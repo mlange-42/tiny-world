@@ -128,7 +128,7 @@ func NewSprites(dir string) Sprites {
 
 	terrIndices := [terr.EndTerrain]int{}
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
-		if idx, ok := indices[terr.Names[i]]; ok {
+		if idx, ok := indices[terr.Properties[i].Name]; ok {
 			terrIndices[i] = idx
 		} else {
 			terrIndices[i] = indices[nameUnknown]

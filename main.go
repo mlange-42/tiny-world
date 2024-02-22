@@ -36,6 +36,7 @@ func main() {
 	ecs.AddResource(&g.Model.World, &sprites)
 
 	g.Model.AddSystem(&sys.InitTerrain{})
+	g.Model.AddSystem(&sys.Build{})
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton: ebiten.MouseButton1,
 	})
