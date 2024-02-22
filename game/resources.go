@@ -1,11 +1,19 @@
 package game
 
 import (
+	"encoding/json"
+	"fmt"
 	"image"
+	"log"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/mlange-42/arche/ecs"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 // EbitenImage resource for drawing.
@@ -20,43 +28,68 @@ type Terrain struct {
 	Grid[ecs.Entity]
 }
 
-type TerrainSprites struct {
-	atlas   *ebiten.Image
+type Sprites struct {
+	atlas   []*ebiten.Image
 	sprites []*ebiten.Image
-	width   int
-	height  int
+	infos   []util.SpriteInfo
 }
 
-func NewTerrainSprites(file string, width, height int) TerrainSprites {
-	img, _, err := ebitenutil.NewImageFromFile(file)
+func NewSprites(dir string) Sprites {
+	entries, err := os.ReadDir(dir)
 	if err != nil {
-		panic(err)
-	}
-	cols, rows := img.Bounds().Dx()/width, img.Bounds().Dy()/height
-	numSprites := rows * cols
-
-	sprites := make([]*ebiten.Image, numSprites)
-
-	for i := 0; i < numSprites; i++ {
-		row := i / cols
-		col := i % cols
-		sprites[i] = img.SubImage(image.Rect(col*width, row*height, col*width+width, row*height+height)).(*ebiten.Image)
+		log.Fatal(err)
 	}
 
-	return TerrainSprites{
-		atlas:   img,
+	atlas := []*ebiten.Image{}
+	sprites := []*ebiten.Image{}
+	infos := []util.SpriteInfo{}
+
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		ext := filepath.Ext(e.Name())
+		if ext != ".json" && ext != ".JSON" {
+			continue
+		}
+		baseName := strings.Replace(e.Name(), ext, "", 1)
+		pngPath := path.Join(dir, fmt.Sprintf("%s.png", baseName))
+
+		infos := util.SpriteSheet{}
+		content, err := os.ReadFile(path.Join(dir, e.Name()))
+		if err != nil {
+			log.Fatal("error loading JSON file: ", err)
+		}
+		if err := json.Unmarshal(content, &infos); err != nil {
+			log.Fatal("error decoding JSON: ", err)
+		}
+
+		img, _, err := ebitenutil.NewImageFromFile(pngPath)
+		if err != nil {
+			log.Fatal("error reading image: ", err)
+		}
+		atlas = append(atlas, img)
+
+		w, h := infos.SpriteWidth, infos.SpriteHeight
+		cols, rows := img.Bounds().Dx()/w, img.Bounds().Dy()/h
+		numSprites := rows * cols
+
+		for i := 0; i < numSprites; i++ {
+			row := i / cols
+			col := i % cols
+			sprites = append(sprites, img.SubImage(image.Rect(col*w, row*h, col*w+w, row*h+h)).(*ebiten.Image))
+		}
+	}
+
+	return Sprites{
+		atlas:   atlas,
 		sprites: sprites,
-		width:   width,
-		height:  height,
+		infos:   infos,
 	}
 }
 
-func (s *TerrainSprites) Get(idx int) *ebiten.Image {
+func (s *Sprites) Get(idx int) *ebiten.Image {
 	return s.sprites[idx]
-}
-
-func (s *TerrainSprites) Size() (int, int) {
-	return s.width, s.height
 }
 
 type View struct {

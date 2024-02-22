@@ -21,14 +21,14 @@ type PanAndZoom struct {
 
 	view    generic.Resource[game.View]
 	terrain generic.Resource[game.Terrain]
-	sprites generic.Resource[game.TerrainSprites]
+	sprites generic.Resource[game.Sprites]
 }
 
 // Initialize the system
 func (s *PanAndZoom) Initialize(world *ecs.World) {
 	s.view = generic.NewResource[game.View](world)
 	s.terrain = generic.NewResource[game.Terrain](world)
-	s.sprites = generic.NewResource[game.TerrainSprites](world)
+	s.sprites = generic.NewResource[game.Sprites](world)
 }
 
 // Update the system

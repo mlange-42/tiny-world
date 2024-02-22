@@ -10,7 +10,7 @@ import (
 // Terrain is a system to render the terrain.
 type Terrain struct {
 	screen  generic.Resource[game.EbitenImage]
-	sprites generic.Resource[game.TerrainSprites]
+	sprites generic.Resource[game.Sprites]
 	terrain generic.Resource[game.Terrain]
 	view    generic.Resource[game.View]
 }
@@ -18,7 +18,7 @@ type Terrain struct {
 // InitializeUI the system
 func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.screen = generic.NewResource[game.EbitenImage](world)
-	s.sprites = generic.NewResource[game.TerrainSprites](world)
+	s.sprites = generic.NewResource[game.Sprites](world)
 	s.terrain = generic.NewResource[game.Terrain](world)
 	s.view = generic.NewResource[game.View](world)
 }
@@ -32,7 +32,6 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	canvas := s.screen.Get()
 	img := canvas.Image
 
-	_, height := sprites.Size()
 	xOff, yOff := view.Offset()
 	bounds := view.Bounds(canvas.Width, canvas.Height)
 
@@ -45,6 +44,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 		for j := 0; j <= terrain.Height(); j++ {
 			//t := terrain.Get(i, j)
 			sp := sprites.Get(0)
+			h := sp.Bounds().Dy()
 			point := view.TileToScreen(i, j)
 
 			if !point.In(bounds) {
@@ -53,7 +53,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			op.GeoM.Reset()
 			op.GeoM.Scale(view.Zoom, view.Zoom)
-			op.GeoM.Translate(float64(point.X)*view.Zoom-float64(xOff), float64(point.Y+height)*view.Zoom-float64(yOff))
+			op.GeoM.Translate(float64(point.X)*view.Zoom-float64(xOff), float64(point.Y+h)*view.Zoom-float64(yOff))
 			img.DrawImage(sp, &op)
 		}
 	}
