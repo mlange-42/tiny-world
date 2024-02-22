@@ -16,20 +16,23 @@ type EbitenImage struct {
 }
 
 // Terrain resource
-type Terrain = Grid[ecs.Entity]
+type Terrain struct {
+	Grid[ecs.Entity]
+}
 
 type TerrainSprites struct {
 	atlas   *ebiten.Image
 	sprites []*ebiten.Image
-	size    int
+	width   int
+	height  int
 }
 
-func NewTerrainSprites(file string, size int) TerrainSprites {
+func NewTerrainSprites(file string, width, height int) TerrainSprites {
 	img, _, err := ebitenutil.NewImageFromFile(file)
 	if err != nil {
 		panic(err)
 	}
-	cols, rows := img.Bounds().Dy()/size, img.Bounds().Dx()/size
+	cols, rows := img.Bounds().Dx()/width, img.Bounds().Dy()/height
 	numSprites := rows * cols
 
 	sprites := make([]*ebiten.Image, numSprites)
@@ -37,13 +40,14 @@ func NewTerrainSprites(file string, size int) TerrainSprites {
 	for i := 0; i < numSprites; i++ {
 		row := i / cols
 		col := i % cols
-		sprites[i] = img.SubImage(image.Rect(col*size, row*size, col*size+size, row*size+size)).(*ebiten.Image)
+		sprites[i] = img.SubImage(image.Rect(col*width, row*height, col*width+width, row*height+height)).(*ebiten.Image)
 	}
 
 	return TerrainSprites{
 		atlas:   img,
 		sprites: sprites,
-		size:    size,
+		width:   width,
+		height:  height,
 	}
 }
 
@@ -51,29 +55,35 @@ func (s *TerrainSprites) Get(idx int) *ebiten.Image {
 	return s.sprites[idx]
 }
 
-func (s *TerrainSprites) Size() int {
-	return s.size
+func (s *TerrainSprites) Size() (int, int) {
+	return s.width, s.height
 }
 
 type View struct {
-	X, Y int
-	Zoom int
+	TileWidth, TileHeight int
+	X, Y                  int
+	Zoom                  float64
 }
 
-func (v *View) Bounds(sc, w, h int) (iMin, jMin, iMax, jMax int) {
-	vw, vh := w/v.Zoom, h/v.Zoom
-
-	iMin, jMin = v.X/sc, v.Y/sc
-	iMax, jMax = iMin+vw, jMin+vh
-
-	return
+func (v *View) Offset() (int, int) {
+	return int(float64(v.X) * v.Zoom), int(float64(v.Y) * v.Zoom)
 }
 
-func (v *View) Offset(sc int) (int, int) {
-	return v.X * v.Zoom / sc, v.Y * v.Zoom / sc
+func (v *View) Bounds(w, h int) image.Rectangle {
+	vw, vh := int(float64(w)/v.Zoom), int(float64(h)/v.Zoom)
+
+	return image.Rect(
+		v.X-v.TileWidth, v.Y-3*v.TileHeight,
+		v.X+vw, v.Y+vh-2*v.TileHeight,
+	)
 }
 
-func (v View) MouseToLocal(sc, x, y int) (int, int) {
-	return v.X + x*sc/v.Zoom,
-		v.Y + y*sc/v.Zoom
+func (v View) TileToScreen(x, y int) image.Point {
+	return image.Pt((x-y)*v.TileWidth/2,
+		(x+y)*v.TileHeight/2)
+}
+
+func (v View) MouseToLocal(x, y int) (int, int) {
+	return v.X + int(float64(x)/v.Zoom),
+		v.Y + int(float64(y)/v.Zoom)
 }
