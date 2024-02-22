@@ -50,7 +50,7 @@ func (s *PanAndZoom) Update(world *ecs.World) {
 
 	_, dy := ebiten.Wheel()
 	x, y := ebiten.CursorPosition()
-	mx, my := view.MouseToLocal(x, y)
+	mx, my := view.ScreenToGlobal(x, y)
 	if dy > 0 && view.Zoom < 4 {
 		view.Zoom *= 2
 		view.X += (mx - view.X) / 2

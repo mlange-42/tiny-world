@@ -7,6 +7,7 @@ const (
 	Buildable
 	Grass
 	Path
+	Cursor
 	EndTerrain
 )
 
@@ -15,4 +16,5 @@ var Names = [EndTerrain]string{
 	"buildable",
 	"grass",
 	"path",
+	"cursor",
 }

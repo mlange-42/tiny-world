@@ -15,6 +15,7 @@ type Terrain struct {
 	screen  generic.Resource[game.EbitenImage]
 	sprites generic.Resource[game.Sprites]
 	terrain generic.Resource[game.Terrain]
+	landUse generic.Resource[game.LandUse]
 	view    generic.Resource[game.View]
 }
 
@@ -23,12 +24,14 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.screen = generic.NewResource[game.EbitenImage](world)
 	s.sprites = generic.NewResource[game.Sprites](world)
 	s.terrain = generic.NewResource[game.Terrain](world)
+	s.landUse = generic.NewResource[game.LandUse](world)
 	s.view = generic.NewResource[game.View](world)
 }
 
 // UpdateUI the system
 func (s *Terrain) UpdateUI(world *ecs.World) {
 	terrain := s.terrain.Get()
+	landUse := s.landUse.Get()
 	sprites := s.sprites.Get()
 	view := s.view.Get()
 
@@ -43,14 +46,16 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	op := ebiten.DrawImageOptions{}
 	op.Blend = ebiten.BlendSourceOver
 
+	halfWidth := view.TileWidth / 2
+
 	drawSprite := func(idx int, point *image.Point, off *image.Point, height int) int {
 		sp, info := sprites.Get(idx)
-		h := sp.Bounds().Dy()
+		h := sp.Bounds().Dy() - view.TileHeight
 
 		op.GeoM.Reset()
 		op.GeoM.Scale(view.Zoom, view.Zoom)
 		op.GeoM.Translate(
-			float64(point.X)*view.Zoom-float64(off.X),
+			float64(point.X-halfWidth)*view.Zoom-float64(off.X),
 			float64(point.Y-h-height-info.YOffset)*view.Zoom-float64(off.Y),
 		)
 		img.DrawImage(sp, &op)
@@ -58,19 +63,32 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 		return height + info.Height
 	}
 
+	mx, my := view.ScreenToGlobal(ebiten.CursorPosition())
+	cursor := view.GlobalToTile(mx, my)
+
 	for i := 0; i < terrain.Width(); i++ {
 		for j := 0; j < terrain.Height(); j++ {
-			point := view.TileToScreen(i, j)
+			point := view.TileToGlobal(i, j)
 			if !point.In(bounds) {
 				continue
 			}
 
 			t := terrain.Get(i, j)
-			idx := sprites.GetTerrainIndex(t)
-
 			height := 0
 			if t != terr.Air {
+				idx := sprites.GetTerrainIndex(t)
+				height = drawSprite(idx, &point, &off, height)
+			}
+
+			lu := landUse.Get(i, j)
+			if lu != terr.Air {
+				idx := sprites.GetTerrainIndex(lu)
 				_ = drawSprite(idx, &point, &off, height)
+			}
+
+			if cursor.X == i && cursor.Y == j {
+				idx := sprites.GetTerrainIndex(terr.Cursor)
+				_ = drawSprite(idx, &point, &off, 0)
 			}
 		}
 	}

@@ -21,11 +21,14 @@ func main() {
 
 	terrain := game.Terrain{Grid: game.NewGrid[terr.Terrain](100, 100)}
 	ecs.AddResource(&g.Model.World, &terrain)
+	landUse := game.LandUse{Grid: game.NewGrid[terr.Terrain](100, 100)}
+	ecs.AddResource(&g.Model.World, &landUse)
 
 	view := game.View{
-		TileWidth:  48,
-		TileHeight: 24,
-		Zoom:       1,
+		TileWidth:   48,
+		TileHeight:  24,
+		Zoom:        1,
+		MouseOffset: 24,
 	}
 	ecs.AddResource(&g.Model.World, &view)
 

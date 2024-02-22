@@ -35,24 +35,16 @@ func main() {
 }
 
 func processDirectory(info dirInfo) {
-	count := len(info.Files)
+	fmt.Printf("Processing %s (%d images)\n", info.Directory, len(info.Files))
 
-	fmt.Printf("Processing %s (%d images)\n", info.Directory, count)
-
-	if count == 0 {
+	if len(info.Files) == 0 {
 		return
 	}
 
-	perRow := maxWidth / info.Width
-	numRows := int(math.Ceil(float64(count) / float64(perRow)))
-
-	sheetWidth := perRow * info.Width
-	sheetHeight := numRows * info.Height
-
-	img := image.NewRGBA(image.Rect(0, 0, sheetWidth, sheetHeight))
 	mask := isoMask(info.Width, info.Height)
 
 	infos := []util.SpriteInfo{}
+	images := []image.Image{}
 
 	index := 0
 	for _, file := range info.Files {
@@ -85,12 +77,6 @@ func processDirectory(info dirInfo) {
 			}
 			tiles := spiltMultiTile(sprite, mask, info.Width, info.Height)
 			for i, tile := range tiles {
-				row, col := index/perRow, index%perRow
-
-				draw.Draw(img,
-					image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
-					tile, image.Point{}, draw.Src)
-
 				name := strings.Replace(baseName, suffixMultiTile, "", 1)
 				if i > 0 {
 					name = fmt.Sprintf("%s_%d", name, i)
@@ -101,6 +87,7 @@ func processDirectory(info dirInfo) {
 					MultiTile: i == 0,
 				}
 
+				images = append(images, tile)
 				infos = append(infos, spriteInfo)
 				index++
 			}
@@ -109,17 +96,27 @@ func processDirectory(info dirInfo) {
 				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
 			}
 
-			row, col := index/perRow, index%perRow
-
-			draw.Draw(img,
-				image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
-				sprite, image.Point{}, draw.Src)
-
 			spriteInfo.MultiTile = false
+
+			images = append(images, sprite)
 			infos = append(infos, spriteInfo)
 
 			index++
 		}
+	}
+
+	perRow := maxWidth / info.Width
+	numRows := int(math.Ceil(float64(len(images)) / float64(perRow)))
+
+	sheetWidth := perRow * info.Width
+	sheetHeight := numRows * info.Height
+
+	img := image.NewRGBA(image.Rect(0, 0, sheetWidth, sheetHeight))
+	for i, sprite := range images {
+		row, col := i/perRow, i%perRow
+		draw.Draw(img,
+			image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
+			sprite, image.Point{}, draw.Src)
 	}
 
 	outFile := path.Join(outFolder, fmt.Sprintf("%s.png", info.Directory))

@@ -44,6 +44,11 @@ func (t *Terrain) setNeighbor(x, y, dx, dy int) {
 	}
 }
 
+// LandUse resource
+type LandUse struct {
+	Grid[terr.Terrain]
+}
+
 type Sprites struct {
 	atlas       []*ebiten.Image
 	sprites     []*ebiten.Image
@@ -100,6 +105,7 @@ func NewSprites(dir string) Sprites {
 		w, h := sheet.SpriteWidth, sheet.SpriteHeight
 		cols, _ := img.Bounds().Dx()/w, img.Bounds().Dy()/h
 
+		fmt.Println(e.Name())
 		for i, inf := range sheet.Sprites {
 			if _, ok := indices[inf.Name]; ok {
 				log.Fatalf("duplicate sprite name: %s", inf.Name)
@@ -122,7 +128,11 @@ func NewSprites(dir string) Sprites {
 
 	terrIndices := [terr.EndTerrain]int{}
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
-		terrIndices[i] = indices[terr.Names[i]]
+		if idx, ok := indices[terr.Names[i]]; ok {
+			terrIndices[i] = idx
+		} else {
+			terrIndices[i] = indices[nameUnknown]
+		}
 	}
 
 	return Sprites{
@@ -162,6 +172,7 @@ type View struct {
 	TileWidth, TileHeight int
 	X, Y                  int
 	Zoom                  float64
+	MouseOffset           int
 }
 
 func (v *View) Offset() image.Point {
@@ -177,12 +188,30 @@ func (v *View) Bounds(w, h int) image.Rectangle {
 	)
 }
 
-func (v View) TileToScreen(x, y int) image.Point {
+func (v View) TileToGlobal(x, y int) image.Point {
 	return image.Pt((x-y)*v.TileWidth/2,
 		(x+y)*v.TileHeight/2)
 }
 
-func (v View) MouseToLocal(x, y int) (int, int) {
+func (v View) GlobalToTile(x, y int) image.Point {
+	y += v.MouseOffset
+
+	// TODO: fix the integer version!
+	//twh := v.TileWidth / 2
+	//thh := v.TileHeight / 2
+
+	//i := (x/twh + y/thh) / 2
+	//j := (y/thh - x/twh) / 2
+
+	w, h := float64(v.TileWidth), float64(v.TileHeight)
+	xx, yy := float64(x), float64(y)
+	i := xx/w + yy/h
+	j := yy/h - xx/w
+
+	return image.Pt(int(i), int(j))
+}
+
+func (v View) ScreenToGlobal(x, y int) (int, int) {
 	return v.X + int(float64(x)/v.Zoom),
 		v.Y + int(float64(y)/v.Zoom)
 }

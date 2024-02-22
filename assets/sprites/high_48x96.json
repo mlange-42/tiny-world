@@ -1,0 +1,13 @@
+{
+ "SpriteWidth": 48,
+ "SpriteHeight": 96,
+ "Sprites": [
+  {
+   "Name": "cursor",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  }
+ ]
+}
