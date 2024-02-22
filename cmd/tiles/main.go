@@ -32,6 +32,9 @@ func main() {
 
 func processDirectory(info dirInfo) {
 	count := len(info.Files)
+
+	fmt.Printf("Processing %s (%d images)\n", info.Directory, count)
+
 	if count == 0 {
 		return
 	}
@@ -89,7 +92,7 @@ func processDirectory(info dirInfo) {
 		SpriteHeight: info.Height,
 		Sprites:      infos,
 	}
-	js, err := json.Marshal(spriteSheet)
+	js, err := json.MarshalIndent(spriteSheet, "", " ")
 	if err != nil {
 		log.Fatalf("error encoding json: %s", err.Error())
 	}

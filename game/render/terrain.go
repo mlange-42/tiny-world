@@ -40,10 +40,12 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	op := ebiten.DrawImageOptions{}
 	op.Blend = ebiten.BlendSourceOver
 
+	idx := sprites.GetIndex("grass")
+
 	for i := 0; i <= terrain.Width(); i++ {
 		for j := 0; j <= terrain.Height(); j++ {
 			//t := terrain.Get(i, j)
-			sp := sprites.Get(0)
+			sp := sprites.Get(idx)
 			h := sp.Bounds().Dy()
 			point := view.TileToScreen(i, j)
 

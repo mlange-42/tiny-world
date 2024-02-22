@@ -16,6 +16,8 @@ import (
 	"github.com/mlange-42/tiny-world/game/util"
 )
 
+const nameUnknown = "unknown"
+
 // EbitenImage resource for drawing.
 type EbitenImage struct {
 	Image  *ebiten.Image
@@ -29,9 +31,11 @@ type Terrain struct {
 }
 
 type Sprites struct {
-	atlas   []*ebiten.Image
-	sprites []*ebiten.Image
-	infos   []util.SpriteInfo
+	atlas      []*ebiten.Image
+	sprites    []*ebiten.Image
+	infos      []util.SpriteInfo
+	indices    map[string]int
+	idxUnknown int
 }
 
 func NewSprites(dir string) Sprites {
@@ -43,7 +47,9 @@ func NewSprites(dir string) Sprites {
 	atlas := []*ebiten.Image{}
 	sprites := []*ebiten.Image{}
 	infos := []util.SpriteInfo{}
+	indices := map[string]int{}
 
+	index := 0
 	for _, e := range entries {
 		if e.IsDir() {
 			continue
@@ -71,25 +77,40 @@ func NewSprites(dir string) Sprites {
 		atlas = append(atlas, img)
 
 		w, h := infos.SpriteWidth, infos.SpriteHeight
-		cols, rows := img.Bounds().Dx()/w, img.Bounds().Dy()/h
-		numSprites := rows * cols
+		cols, _ := img.Bounds().Dx()/w, img.Bounds().Dy()/h
 
-		for i := 0; i < numSprites; i++ {
+		for i, inf := range infos.Sprites {
+			if _, ok := indices[inf.Name]; ok {
+				log.Fatalf("duplicate sprite name: %s", inf.Name)
+			}
+			indices[inf.Name] = index
+
 			row := i / cols
 			col := i % cols
 			sprites = append(sprites, img.SubImage(image.Rect(col*w, row*h, col*w+w, row*h+h)).(*ebiten.Image))
+
+			index++
 		}
 	}
 
 	return Sprites{
-		atlas:   atlas,
-		sprites: sprites,
-		infos:   infos,
+		atlas:      atlas,
+		sprites:    sprites,
+		infos:      infos,
+		indices:    indices,
+		idxUnknown: indices[nameUnknown],
 	}
 }
 
 func (s *Sprites) Get(idx int) *ebiten.Image {
 	return s.sprites[idx]
+}
+
+func (s *Sprites) GetIndex(name string) int {
+	if idx, ok := s.indices[name]; ok {
+		return idx
+	}
+	return s.idxUnknown
 }
 
 type View struct {
@@ -107,7 +128,7 @@ func (v *View) Bounds(w, h int) image.Rectangle {
 
 	return image.Rect(
 		v.X-v.TileWidth, v.Y-3*v.TileHeight,
-		v.X+vw, v.Y+vh-2*v.TileHeight,
+		v.X+vw, v.Y+vh-v.TileHeight,
 	)
 }
 

@@ -1,1 +1,14 @@
-{"SpriteWidth":48,"SpriteHeight":48,"Sprites":[{"Name":"grass","Index":0}]}
+{
+ "SpriteWidth": 48,
+ "SpriteHeight": 48,
+ "Sprites": [
+  {
+   "Name": "grass",
+   "Index": 0
+  },
+  {
+   "Name": "unknown",
+   "Index": 1
+  }
+ ]
+}
