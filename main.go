@@ -28,7 +28,7 @@ func main() {
 	}
 	ecs.AddResource(&g.Model.World, &view)
 
-	sprites := game.NewTerrainSprites("./assets/sprites/terrain.png", 48, 36)
+	sprites := game.NewTerrainSprites("./assets/sprites/terrain.png", 48, 48)
 	ecs.AddResource(&g.Model.World, &sprites)
 
 	g.Model.AddSystem(&sys.PanAndZoom{
