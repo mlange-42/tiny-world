@@ -50,7 +50,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 		op.GeoM.Scale(view.Zoom, view.Zoom)
 		op.GeoM.Translate(
 			float64(point.X)*view.Zoom-float64(off.X),
-			float64(point.Y+h-height-info.YOffset)*view.Zoom-float64(off.Y),
+			float64(point.Y-h-height-info.YOffset)*view.Zoom-float64(off.Y),
 		)
 		img.DrawImage(sp, &op)
 
@@ -58,7 +58,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	}
 
 	idx := sprites.GetIndex("grass")
-	idx2 := sprites.GetIndex("unknown")
+	idx2 := sprites.GetIndex("path")
 
 	for i := 0; i <= terrain.Width(); i++ {
 		for j := 0; j <= terrain.Height(); j++ {

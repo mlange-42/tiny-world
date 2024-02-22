@@ -84,12 +84,23 @@ func processDirectory(info dirInfo) {
 				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
 			}
 			tiles := spiltMultiTile(sprite, mask, info.Width, info.Height)
-			for _, tile := range tiles {
+			for i, tile := range tiles {
 				row, col := index/perRow, index%perRow
 
 				draw.Draw(img,
 					image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
 					tile, image.Point{}, draw.Src)
+
+				name := strings.Replace(baseName, suffixMultiTile, "", 1)
+				if i > 0 {
+					name = fmt.Sprintf("%s_%d", name, i)
+				}
+				spriteInfo := util.SpriteInfo{
+					Name:      name,
+					Index:     index,
+					MultiTile: i == 0,
+				}
+
 				infos = append(infos, spriteInfo)
 				index++
 			}
@@ -104,6 +115,7 @@ func processDirectory(info dirInfo) {
 				image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
 				sprite, image.Point{}, draw.Src)
 
+			spriteInfo.MultiTile = false
 			infos = append(infos, spriteInfo)
 
 			index++

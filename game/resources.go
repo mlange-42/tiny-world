@@ -39,8 +39,9 @@ type Sprites struct {
 }
 
 type Sprite struct {
-	Height  int
-	YOffset int
+	Height    int
+	YOffset   int
+	MultiTile bool
 }
 
 func NewSprites(dir string) Sprites {
@@ -95,8 +96,9 @@ func NewSprites(dir string) Sprites {
 			sprites = append(sprites, img.SubImage(image.Rect(col*w, row*h, col*w+w, row*h+h)).(*ebiten.Image))
 
 			infos = append(infos, Sprite{
-				Height:  inf.Height,
-				YOffset: inf.YOffset,
+				Height:    inf.Height,
+				YOffset:   inf.YOffset,
+				MultiTile: inf.MultiTile,
 			})
 
 			index++
@@ -137,8 +139,8 @@ func (v *View) Bounds(w, h int) image.Rectangle {
 	vw, vh := int(float64(w)/v.Zoom), int(float64(h)/v.Zoom)
 
 	return image.Rect(
-		v.X-v.TileWidth, v.Y-3*v.TileHeight,
-		v.X+vw, v.Y+vh-v.TileHeight,
+		v.X-v.TileWidth, v.Y-2*v.TileHeight,
+		v.X+vw, v.Y+vh+2*v.TileHeight,
 	)
 }
 
