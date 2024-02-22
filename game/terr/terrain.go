@@ -4,6 +4,7 @@ type Terrain uint8
 
 const (
 	Air Terrain = iota
+	Buildable
 	Grass
 	Path
 	EndTerrain
@@ -11,6 +12,7 @@ const (
 
 var Names = [EndTerrain]string{
 	"air",
+	"buildable",
 	"grass",
 	"path",
 }

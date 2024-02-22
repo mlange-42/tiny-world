@@ -7,6 +7,7 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // Terrain is a system to render the terrain.
@@ -57,20 +58,20 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 		return height + info.Height
 	}
 
-	idx := sprites.GetIndex("grass")
-	idx2 := sprites.GetIndex("path")
-
-	for i := 0; i <= terrain.Width(); i++ {
-		for j := 0; j <= terrain.Height(); j++ {
+	for i := 0; i < terrain.Width(); i++ {
+		for j := 0; j < terrain.Height(); j++ {
 			point := view.TileToScreen(i, j)
 			if !point.In(bounds) {
 				continue
 			}
 
-			//t := terrain.Get(i, j)
+			t := terrain.Get(i, j)
+			idx := sprites.GetTerrainIndex(t)
+
 			height := 0
-			height = drawSprite(idx, &point, &off, height)
-			_ = drawSprite(idx2, &point, &off, height)
+			if t != terr.Air {
+				_ = drawSprite(idx, &point, &off, height)
+			}
 		}
 	}
 }

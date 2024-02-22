@@ -12,7 +12,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/mlange-42/tiny-world/game/util"
 )
@@ -28,7 +27,21 @@ type EbitenImage struct {
 
 // Terrain resource
 type Terrain struct {
-	Grid[ecs.Entity]
+	Grid[terr.Terrain]
+}
+
+func (t *Terrain) Set(x, y int, value terr.Terrain) {
+	t.Grid.Set(x, y, value)
+	t.setNeighbor(x, y, -1, 0)
+	t.setNeighbor(x, y, 1, 0)
+	t.setNeighbor(x, y, 0, -1)
+	t.setNeighbor(x, y, 0, 1)
+}
+
+func (t *Terrain) setNeighbor(x, y, dx, dy int) {
+	if t.Contains(x+dx, y+dy) && t.Get(x+dx, y+dy) == terr.Air {
+		t.Grid.Set(x+dx, y+dy, terr.Buildable)
+	}
 }
 
 type Sprites struct {
