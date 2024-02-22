@@ -39,7 +39,8 @@ type Sprites struct {
 }
 
 type Sprite struct {
-	Height int
+	Height  int
+	YOffset int
 }
 
 func NewSprites(dir string) Sprites {
@@ -93,7 +94,10 @@ func NewSprites(dir string) Sprites {
 			col := i % cols
 			sprites = append(sprites, img.SubImage(image.Rect(col*w, row*h, col*w+w, row*h+h)).(*ebiten.Image))
 
-			infos = append(infos, Sprite{Height: inf.Height})
+			infos = append(infos, Sprite{
+				Height:  inf.Height,
+				YOffset: inf.YOffset,
+			})
 
 			index++
 		}
