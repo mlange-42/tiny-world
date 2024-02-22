@@ -13,6 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/mlange-42/arche/ecs"
+	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/mlange-42/tiny-world/game/util"
 )
 
@@ -31,11 +32,12 @@ type Terrain struct {
 }
 
 type Sprites struct {
-	atlas      []*ebiten.Image
-	sprites    []*ebiten.Image
-	infos      []Sprite
-	indices    map[string]int
-	idxUnknown int
+	atlas       []*ebiten.Image
+	sprites     []*ebiten.Image
+	infos       []Sprite
+	indices     map[string]int
+	terrIndices [terr.EndTerrain]int
+	idxUnknown  int
 }
 
 type Sprite struct {
@@ -105,12 +107,18 @@ func NewSprites(dir string) Sprites {
 		}
 	}
 
+	terrIndices := [terr.EndTerrain]int{}
+	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		terrIndices[i] = indices[terr.Names[i]]
+	}
+
 	return Sprites{
-		atlas:      atlas,
-		sprites:    sprites,
-		infos:      infos,
-		indices:    indices,
-		idxUnknown: indices[nameUnknown],
+		atlas:       atlas,
+		sprites:     sprites,
+		infos:       infos,
+		indices:     indices,
+		idxUnknown:  indices[nameUnknown],
+		terrIndices: terrIndices,
 	}
 }
 
@@ -123,6 +131,18 @@ func (s *Sprites) GetIndex(name string) int {
 		return idx
 	}
 	return s.idxUnknown
+}
+
+func (s *Sprites) GetTerrainIndex(t terr.Terrain) int {
+	return s.terrIndices[t]
+}
+
+func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions) int {
+	idx := s.terrIndices[t]
+	if s.infos[idx].MultiTile {
+		return idx + int(dirs)
+	}
+	return idx
 }
 
 type View struct {
