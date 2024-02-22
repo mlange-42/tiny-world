@@ -33,9 +33,13 @@ type Terrain struct {
 type Sprites struct {
 	atlas      []*ebiten.Image
 	sprites    []*ebiten.Image
-	infos      []util.SpriteInfo
+	infos      []Sprite
 	indices    map[string]int
 	idxUnknown int
+}
+
+type Sprite struct {
+	Height int
 }
 
 func NewSprites(dir string) Sprites {
@@ -46,7 +50,7 @@ func NewSprites(dir string) Sprites {
 
 	atlas := []*ebiten.Image{}
 	sprites := []*ebiten.Image{}
-	infos := []util.SpriteInfo{}
+	infos := []Sprite{}
 	indices := map[string]int{}
 
 	index := 0
@@ -61,12 +65,12 @@ func NewSprites(dir string) Sprites {
 		baseName := strings.Replace(e.Name(), ext, "", 1)
 		pngPath := path.Join(dir, fmt.Sprintf("%s.png", baseName))
 
-		infos := util.SpriteSheet{}
+		sheet := util.SpriteSheet{}
 		content, err := os.ReadFile(path.Join(dir, e.Name()))
 		if err != nil {
 			log.Fatal("error loading JSON file: ", err)
 		}
-		if err := json.Unmarshal(content, &infos); err != nil {
+		if err := json.Unmarshal(content, &sheet); err != nil {
 			log.Fatal("error decoding JSON: ", err)
 		}
 
@@ -76,10 +80,10 @@ func NewSprites(dir string) Sprites {
 		}
 		atlas = append(atlas, img)
 
-		w, h := infos.SpriteWidth, infos.SpriteHeight
+		w, h := sheet.SpriteWidth, sheet.SpriteHeight
 		cols, _ := img.Bounds().Dx()/w, img.Bounds().Dy()/h
 
-		for i, inf := range infos.Sprites {
+		for i, inf := range sheet.Sprites {
 			if _, ok := indices[inf.Name]; ok {
 				log.Fatalf("duplicate sprite name: %s", inf.Name)
 			}
@@ -88,6 +92,8 @@ func NewSprites(dir string) Sprites {
 			row := i / cols
 			col := i % cols
 			sprites = append(sprites, img.SubImage(image.Rect(col*w, row*h, col*w+w, row*h+h)).(*ebiten.Image))
+
+			infos = append(infos, Sprite{Height: inf.Height})
 
 			index++
 		}
@@ -102,8 +108,8 @@ func NewSprites(dir string) Sprites {
 	}
 }
 
-func (s *Sprites) Get(idx int) *ebiten.Image {
-	return s.sprites[idx]
+func (s *Sprites) Get(idx int) (*ebiten.Image, *Sprite) {
+	return s.sprites[idx], &s.infos[idx]
 }
 
 func (s *Sprites) GetIndex(name string) int {
@@ -119,8 +125,8 @@ type View struct {
 	Zoom                  float64
 }
 
-func (v *View) Offset() (int, int) {
-	return int(float64(v.X) * v.Zoom), int(float64(v.Y) * v.Zoom)
+func (v *View) Offset() image.Point {
+	return image.Pt(int(float64(v.X)*v.Zoom), int(float64(v.Y)*v.Zoom))
 }
 
 func (v *View) Bounds(w, h int) image.Rectangle {

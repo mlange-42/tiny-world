@@ -4,11 +4,13 @@
  "Sprites": [
   {
    "Name": "grass",
-   "Index": 0
+   "Index": 0,
+   "Height": 25
   },
   {
    "Name": "unknown",
-   "Index": 1
+   "Index": 1,
+   "Height": 0
   }
  ]
 }

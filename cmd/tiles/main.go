@@ -61,16 +61,24 @@ func processDirectory(info dirInfo) {
 
 		baseName := strings.Replace(filepath.Base(file), filepath.Ext(file), "", 1)
 
+		spriteInfo := util.SpriteInfo{
+			Name:  baseName,
+			Index: i,
+		}
+		jsonFile := strings.Replace(file, filepath.Ext(file), "", 1) + ".json"
+		if content, err := os.ReadFile(jsonFile); err == nil {
+			if err := json.Unmarshal(content, &spriteInfo); err != nil {
+				log.Fatal("error decoding JSON: ", err)
+			}
+		}
+
 		row, col := i/perRow, i%perRow
 
 		draw.Draw(img,
 			image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
 			sprite, image.Point{}, draw.Src)
 
-		infos = append(infos, util.SpriteInfo{
-			Name:  baseName,
-			Index: i,
-		})
+		infos = append(infos, spriteInfo)
 	}
 
 	outFile := path.Join(outFolder, fmt.Sprintf("%s.png", info.Directory))

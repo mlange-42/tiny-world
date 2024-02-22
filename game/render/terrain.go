@@ -1,6 +1,8 @@
 package render
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -32,7 +34,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	canvas := s.screen.Get()
 	img := canvas.Image
 
-	xOff, yOff := view.Offset()
+	off := view.Offset()
 	bounds := view.Bounds(canvas.Width, canvas.Height)
 
 	img.Clear()
@@ -40,23 +42,34 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	op := ebiten.DrawImageOptions{}
 	op.Blend = ebiten.BlendSourceOver
 
+	drawSprite := func(idx int, point *image.Point, off *image.Point, height int) int {
+		sp, info := sprites.Get(idx)
+		h := sp.Bounds().Dy()
+
+		op.GeoM.Reset()
+		op.GeoM.Scale(view.Zoom, view.Zoom)
+		op.GeoM.Translate(
+			float64(point.X)*view.Zoom-float64(off.X),
+			float64(point.Y+h-height)*view.Zoom-float64(off.Y),
+		)
+		img.DrawImage(sp, &op)
+
+		return height + info.Height
+	}
+
 	idx := sprites.GetIndex("grass")
 
 	for i := 0; i <= terrain.Width(); i++ {
 		for j := 0; j <= terrain.Height(); j++ {
-			//t := terrain.Get(i, j)
-			sp := sprites.Get(idx)
-			h := sp.Bounds().Dy()
 			point := view.TileToScreen(i, j)
-
 			if !point.In(bounds) {
 				continue
 			}
 
-			op.GeoM.Reset()
-			op.GeoM.Scale(view.Zoom, view.Zoom)
-			op.GeoM.Translate(float64(point.X)*view.Zoom-float64(xOff), float64(point.Y+h)*view.Zoom-float64(yOff))
-			img.DrawImage(sp, &op)
+			//t := terrain.Get(i, j)
+			height := 0
+			height = drawSprite(idx, &point, &off, height)
+			_ = drawSprite(idx, &point, &off, height)
 		}
 	}
 }
