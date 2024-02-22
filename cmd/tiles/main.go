@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"log"
@@ -15,9 +16,12 @@ import (
 	"strings"
 
 	"github.com/mlange-42/tiny-world/game/util"
+	tmath "github.com/mlange-42/tiny-world/math"
 )
 
 const maxWidth = 512
+
+const suffixMultiTile = "_multitile"
 
 const outFolder = "assets/sprites"
 const inFolder = "artwork/sprites"
@@ -42,13 +46,16 @@ func processDirectory(info dirInfo) {
 	perRow := maxWidth / info.Width
 	numRows := int(math.Ceil(float64(count) / float64(perRow)))
 
-	width := perRow * info.Width
-	height := numRows * info.Height
+	sheetWidth := perRow * info.Width
+	sheetHeight := numRows * info.Height
 
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img := image.NewRGBA(image.Rect(0, 0, sheetWidth, sheetHeight))
+	mask := isoMask(info.Width, info.Height)
 
 	infos := []util.SpriteInfo{}
-	for i, file := range info.Files {
+
+	index := 0
+	for _, file := range info.Files {
 		f, err := os.Open(file)
 		if err != nil {
 			log.Fatalf("error reading file %s: %s", file, err.Error())
@@ -63,7 +70,7 @@ func processDirectory(info dirInfo) {
 
 		spriteInfo := util.SpriteInfo{
 			Name:  baseName,
-			Index: i,
+			Index: index,
 		}
 		jsonFile := strings.Replace(file, filepath.Ext(file), "", 1) + ".json"
 		if content, err := os.ReadFile(jsonFile); err == nil {
@@ -72,13 +79,35 @@ func processDirectory(info dirInfo) {
 			}
 		}
 
-		row, col := i/perRow, i%perRow
+		if strings.HasSuffix(baseName, suffixMultiTile) {
+			if sprite.Bounds().Dx() != info.Width*4 || sprite.Bounds().Dy() != info.Height*4 {
+				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
+			}
+			tiles := spiltMultiTile(sprite, mask, info.Width, info.Height)
+			for _, tile := range tiles {
+				row, col := index/perRow, index%perRow
 
-		draw.Draw(img,
-			image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
-			sprite, image.Point{}, draw.Src)
+				draw.Draw(img,
+					image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
+					tile, image.Point{}, draw.Src)
+				infos = append(infos, spriteInfo)
+				index++
+			}
+		} else {
+			if sprite.Bounds().Dx() != info.Width || sprite.Bounds().Dy() != info.Height {
+				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
+			}
 
-		infos = append(infos, spriteInfo)
+			row, col := index/perRow, index%perRow
+
+			draw.Draw(img,
+				image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
+				sprite, image.Point{}, draw.Src)
+
+			infos = append(infos, spriteInfo)
+
+			index++
+		}
 	}
 
 	outFile := path.Join(outFolder, fmt.Sprintf("%s.png", info.Directory))
@@ -188,4 +217,57 @@ func newDirInfo(dir string) (dirInfo, error) {
 	}
 
 	return dirInfo{Directory: dir, Width: w, Height: h}, nil
+}
+
+func isoMask(width, height int) *image.RGBA {
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	fill := color.RGBA{255, 255, 255, 255}
+	mask := color.RGBA{0, 0, 0, 0}
+
+	draw.Draw(img, img.Bounds(), &image.Uniform{fill}, image.Point{}, draw.Src)
+
+	midX := width / 2
+	midY := height / 2
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			dx := (midX - x)
+			dy := (midY - y)
+
+			if x >= midX {
+				dx = x + 1 - midX
+			}
+			if y >= midY {
+				dy = y + 1 - midY
+			}
+
+			dist := dx + 2*dy
+			if dist > height+1 {
+				img.SetRGBA(x, y, mask)
+			}
+		}
+	}
+	return img
+}
+
+func spiltMultiTile(sprite image.Image, mask *image.RGBA, width, height int) []*image.RGBA {
+	result := []*image.RGBA{}
+
+	dx, dy := width/2, height/2
+	doubleSize := 8
+
+	for row := 0; row < doubleSize-1; row++ {
+		perRow := tmath.MinInt(row, doubleSize-2-row) + 1
+		halfOffsets := (doubleSize - 2*perRow) / 2
+		xOffset := halfOffsets * dx
+		yOffset := row * dy
+		for col := 0; col < perRow; col++ {
+			img := image.NewRGBA(image.Rect(0, 0, width, height))
+			draw.DrawMask(img, img.Bounds(), sprite, image.Point{xOffset + col*width, yOffset}, mask, image.Point{}, draw.Src)
+			result = append(result, img)
+		}
+	}
+
+	return result
 }

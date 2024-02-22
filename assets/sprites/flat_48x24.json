@@ -1,0 +1,102 @@
+{
+ "SpriteWidth": 48,
+ "SpriteHeight": 24,
+ "Sprites": [
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  },
+  {
+   "Name": "path_multitile",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0
+  }
+ ]
+}
