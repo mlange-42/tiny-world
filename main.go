@@ -27,8 +27,17 @@ func main() {
 	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](100, 100)}
 	ecs.AddResource(&g.Model.World, &landUse)
 
+	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](100, 100)}
+	ecs.AddResource(&g.Model.World, &landUseEntities)
+
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
+
+	update := res.UpdateInterval{Interval: 60}
+	ecs.AddResource(&g.Model.World, &update)
+
+	fonts := res.NewFonts()
+	ecs.AddResource(&g.Model.World, &fonts)
 
 	view := res.View{
 		TileWidth:   48,
@@ -44,6 +53,8 @@ func main() {
 	// =========== Systems ===========
 
 	g.Model.AddSystem(&sys.InitTerrain{})
+
+	g.Model.AddSystem(&sys.Production{})
 
 	g.Model.AddSystem(&sys.Build{
 		AllowStroke: true,
