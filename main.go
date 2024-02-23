@@ -36,10 +36,15 @@ func main() {
 	update := res.UpdateInterval{Interval: 60}
 	ecs.AddResource(&g.Model.World, &update)
 
+	sprites := res.NewSprites("./assets/sprites")
+	ecs.AddResource(&g.Model.World, &sprites)
+
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewHUD(fonts.Default)
+	hud := res.NewHUD(fonts.Default)
+	ui := res.NewUI(fonts.Default, &sprites)
+	ecs.AddResource(&g.Model.World, &hud)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	view := res.View{
@@ -49,9 +54,6 @@ func main() {
 		MouseOffset: 24,
 	}
 	ecs.AddResource(&g.Model.World, &view)
-
-	sprites := res.NewSprites("./assets/sprites")
-	ecs.AddResource(&g.Model.World, &sprites)
 
 	production := res.Production{}
 	stock := res.Stock{}
@@ -73,6 +75,8 @@ func main() {
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton: ebiten.MouseButton1,
 	})
+
+	g.Model.AddSystem(&sys.UpdateUI{})
 
 	// =========== UI Systems ===========
 

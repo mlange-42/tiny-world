@@ -11,7 +11,7 @@ import (
 )
 
 type HUD struct {
-	HUD            *ebitenui.UI
+	UI             *ebitenui.UI
 	ResourceLabels [resource.EndResources]*widget.Text
 }
 
@@ -60,7 +60,7 @@ func NewHUD(font font.Face) HUD {
 	eui := ebitenui.UI{
 		Container: rootContainer,
 	}
-	ui.HUD = &eui
+	ui.UI = &eui
 
 	return ui
 }
