@@ -48,9 +48,16 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 	halfWidth := view.TileWidth / 2
 
-	drawSprite := func(idx int, point *image.Point, off *image.Point, height int) int {
+	drawSprite := func(grid *game.Grid[terr.Terrain], x, y int, t terr.Terrain, point *image.Point, height int) int {
+		idx := sprites.GetTerrainIndex(t)
 		sp, info := sprites.Get(idx)
 		h := sp.Bounds().Dy() - view.TileHeight
+
+		if info.MultiTile {
+			neigh := grid.NeighborsMask(x, y, t)
+			idx = sprites.GetMultiTileIndex(t, neigh)
+			sp, _ = sprites.Get(idx)
+		}
 
 		op.GeoM.Reset()
 		op.GeoM.Scale(view.Zoom, view.Zoom)
@@ -73,22 +80,19 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				continue
 			}
 
-			t := terrain.Get(i, j)
 			height := 0
+			t := terrain.Get(i, j)
 			if t != terr.Air {
-				idx := sprites.GetTerrainIndex(t)
-				height = drawSprite(idx, &point, &off, height)
+				height = drawSprite(&terrain.Grid, i, j, t, &point, height)
 			}
 
 			lu := landUse.Get(i, j)
 			if lu != terr.Air {
-				idx := sprites.GetTerrainIndex(lu)
-				_ = drawSprite(idx, &point, &off, height)
+				_ = drawSprite(&landUse.Grid, i, j, lu, &point, height)
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				idx := sprites.GetTerrainIndex(terr.Cursor)
-				_ = drawSprite(idx, &point, &off, 0)
+				_ = drawSprite(nil, i, j, terr.Cursor, &point, 0)
 			}
 		}
 	}

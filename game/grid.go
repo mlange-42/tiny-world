@@ -1,14 +1,16 @@
 package game
 
+import "github.com/mlange-42/tiny-world/game/terr"
+
 // Grid data structure
-type Grid[T any] struct {
+type Grid[T comparable] struct {
 	data   []T
 	width  int
 	height int
 }
 
 // NewGrid returns a new Grid.
-func NewGrid[T any](width, height int) Grid[T] {
+func NewGrid[T comparable](width, height int) Grid[T] {
 	return Grid[T]{
 		data:   make([]T, width*height),
 		width:  width,
@@ -71,4 +73,25 @@ func (g *Grid[T]) Clamp(x, y int) (int, int) {
 		y = g.height - 1
 	}
 	return x, y
+}
+
+func (g *Grid[T]) NeighborsMask(x, y int, tp T) terr.Directions {
+	dirs := terr.Directions(0)
+	if g.isNeighbor(x, y, 0, -1, tp) {
+		dirs.Set(terr.N)
+	}
+	if g.isNeighbor(x, y, 1, 0, tp) {
+		dirs.Set(terr.E)
+	}
+	if g.isNeighbor(x, y, 0, 1, tp) {
+		dirs.Set(terr.S)
+	}
+	if g.isNeighbor(x, y, -1, 0, tp) {
+		dirs.Set(terr.W)
+	}
+	return dirs
+}
+
+func (g *Grid[T]) isNeighbor(x, y, dx, dy int, tp T) bool {
+	return g.Contains(x+dx, y+dy) && g.Get(x+dx, y+dy) == tp
 }

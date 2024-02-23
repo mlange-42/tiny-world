@@ -26,6 +26,16 @@ const suffixMultiTile = "_multitile"
 const outFolder = "assets/sprites"
 const inFolder = "artwork/sprites"
 
+var multiTileOrder = [16]int{
+	4,
+	5, 6,
+	1, 7, 14,
+	0, 3, 15, 12,
+	2, 11, 13,
+	10, 9,
+	8,
+}
+
 func main() {
 	dirs := extractFiles()
 
@@ -261,11 +271,12 @@ func isoMask(width, height int) *image.RGBA {
 }
 
 func spiltMultiTile(sprite image.Image, mask *image.RGBA, width, height int) []*image.RGBA {
-	result := []*image.RGBA{}
+	result := make([]*image.RGBA, len(multiTileOrder))
 
 	dx, dy := width/2, height/2
 	doubleSize := 8
 
+	index := 0
 	for row := 0; row < doubleSize-1; row++ {
 		perRow := tmath.MinInt(row, doubleSize-2-row) + 1
 		halfOffsets := (doubleSize - 2*perRow) / 2
@@ -274,7 +285,8 @@ func spiltMultiTile(sprite image.Image, mask *image.RGBA, width, height int) []*
 		for col := 0; col < perRow; col++ {
 			img := image.NewRGBA(image.Rect(0, 0, width, height))
 			draw.DrawMask(img, img.Bounds(), sprite, image.Point{xOffset + col*width, yOffset}, mask, image.Point{}, draw.Src)
-			result = append(result, img)
+			result[multiTileOrder[index]] = img
+			index++
 		}
 	}
 

@@ -38,12 +38,12 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		s.paint = terr.EndTerrain
+		s.paint = terr.Air
 		fmt.Println("paint nothing")
 	}
 
 	p := &terr.Properties[s.paint]
-	if s.paint == terr.EndTerrain || !p.CanBuild || !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+	if !p.CanBuild || !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
 		return
 	}
 
