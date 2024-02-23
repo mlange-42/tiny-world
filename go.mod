@@ -1,6 +1,8 @@
 module github.com/mlange-42/tiny-world
 
-go 1.22.0
+go 1.22
+
+toolchain go1.22.0
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.6.6
