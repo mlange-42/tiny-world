@@ -5,7 +5,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
-	"github.com/mlange-42/tiny-world/game"
+	"github.com/mlange-42/tiny-world/game/res"
 )
 
 type mouse struct {
@@ -19,16 +19,16 @@ type PanAndZoom struct {
 
 	mouseStart mouse
 
-	view    generic.Resource[game.View]
-	terrain generic.Resource[game.Terrain]
-	sprites generic.Resource[game.Sprites]
+	view    generic.Resource[res.View]
+	terrain generic.Resource[res.Terrain]
+	sprites generic.Resource[res.Sprites]
 }
 
 // Initialize the system
 func (s *PanAndZoom) Initialize(world *ecs.World) {
-	s.view = generic.NewResource[game.View](world)
-	s.terrain = generic.NewResource[game.Terrain](world)
-	s.sprites = generic.NewResource[game.Sprites](world)
+	s.view = generic.NewResource[res.View](world)
+	s.terrain = generic.NewResource[res.Terrain](world)
+	s.sprites = generic.NewResource[res.Sprites](world)
 }
 
 // Update the system

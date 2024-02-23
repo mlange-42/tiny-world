@@ -3,19 +3,20 @@ package game
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche-model/model"
+	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // Game container
 type Game struct {
 	Model  *model.Model
-	Screen EbitenImage
+	Screen res.EbitenImage
 }
 
 // NewGame returns a new game
 func NewGame(mod *model.Model) Game {
 	return Game{
 		Model:  mod,
-		Screen: EbitenImage{Image: nil, Width: 0, Height: 0},
+		Screen: res.EbitenImage{Image: nil, Width: 0, Height: 0},
 	}
 }
 

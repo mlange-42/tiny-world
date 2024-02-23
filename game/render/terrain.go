@@ -6,26 +6,35 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
-	"github.com/mlange-42/tiny-world/game"
+	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // Terrain is a system to render the terrain.
 type Terrain struct {
-	screen  generic.Resource[game.EbitenImage]
-	sprites generic.Resource[game.Sprites]
-	terrain generic.Resource[game.Terrain]
-	landUse generic.Resource[game.LandUse]
-	view    generic.Resource[game.View]
+	cursorGreen int
+	cursorRed   int
+	cursorBlue  int
+
+	screen  generic.Resource[res.EbitenImage]
+	sprites generic.Resource[res.Sprites]
+	terrain generic.Resource[res.Terrain]
+	landUse generic.Resource[res.LandUse]
+	view    generic.Resource[res.View]
 }
 
 // InitializeUI the system
 func (s *Terrain) InitializeUI(world *ecs.World) {
-	s.screen = generic.NewResource[game.EbitenImage](world)
-	s.sprites = generic.NewResource[game.Sprites](world)
-	s.terrain = generic.NewResource[game.Terrain](world)
-	s.landUse = generic.NewResource[game.LandUse](world)
-	s.view = generic.NewResource[game.View](world)
+	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.sprites = generic.NewResource[res.Sprites](world)
+	s.terrain = generic.NewResource[res.Terrain](world)
+	s.landUse = generic.NewResource[res.LandUse](world)
+	s.view = generic.NewResource[res.View](world)
+
+	sprites := s.sprites.Get()
+	s.cursorRed = sprites.GetIndex("cursor_red")
+	s.cursorGreen = sprites.GetIndex("cursor_green")
+	s.cursorBlue = sprites.GetIndex("cursor_blue")
 }
 
 // UpdateUI the system
@@ -48,7 +57,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 	halfWidth := view.TileWidth / 2
 
-	drawSprite := func(grid *game.Grid[terr.Terrain], x, y int, t terr.Terrain, point *image.Point, height int) int {
+	drawSprite := func(grid *res.Grid[terr.Terrain], x, y int, t terr.Terrain, point *image.Point, height int) int {
 		idx := sprites.GetTerrainIndex(t)
 		sp, info := sprites.Get(idx)
 		h := sp.Bounds().Dy() - view.TileHeight
@@ -68,6 +77,19 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 		img.DrawImage(sp, &op)
 
 		return height + info.Height
+	}
+
+	drawCursor := func(point *image.Point, cursor int) {
+		sp, info := sprites.Get(cursor)
+		h := sp.Bounds().Dy() - view.TileHeight
+
+		op.GeoM.Reset()
+		op.GeoM.Scale(view.Zoom, view.Zoom)
+		op.GeoM.Translate(
+			float64(point.X-halfWidth)*view.Zoom-float64(off.X),
+			float64(point.Y-h-info.YOffset)*view.Zoom-float64(off.Y),
+		)
+		img.DrawImage(sp, &op)
 	}
 
 	mx, my := view.ScreenToGlobal(ebiten.CursorPosition())
@@ -92,7 +114,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				_ = drawSprite(nil, i, j, terr.Cursor, &point, 0)
+				drawCursor(&point, s.cursorBlue)
 			}
 		}
 	}

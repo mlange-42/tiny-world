@@ -7,7 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
-	"github.com/mlange-42/tiny-world/game"
+	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -15,16 +15,16 @@ import (
 type Build struct {
 	paint terr.Terrain
 
-	view    generic.Resource[game.View]
-	terrain generic.Resource[game.Terrain]
-	landUse generic.Resource[game.LandUse]
+	view    generic.Resource[res.View]
+	terrain generic.Resource[res.Terrain]
+	landUse generic.Resource[res.LandUse]
 }
 
 // Initialize the system
 func (s *Build) Initialize(world *ecs.World) {
-	s.view = generic.NewResource[game.View](world)
-	s.terrain = generic.NewResource[game.Terrain](world)
-	s.landUse = generic.NewResource[game.LandUse](world)
+	s.view = generic.NewResource[res.View](world)
+	s.terrain = generic.NewResource[res.Terrain](world)
+	s.landUse = generic.NewResource[res.LandUse](world)
 }
 
 // Update the system
