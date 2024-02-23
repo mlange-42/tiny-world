@@ -72,6 +72,9 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 	op := ebiten.DrawImageOptions{}
 	op.Blend = ebiten.BlendSourceOver
+	if view.Zoom < 1 {
+		op.Filter = ebiten.FilterLinear
+	}
 
 	halfWidth := view.TileWidth / 2
 
