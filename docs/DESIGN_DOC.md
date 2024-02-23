@@ -15,24 +15,50 @@ A simple economy and demography are simulated.
 
 * Air (nothing)
 * Grass/land
-* Mountains
 * Desert
 * Water
 
-### Land Use
+### Land Use / Buildings
+
+Natural land use
 
 * Air (nothing)
 * Trees
-* Path/road
-* Lumberjack (p)
-* Sawmill (pw)
-* Fields
-* Farm (p)
-* Wind mill (p)
-* Water mill (pw)
-* Fisher's hut (pw)
-* Quarry (pr)
-* Bakery (pw)
-* Residential (pw)
+* Rocks
 
-\* p: next to path; w: next to water; r: next to rock
+Other land use
+
+* Path
+* Fields
+
+Buildings
+
+* Farm
+* Fisherman
+* Lumberjack
+* Mason
+
+Potentially, later:
+
+* Sawmill
+* Wind mill
+* Water mill
+* Bakery
+* Residential
+
+### Production
+
+Production buildings need an adjacent road in one of the 4 neighboring tiles.
+They produce one unit per minute for each relevant land use tile in the 8 neighboring tiles.
+
+Further, food storage must be positive for any production except food
+
+* field -> farm -> food
+* water -> fisherman -> food
+* trees -> lumberjack -> wood
+* rocks -> mason -> stones
+
+### Consumption
+
+Production buildings require 5 units of food per minute.
+Food production buildings require only 1 unit per minute.
