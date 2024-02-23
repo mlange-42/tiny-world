@@ -9,6 +9,22 @@ type View struct {
 	MouseOffset           int
 }
 
+func NewView(tileWidth, tileHeight int) View {
+	return View{
+		TileWidth:   tileWidth,
+		TileHeight:  tileHeight,
+		Zoom:        1,
+		MouseOffset: tileHeight,
+	}
+}
+
+func (v *View) Center(cell image.Point, screenWidth, screenHeight int) {
+	pos := v.TileToGlobal(cell.X, cell.Y)
+	v.Zoom = 1
+	v.X = pos.X - screenWidth/2
+	v.Y = pos.Y - screenHeight/2
+}
+
 func (v *View) Offset() image.Point {
 	return image.Pt(int(float64(v.X)*v.Zoom), int(float64(v.Y)*v.Zoom))
 }
