@@ -24,9 +24,10 @@ type Build struct {
 	landUseEntities generic.Resource[res.LandUseEntities]
 	selection       generic.Resource[res.Selection]
 	update          generic.Resource[res.UpdateInterval]
+	ui              generic.Resource[res.UI]
 
 	builder           generic.Map2[comp.Tile, comp.UpdateTick]
-	productionBuilder generic.Map3[comp.Tile, comp.UpdateTick, comp.Production]
+	productionBuilder generic.Map4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
 }
 
 // Initialize the system
@@ -37,9 +38,10 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.landUseEntities = generic.NewResource[res.LandUseEntities](world)
 	s.selection = generic.NewResource[res.Selection](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
+	s.ui = generic.NewResource[res.UI](world)
 
 	s.builder = generic.NewMap2[comp.Tile, comp.UpdateTick](world)
-	s.productionBuilder = generic.NewMap3[comp.Tile, comp.UpdateTick, comp.Production](world)
+	s.productionBuilder = generic.NewMap4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption](world)
 }
 
 // Update the system
@@ -49,6 +51,11 @@ func (s *Build) Update(world *ecs.World) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		sel.Build = terr.Air
 		fmt.Println("paint nothing")
+	}
+
+	x, y := ebiten.CursorPosition()
+	if s.ui.Get().MouseInside(x, y) {
+		return
 	}
 
 	mouseFn := inpututil.IsMouseButtonJustPressed
@@ -66,7 +73,7 @@ func (s *Build) Update(world *ecs.World) {
 	view := s.view.Get()
 	landUse := s.landUse.Get()
 	landUseE := s.landUseEntities.Get()
-	mx, my := view.ScreenToGlobal(ebiten.CursorPosition())
+	mx, my := view.ScreenToGlobal(x, y)
 	cursor := view.GlobalToTile(mx, my)
 
 	remove := mouseFn(ebiten.MouseButton2)
@@ -96,9 +103,9 @@ func (s *Build) Update(world *ecs.World) {
 		terrain.Set(cursor.X, cursor.Y, sel.Build)
 	} else {
 		update := s.update.Get()
-		prod := terr.Properties[sel.Build].Production.Produces
+		prod := terr.Properties[sel.Build].Production
 		var e ecs.Entity
-		if prod == resource.EndResources {
+		if prod.Produces == resource.EndResources {
 			e = s.builder.NewWith(
 				&comp.Tile{Point: cursor},
 				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
@@ -107,7 +114,8 @@ func (s *Build) Update(world *ecs.World) {
 			e = s.productionBuilder.NewWith(
 				&comp.Tile{Point: cursor},
 				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
-				&comp.Production{Type: prod, Amount: 0, Countdown: 100},
+				&comp.Production{Type: prod.Produces, Amount: 0, Countdown: update.Countdown},
+				&comp.Consumption{Amount: prod.ConsumesFood, Countdown: update.Countdown},
 			)
 		}
 		landUseE.Set(cursor.X, cursor.Y, e)
