@@ -39,6 +39,9 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
+	ui := res.NewUserInterface(fonts.Default)
+	ecs.AddResource(&g.Model.World, &ui)
+
 	view := res.View{
 		TileWidth:   48,
 		TileHeight:  24,
@@ -50,11 +53,18 @@ func main() {
 	sprites := res.NewSprites("./assets/sprites")
 	ecs.AddResource(&g.Model.World, &sprites)
 
+	production := res.Production{}
+	stock := res.Stock{}
+	ecs.AddResource(&g.Model.World, &production)
+	ecs.AddResource(&g.Model.World, &stock)
+
 	// =========== Systems ===========
 
 	g.Model.AddSystem(&sys.InitTerrain{})
 
-	g.Model.AddSystem(&sys.Production{})
+	g.Model.AddSystem(&sys.UpdateProduction{})
+	g.Model.AddSystem(&sys.DoProduction{})
+	g.Model.AddSystem(&sys.UpdateStats{})
 
 	g.Model.AddSystem(&sys.Build{
 		AllowStroke: true,
@@ -67,6 +77,7 @@ func main() {
 	// =========== UI Systems ===========
 
 	g.Model.AddUISystem(&render.Terrain{})
+	g.Model.AddUISystem(&render.UI{})
 
 	// =========== Run ===========
 

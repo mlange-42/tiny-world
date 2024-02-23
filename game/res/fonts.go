@@ -10,7 +10,7 @@ import (
 )
 
 const fontFile = "./assets/fonts/JupiteroidRegular.ttf"
-const fontSize = 24
+const fontSize = 20
 
 type Fonts struct {
 	Default font.Face
