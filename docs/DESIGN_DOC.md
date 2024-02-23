@@ -7,6 +7,8 @@ A tiny colony of city builder.
 Players grow their own small 2D iso landscape by adding terrain tiles.
 On the terrain tiles, "land use" can be placed.
 
+A simple economy and demography are simulated.
+
 ## Game Elements
 
 ### Terrain
