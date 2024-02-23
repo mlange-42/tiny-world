@@ -14,7 +14,7 @@ import (
 type UpdateStats struct {
 	production generic.Resource[res.Production]
 	stock      generic.Resource[res.Stock]
-	ui         generic.Resource[res.UserInterface]
+	ui         generic.Resource[res.HUD]
 	filter     generic.Filter1[comp.Production]
 }
 
@@ -22,7 +22,7 @@ type UpdateStats struct {
 func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.production = generic.NewResource[res.Production](world)
 	s.stock = generic.NewResource[res.Stock](world)
-	s.ui = generic.NewResource[res.UserInterface](world)
+	s.ui = generic.NewResource[res.HUD](world)
 	s.filter = *generic.NewFilter1[comp.Production]()
 }
 

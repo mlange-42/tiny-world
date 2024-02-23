@@ -39,7 +39,7 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUserInterface(fonts.Default)
+	ui := res.NewHUD(fonts.Default)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	view := res.View{

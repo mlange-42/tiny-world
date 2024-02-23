@@ -10,13 +10,13 @@ import (
 	"golang.org/x/image/font"
 )
 
-type UserInterface struct {
-	UI             *ebitenui.UI
+type HUD struct {
+	HUD            *ebitenui.UI
 	ResourceLabels [resource.EndResources]*widget.Text
 }
 
-func NewUserInterface(font font.Face) UserInterface {
-	ui := UserInterface{}
+func NewHUD(font font.Face) HUD {
+	ui := HUD{}
 	rootContainer := widget.NewContainer(
 		//widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0x13, 0x1a, 0x22, 0xff})),
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
@@ -60,7 +60,7 @@ func NewUserInterface(font font.Face) UserInterface {
 	eui := ebitenui.UI{
 		Container: rootContainer,
 	}
-	ui.UI = &eui
+	ui.HUD = &eui
 
 	return ui
 }
