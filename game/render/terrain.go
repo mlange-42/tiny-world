@@ -11,6 +11,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -144,7 +145,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				}
 
 				lu := landUse.Get(i, j)
-				if !terr.Properties[lu].Production.Produces {
+				if terr.Properties[lu].Production.Produces == resource.EndResources {
 					continue
 				}
 

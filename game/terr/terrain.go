@@ -1,6 +1,9 @@
 package terr
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mlange-42/tiny-world/game/resource"
+)
 
 type Terrain uint8
 
@@ -50,7 +53,7 @@ type TerrainProps struct {
 }
 
 type Production struct {
-	Produces          bool
+	Produces          resource.Resource
 	RequiredTerrain   Terrain
 	RequiredLandUse   Terrain
 	ProductionTerrain Terrain
@@ -62,48 +65,48 @@ var Properties = [EndTerrain]TerrainProps{
 		BuildOn:    NewTerrains(),
 		CanBuild:   false,
 		ShortKey:   ebiten.KeyEscape,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "buildable", IsTerrain: true,
 		BuildOn:    NewTerrains(),
 		CanBuild:   false,
 		ShortKey:   ebiten.KeyEscape,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "grass", IsTerrain: true,
 		BuildOn:    NewTerrains(Buildable),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key1,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "water", IsTerrain: true,
 		BuildOn:    NewTerrains(Buildable),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key2,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "desert", IsTerrain: true,
 		BuildOn:    NewTerrains(Buildable),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key3,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "field", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key4,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "farm", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key5,
-		Production: Production{Produces: true, RequiredLandUse: Path, ProductionLandUse: Field},
+		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field},
 	},
 	{Name: "path", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass, Desert),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key6,
-		Production: Production{Produces: false},
+		Production: Production{Produces: resource.EndResources},
 	},
 }

@@ -39,6 +39,9 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
+	ui := res.NewUserInterface(fonts.Default)
+	ecs.AddResource(&g.Model.World, &ui)
+
 	view := res.View{
 		TileWidth:   48,
 		TileHeight:  24,
@@ -67,6 +70,7 @@ func main() {
 	// =========== UI Systems ===========
 
 	g.Model.AddUISystem(&render.Terrain{})
+	g.Model.AddUISystem(&render.UI{})
 
 	// =========== Run ===========
 
