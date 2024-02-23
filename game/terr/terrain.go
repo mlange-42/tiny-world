@@ -11,6 +11,7 @@ const (
 	Water
 	Desert
 	Field
+	Farm
 	Path
 	EndTerrain
 )
@@ -93,10 +94,16 @@ var Properties = [EndTerrain]TerrainProps{
 		ShortKey:   ebiten.Key4,
 		Production: Production{Produces: false},
 	},
+	{Name: "farm", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key5,
+		Production: Production{Produces: true, RequiredLandUse: Path, ProductionLandUse: Field},
+	},
 	{Name: "path", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass, Desert),
 		CanBuild:   true,
-		ShortKey:   ebiten.Key5,
+		ShortKey:   ebiten.Key6,
 		Production: Production{Produces: false},
 	},
 }
