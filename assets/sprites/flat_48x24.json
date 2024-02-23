@@ -1,0 +1,118 @@
+{
+ "SpriteWidth": 48,
+ "SpriteHeight": 24,
+ "Sprites": [
+  {
+   "Name": "path",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": true
+  },
+  {
+   "Name": "path_1",
+   "Index": 1,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_2",
+   "Index": 2,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_3",
+   "Index": 3,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_4",
+   "Index": 4,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_5",
+   "Index": 5,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_6",
+   "Index": 6,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_7",
+   "Index": 7,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_8",
+   "Index": 8,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_9",
+   "Index": 9,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_10",
+   "Index": 10,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_11",
+   "Index": 11,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_12",
+   "Index": 12,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_13",
+   "Index": 13,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_14",
+   "Index": 14,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_15",
+   "Index": 15,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  }
+ ]
+}

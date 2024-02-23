@@ -1,0 +1,27 @@
+{
+ "SpriteWidth": 48,
+ "SpriteHeight": 48,
+ "Sprites": [
+  {
+   "Name": "buildable",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "grass",
+   "Index": 1,
+   "Height": 25,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "unknown",
+   "Index": 2,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  }
+ ]
+}
