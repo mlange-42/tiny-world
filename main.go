@@ -13,6 +13,10 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+const (
+	worldSize = 256
+)
+
 func main() {
 	ebiten.SetVsyncEnabled(true)
 	g := game.NewGame(model.New())
@@ -21,13 +25,13 @@ func main() {
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
-	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](100, 100)}
+	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](worldSize, worldSize)}
 	ecs.AddResource(&g.Model.World, &terrain)
 
-	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](100, 100)}
+	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](worldSize, worldSize)}
 	ecs.AddResource(&g.Model.World, &landUse)
 
-	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](100, 100)}
+	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](worldSize, worldSize)}
 	ecs.AddResource(&g.Model.World, &landUseEntities)
 
 	selection := res.Selection{}
@@ -47,12 +51,7 @@ func main() {
 	ecs.AddResource(&g.Model.World, &hud)
 	ecs.AddResource(&g.Model.World, &ui)
 
-	view := res.View{
-		TileWidth:   48,
-		TileHeight:  24,
-		Zoom:        1,
-		MouseOffset: 24,
-	}
+	view := res.NewView(48, 24)
 	ecs.AddResource(&g.Model.World, &view)
 
 	production := res.Production{}
@@ -80,6 +79,7 @@ func main() {
 
 	// =========== UI Systems ===========
 
+	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
 	g.Model.AddUISystem(&render.UI{})
 
