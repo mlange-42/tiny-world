@@ -15,15 +15,18 @@ import (
 
 func main() {
 	ebiten.SetVsyncEnabled(true)
-
 	g := game.NewGame(model.New())
+
+	// =========== Resources ===========
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](100, 100)}
 	ecs.AddResource(&g.Model.World, &terrain)
+
 	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](100, 100)}
 	ecs.AddResource(&g.Model.World, &landUse)
+
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
 
@@ -38,13 +41,23 @@ func main() {
 	sprites := res.NewSprites("./assets/sprites")
 	ecs.AddResource(&g.Model.World, &sprites)
 
+	// =========== Systems ===========
+
 	g.Model.AddSystem(&sys.InitTerrain{})
-	g.Model.AddSystem(&sys.Build{})
+
+	g.Model.AddSystem(&sys.Build{
+		AllowStroke: true,
+	})
+
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton: ebiten.MouseButton1,
 	})
 
+	// =========== UI Systems ===========
+
 	g.Model.AddUISystem(&render.Terrain{})
+
+	// =========== Run ===========
 
 	g.Initialize()
 	if err := g.Run(); err != nil {

@@ -13,6 +13,8 @@ import (
 
 // Build system.
 type Build struct {
+	AllowStroke bool
+
 	view      generic.Resource[res.View]
 	terrain   generic.Resource[res.Terrain]
 	landUse   generic.Resource[res.LandUse]
@@ -44,10 +46,15 @@ func (s *Build) Update(world *ecs.World) {
 		fmt.Println("paint nothing")
 	}
 
+	mouseFn := inpututil.IsMouseButtonJustPressed
+	if s.AllowStroke {
+		mouseFn = ebiten.IsMouseButtonPressed
+	}
+
 	p := &terr.Properties[sel.Build]
 	if !p.CanBuild ||
-		!(inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) ||
-			inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2)) {
+		!(mouseFn(ebiten.MouseButton0) ||
+			mouseFn(ebiten.MouseButton2)) {
 		return
 	}
 
@@ -56,7 +63,7 @@ func (s *Build) Update(world *ecs.World) {
 	mx, my := view.ScreenToGlobal(ebiten.CursorPosition())
 	cursor := view.GlobalToTile(mx, my)
 
-	remove := inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2)
+	remove := mouseFn(ebiten.MouseButton2)
 	if remove {
 		if p.IsTerrain {
 			return
