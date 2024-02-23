@@ -22,6 +22,7 @@ import (
 const maxWidth = 512
 
 const suffixMultiTile = "_multitile"
+const suffixBaseTile = "_base"
 
 const outFolder = "assets/sprites"
 const inFolder = "artwork/sprites"
@@ -44,6 +45,11 @@ func main() {
 	}
 }
 
+type ImagePair struct {
+	Image image.Image
+	Base  image.Image
+}
+
 func processDirectory(info dirInfo) {
 	fmt.Printf("Processing %s (%d images)\n", info.Directory, len(info.Files))
 
@@ -51,10 +57,10 @@ func processDirectory(info dirInfo) {
 		return
 	}
 
-	mask := isoMask(info.Width, info.Height)
+	mask := isoMask(info.Width, info.Width/2)
 
 	infos := []util.SpriteInfo{}
-	images := []image.Image{}
+	images := []ImagePair{}
 
 	index := 0
 	for _, file := range info.Files {
@@ -81,24 +87,41 @@ func processDirectory(info dirInfo) {
 			}
 		}
 
+		if strings.HasSuffix(baseName, suffixBaseTile) {
+			continue
+		}
+
 		if strings.HasSuffix(baseName, suffixMultiTile) {
-			if sprite.Bounds().Dx() != info.Width*4 || sprite.Bounds().Dy() != info.Height*4 {
+			if sprite.Bounds().Dx() != info.Width*4 || sprite.Bounds().Dy() != info.Width*2 {
 				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
 			}
-			tiles := spiltMultiTile(sprite, mask, info.Width, info.Height)
+			spriteName := strings.Replace(baseName, suffixMultiTile, "", 1)
+			baseFile := strings.Replace(file, suffixMultiTile, suffixBaseTile, 1)
+			var baseSprite image.Image = nil
+			if f, err := os.Open(baseFile); err == nil {
+				defer f.Close()
+				baseSprite, _, err = image.Decode(f)
+				if err != nil {
+					log.Fatalf("error decoding file %s: %s", baseFile, err.Error())
+				}
+			}
+
+			tiles := spiltMultiTile(sprite, mask, info.Width, info.Width/2)
 			for i, tile := range tiles {
-				name := strings.Replace(baseName, suffixMultiTile, "", 1)
+				name := spriteName
 				if i > 0 {
 					name = fmt.Sprintf("%s_%d", name, i)
 				}
-				spriteInfo := util.SpriteInfo{
+				subInfo := util.SpriteInfo{
 					Name:      name,
 					Index:     index,
 					MultiTile: i == 0,
+					Height:    spriteInfo.Height,
+					YOffset:   spriteInfo.YOffset,
 				}
 
-				images = append(images, tile)
-				infos = append(infos, spriteInfo)
+				images = append(images, ImagePair{tile, baseSprite})
+				infos = append(infos, subInfo)
 				index++
 			}
 		} else {
@@ -106,9 +129,7 @@ func processDirectory(info dirInfo) {
 				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
 			}
 
-			spriteInfo.MultiTile = false
-
-			images = append(images, sprite)
+			images = append(images, ImagePair{sprite, nil})
 			infos = append(infos, spriteInfo)
 
 			index++
@@ -124,9 +145,14 @@ func processDirectory(info dirInfo) {
 	img := image.NewRGBA(image.Rect(0, 0, sheetWidth, sheetHeight))
 	for i, sprite := range images {
 		row, col := i/perRow, i%perRow
+		if sprite.Base != nil {
+			draw.Draw(img,
+				image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
+				sprite.Base, image.Point{}, draw.Over)
+		}
 		draw.Draw(img,
 			image.Rect(col*info.Width, row*info.Height, col*info.Width+info.Width, row*info.Height+info.Height),
-			sprite, image.Point{}, draw.Src)
+			sprite.Image, image.Point{}, draw.Over)
 	}
 
 	outFile := path.Join(outFolder, fmt.Sprintf("%s.png", info.Directory))

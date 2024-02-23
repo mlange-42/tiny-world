@@ -1,0 +1,13 @@
+{
+ "SpriteWidth": 48,
+ "SpriteHeight": 36,
+ "Sprites": [
+  {
+   "Name": "field",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  }
+ ]
+}
