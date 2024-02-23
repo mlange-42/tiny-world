@@ -46,14 +46,6 @@ func (s *Build) Initialize(world *ecs.World) {
 func (s *Build) Update(world *ecs.World) {
 	sel := s.selection.Get()
 
-	for i := range terr.Properties {
-		p := &terr.Properties[i]
-		if p.CanBuild && inpututil.IsKeyJustPressed(p.ShortKey) {
-			sel.Build = terr.Terrain(i)
-			fmt.Println("paint", p.Name)
-		}
-	}
-
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		sel.Build = terr.Air
 		fmt.Println("paint nothing")

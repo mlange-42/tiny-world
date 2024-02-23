@@ -1,12 +1,13 @@
 package res
 
 import (
-	"fmt"
 	"image/color"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"golang.org/x/image/font"
@@ -17,7 +18,7 @@ type UI struct {
 	ResourceLabels [resource.EndResources]*widget.Text
 }
 
-func NewUI(font font.Face, sprites *Sprites) UI {
+func NewUI(selection *Selection, font font.Face, sprites *Sprites) UI {
 	ui := UI{}
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
@@ -43,6 +44,7 @@ func NewUI(font font.Face, sprites *Sprites) UI {
 		),
 	)
 
+	buttons := []widget.RadioGroupElement{}
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
 		if !terr.Properties[i].CanBuild {
 			continue
@@ -50,15 +52,28 @@ func NewUI(font font.Face, sprites *Sprites) UI {
 		idx := sprites.GetTerrainIndex(i)
 		img, _ := sprites.Get(idx)
 		slice := image.NewNineSliceSimple(img, 0, 48)
+		pressed := ebiten.NewImageFromImage(img)
+		vector.DrawFilledRect(pressed, 0, 0,
+			float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
+			color.RGBA{0, 0, 0, 80}, false)
+		slicePressed := image.NewNineSliceSimple(pressed, 0, 48)
 
 		buttonImage := widget.ButtonImage{
 			Idle:    slice,
-			Hover:   slice,
-			Pressed: slice,
+			Hover:   slicePressed,
+			Pressed: slicePressed,
 		}
-		button := createButton(&buttonImage, font)
+		button := createButton(selection, i, &buttonImage, font)
 		innerContainer.AddChild(button)
+		buttons = append(buttons, button)
 	}
+	widget.NewRadioGroup(
+		widget.RadioGroupOpts.Elements(buttons...),
+
+		widget.RadioGroupOpts.ChangedHandler(func(args *widget.RadioGroupChangedEventArgs) {
+
+		}),
+	)
 
 	rootContainer.AddChild(innerContainer)
 
@@ -70,7 +85,7 @@ func NewUI(font font.Face, sprites *Sprites) UI {
 	return ui
 }
 
-func createButton(buttonImage *widget.ButtonImage, face font.Face) *widget.Button {
+func createButton(selection *Selection, terrain terr.Terrain, buttonImage *widget.ButtonImage, face font.Face) *widget.Button {
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -80,7 +95,9 @@ func createButton(buttonImage *widget.ButtonImage, face font.Face) *widget.Butto
 		widget.ButtonOpts.Image(buttonImage),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			fmt.Println("button clicked")
+			p := &terr.Properties[terrain]
+			println("paint", p.Name)
+			selection.Build = terrain
 		}),
 	)
 

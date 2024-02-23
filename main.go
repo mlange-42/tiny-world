@@ -43,7 +43,7 @@ func main() {
 	ecs.AddResource(&g.Model.World, &fonts)
 
 	hud := res.NewHUD(fonts.Default)
-	ui := res.NewUI(fonts.Default, &sprites)
+	ui := res.NewUI(&selection, fonts.Default, &sprites)
 	ecs.AddResource(&g.Model.World, &hud)
 	ecs.AddResource(&g.Model.World, &ui)
 
