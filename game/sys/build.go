@@ -90,6 +90,9 @@ func (s *Build) Update(world *ecs.World) {
 		}
 		return
 	}
+	if landUse.Get(cursor.X, cursor.Y) != terr.Air {
+		return
+	}
 
 	terrain := s.terrain.Get()
 
@@ -101,9 +104,6 @@ func (s *Build) Update(world *ecs.World) {
 		terrain.Set(cursor.X, cursor.Y, sel.Build)
 	} else {
 		update := s.update.Get()
-		if landUse.Get(cursor.X, cursor.Y) != terr.Air {
-			return
-		}
 		prod := terr.Properties[sel.Build].Production.Produces
 		var e ecs.Entity
 		if prod == resource.EndResources {

@@ -8,14 +8,21 @@ import (
 type Terrain uint8
 
 const (
+	// Terrain
 	Air Terrain = iota
 	Buildable
 	Grass
 	Water
 	Desert
-	Field
-	Farm
+	// Land use
 	Path
+	Field
+	Tree
+	Rock
+	Farm
+	Fisherman
+	Lumberjack
+	Mason
 	EndTerrain
 )
 
@@ -74,39 +81,69 @@ var Properties = [EndTerrain]TerrainProps{
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "grass", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable),
+		BuildOn:    NewTerrains(Buildable, Water, Desert),
 		CanBuild:   true,
-		ShortKey:   ebiten.Key1,
+		ShortKey:   ebiten.KeyG,
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "water", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable),
+		BuildOn:    NewTerrains(Buildable, Grass, Desert),
 		CanBuild:   true,
-		ShortKey:   ebiten.Key2,
+		ShortKey:   ebiten.KeyW,
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "desert", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable),
+		BuildOn:    NewTerrains(Buildable, Grass, Water),
 		CanBuild:   true,
-		ShortKey:   ebiten.Key3,
+		ShortKey:   ebiten.KeyD,
+		Production: Production{Produces: resource.EndResources},
+	},
+	{Name: "path", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass, Desert, Water),
+		CanBuild:   true,
+		ShortKey:   ebiten.KeyP,
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "field", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
-		ShortKey:   ebiten.Key4,
+		ShortKey:   ebiten.Key1,
+		Production: Production{Produces: resource.EndResources},
+	},
+	{Name: "tree", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key2,
+		Production: Production{Produces: resource.EndResources},
+	},
+	{Name: "rock", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key3,
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "farm", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
-		ShortKey:   ebiten.Key5,
+		ShortKey:   ebiten.Key4,
 		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field},
 	},
-	{Name: "path", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
+	{Name: "fisherman", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key5,
+		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionTerrain: Water},
+	},
+	{Name: "lumberjack", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		ShortKey:   ebiten.Key6,
-		Production: Production{Produces: resource.EndResources},
+		Production: Production{Produces: resource.Wood, RequiredLandUse: Path, ProductionLandUse: Tree},
+	},
+	{Name: "mason", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key7,
+		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock},
 	},
 }

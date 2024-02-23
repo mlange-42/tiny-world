@@ -129,127 +129,162 @@
    "MultiTile": false
   },
   {
-   "Name": "grass",
+   "Name": "fisherman",
    "Index": 18,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "grass",
+   "Index": 19,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
+   "Name": "lumberjack",
+   "Index": 20,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "mason",
+   "Index": 21,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "rock",
+   "Index": 22,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "tree",
+   "Index": 23,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
    "Name": "unknown",
-   "Index": 19,
+   "Index": 24,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
    "Name": "water",
-   "Index": 20,
+   "Index": 25,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": true
   },
   {
    "Name": "water_1",
-   "Index": 21,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_2",
-   "Index": 22,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_3",
-   "Index": 23,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_4",
-   "Index": 24,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_5",
-   "Index": 25,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_6",
    "Index": 26,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_7",
+   "Name": "water_2",
    "Index": 27,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_8",
+   "Name": "water_3",
    "Index": 28,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_9",
+   "Name": "water_4",
    "Index": 29,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_10",
+   "Name": "water_5",
    "Index": 30,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_11",
+   "Name": "water_6",
    "Index": 31,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_12",
+   "Name": "water_7",
    "Index": 32,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_13",
+   "Name": "water_8",
    "Index": 33,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_14",
+   "Name": "water_9",
    "Index": 34,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "water_15",
+   "Name": "water_10",
    "Index": 35,
+   "Height": 25,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "water_11",
+   "Index": 36,
+   "Height": 25,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "water_12",
+   "Index": 37,
+   "Height": 25,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "water_13",
+   "Index": 38,
+   "Height": 25,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "water_14",
+   "Index": 39,
+   "Height": 25,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "water_15",
+   "Index": 40,
    "Height": 25,
    "YOffset": 0,
    "MultiTile": false
