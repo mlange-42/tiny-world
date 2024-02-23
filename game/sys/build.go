@@ -2,6 +2,7 @@ package sys
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -21,8 +22,9 @@ type Build struct {
 	landUse         generic.Resource[res.LandUse]
 	landUseEntities generic.Resource[res.LandUseEntities]
 	selection       generic.Resource[res.Selection]
+	update          generic.Resource[res.UpdateInterval]
 
-	builder generic.Map1[comp.Tile]
+	builder generic.Map3[comp.Tile, comp.UpdateTick, comp.Production]
 }
 
 // Initialize the system
@@ -32,8 +34,9 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.landUseEntities = generic.NewResource[res.LandUseEntities](world)
 	s.selection = generic.NewResource[res.Selection](world)
+	s.update = generic.NewResource[res.UpdateInterval](world)
 
-	s.builder = generic.NewMap1[comp.Tile](world)
+	s.builder = generic.NewMap3[comp.Tile, comp.UpdateTick, comp.Production](world)
 }
 
 // Update the system
@@ -94,10 +97,15 @@ func (s *Build) Update(world *ecs.World) {
 	if p.IsTerrain {
 		terrain.Set(cursor.X, cursor.Y, sel.Build)
 	} else {
+		update := s.update.Get()
 		if landUse.Get(cursor.X, cursor.Y) != terr.Air {
 			return
 		}
-		e := s.builder.NewWith(&comp.Tile{Point: cursor})
+		e := s.builder.NewWith(
+			&comp.Tile{Point: cursor},
+			&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
+			&comp.Production{Amount: 0},
+		)
 		landUseE.Set(cursor.X, cursor.Y, e)
 		landUse.Set(cursor.X, cursor.Y, sel.Build)
 	}

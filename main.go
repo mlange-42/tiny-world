@@ -33,6 +33,12 @@ func main() {
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
 
+	update := res.UpdateInterval{Interval: 60}
+	ecs.AddResource(&g.Model.World, &update)
+
+	fonts := res.NewFonts()
+	ecs.AddResource(&g.Model.World, &fonts)
+
 	view := res.View{
 		TileWidth:   48,
 		TileHeight:  24,
@@ -47,6 +53,8 @@ func main() {
 	// =========== Systems ===========
 
 	g.Model.AddSystem(&sys.InitTerrain{})
+
+	g.Model.AddSystem(&sys.Production{})
 
 	g.Model.AddSystem(&sys.Build{
 		AllowStroke: true,

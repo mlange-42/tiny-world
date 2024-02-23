@@ -1,11 +1,15 @@
 package render
 
 import (
+	"fmt"
 	"image"
+	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
@@ -20,8 +24,12 @@ type Terrain struct {
 	sprites   generic.Resource[res.Sprites]
 	terrain   generic.Resource[res.Terrain]
 	landUse   generic.Resource[res.LandUse]
+	landUseE  generic.Resource[res.LandUseEntities]
 	view      generic.Resource[res.View]
 	selection generic.Resource[res.Selection]
+	fonts     generic.Resource[res.Fonts]
+
+	prodMapper generic.Map1[comp.Production]
 }
 
 // InitializeUI the system
@@ -30,8 +38,12 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.sprites = generic.NewResource[res.Sprites](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
+	s.landUseE = generic.NewResource[res.LandUseEntities](world)
 	s.view = generic.NewResource[res.View](world)
 	s.selection = generic.NewResource[res.Selection](world)
+	s.fonts = generic.NewResource[res.Fonts](world)
+
+	s.prodMapper = generic.NewMap1[comp.Production](world)
 
 	sprites := s.sprites.Get()
 	s.cursorRed = sprites.GetIndex("cursor_red")
@@ -43,9 +55,11 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 func (s *Terrain) UpdateUI(world *ecs.World) {
 	terrain := s.terrain.Get()
 	landUse := s.landUse.Get()
+	landUseE := s.landUseE.Get()
 	sprites := s.sprites.Get()
 	view := s.view.Get()
 	sel := s.selection.Get()
+	fonts := s.fonts.Get()
 
 	canvas := s.screen.Get()
 	img := canvas.Image
@@ -128,6 +142,22 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				} else {
 					drawCursor(&point, s.cursorBlue)
 				}
+
+				lu := landUse.Get(i, j)
+				if !terr.Properties[lu].Production.Produces {
+					continue
+				}
+
+				luEntity := landUseE.Get(i, j)
+				if luEntity.IsZero() {
+					continue
+				}
+				prod := s.prodMapper.Get(luEntity).Amount
+				text.Draw(img, fmt.Sprint(prod), fonts.Default,
+					int(float64(point.X-halfWidth/2)*view.Zoom-float64(off.X)),
+					int(float64(point.Y-2*view.TileHeight)*view.Zoom-float64(off.Y)),
+					color.RGBA{255, 255, 255, 255},
+				)
 			}
 		}
 	}

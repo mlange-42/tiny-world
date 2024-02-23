@@ -40,19 +40,63 @@ func (d Terrains) Contains(dir Terrain) bool {
 }
 
 type TerrainProps struct {
-	Name      string
-	IsTerrain bool
-	BuildOn   Terrains
-	CanBuild  bool
-	ShortKey  ebiten.Key
+	Name       string
+	IsTerrain  bool
+	BuildOn    Terrains
+	CanBuild   bool
+	ShortKey   ebiten.Key
+	Production Production
+}
+
+type Production struct {
+	Produces          bool
+	RequiredTerrain   Terrain
+	RequiredLandUse   Terrain
+	ProductionTerrain Terrain
+	ProductionLandUse Terrain
 }
 
 var Properties = [EndTerrain]TerrainProps{
-	{"air", true, NewTerrains(), false, ebiten.KeyEscape},
-	{"buildable", true, NewTerrains(), false, ebiten.KeyEscape},
-	{"grass", true, NewTerrains(Buildable), true, ebiten.Key1},
-	{"water", true, NewTerrains(Buildable), true, ebiten.Key2},
-	{"desert", true, NewTerrains(Buildable), true, ebiten.Key3},
-	{"field", false, NewTerrains(Grass), true, ebiten.Key4},
-	{"path", false, NewTerrains(Grass, Desert), true, ebiten.Key5},
+	{Name: "air", IsTerrain: true,
+		BuildOn:    NewTerrains(),
+		CanBuild:   false,
+		ShortKey:   ebiten.KeyEscape,
+		Production: Production{Produces: false},
+	},
+	{Name: "buildable", IsTerrain: true,
+		BuildOn:    NewTerrains(),
+		CanBuild:   false,
+		ShortKey:   ebiten.KeyEscape,
+		Production: Production{Produces: false},
+	},
+	{Name: "grass", IsTerrain: true,
+		BuildOn:    NewTerrains(Buildable),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key1,
+		Production: Production{Produces: false},
+	},
+	{Name: "water", IsTerrain: true,
+		BuildOn:    NewTerrains(Buildable),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key2,
+		Production: Production{Produces: false},
+	},
+	{Name: "desert", IsTerrain: true,
+		BuildOn:    NewTerrains(Buildable),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key3,
+		Production: Production{Produces: false},
+	},
+	{Name: "field", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key4,
+		Production: Production{Produces: false},
+	},
+	{Name: "path", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass, Desert),
+		CanBuild:   true,
+		ShortKey:   ebiten.Key5,
+		Production: Production{Produces: false},
+	},
 }

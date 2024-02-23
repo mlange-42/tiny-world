@@ -95,3 +95,37 @@ func (g *Grid[T]) NeighborsMask(x, y int, tp T) terr.Directions {
 func (g *Grid[T]) isNeighbor(x, y, dx, dy int, tp T) bool {
 	return g.Contains(x+dx, y+dy) && g.Get(x+dx, y+dy) == tp
 }
+
+func (g *Grid[T]) CountNeighbors4(x, y int, tp T) int {
+	cnt := 0
+	if g.isNeighbor(x, y, 0, -1, tp) {
+		cnt++
+	}
+	if g.isNeighbor(x, y, 1, 0, tp) {
+		cnt++
+	}
+	if g.isNeighbor(x, y, 0, 1, tp) {
+		cnt++
+	}
+	if g.isNeighbor(x, y, -1, 0, tp) {
+		cnt++
+	}
+	return cnt
+}
+
+func (g *Grid[T]) CountNeighbors8(x, y int, tp T) int {
+	cnt := g.CountNeighbors4(x, y, tp)
+	if g.isNeighbor(x, y, 1, -1, tp) {
+		cnt++
+	}
+	if g.isNeighbor(x, y, 1, 1, tp) {
+		cnt++
+	}
+	if g.isNeighbor(x, y, -1, 1, tp) {
+		cnt++
+	}
+	if g.isNeighbor(x, y, -1, -1, tp) {
+		cnt++
+	}
+	return cnt
+}
