@@ -24,6 +24,8 @@ func main() {
 	ecs.AddResource(&g.Model.World, &terrain)
 	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](100, 100)}
 	ecs.AddResource(&g.Model.World, &landUse)
+	selection := res.Selection{}
+	ecs.AddResource(&g.Model.World, &selection)
 
 	view := res.View{
 		TileWidth:   48,

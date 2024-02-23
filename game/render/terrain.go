@@ -16,11 +16,12 @@ type Terrain struct {
 	cursorRed   int
 	cursorBlue  int
 
-	screen  generic.Resource[res.EbitenImage]
-	sprites generic.Resource[res.Sprites]
-	terrain generic.Resource[res.Terrain]
-	landUse generic.Resource[res.LandUse]
-	view    generic.Resource[res.View]
+	screen    generic.Resource[res.EbitenImage]
+	sprites   generic.Resource[res.Sprites]
+	terrain   generic.Resource[res.Terrain]
+	landUse   generic.Resource[res.LandUse]
+	view      generic.Resource[res.View]
+	selection generic.Resource[res.Selection]
 }
 
 // InitializeUI the system
@@ -30,6 +31,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.view = generic.NewResource[res.View](world)
+	s.selection = generic.NewResource[res.Selection](world)
 
 	sprites := s.sprites.Get()
 	s.cursorRed = sprites.GetIndex("cursor_red")
@@ -43,6 +45,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	landUse := s.landUse.Get()
 	sprites := s.sprites.Get()
 	view := s.view.Get()
+	sel := s.selection.Get()
 
 	canvas := s.screen.Get()
 	img := canvas.Image
@@ -104,7 +107,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			height := 0
 			t := terrain.Get(i, j)
-			if t != terr.Air {
+			if t != terr.Air && t != terr.Buildable {
 				height = drawSprite(&terrain.Grid, i, j, t, &point, height)
 			}
 
@@ -114,7 +117,17 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				drawCursor(&point, s.cursorBlue)
+				prop := terr.Properties[sel.Build]
+				if prop.CanBuild {
+					terrHere := terrain.Get(cursor.X, cursor.Y)
+					if prop.BuildOn.Contains(terrHere) {
+						drawCursor(&point, s.cursorGreen)
+					} else {
+						drawCursor(&point, s.cursorRed)
+					}
+				} else {
+					drawCursor(&point, s.cursorBlue)
+				}
 			}
 		}
 	}
