@@ -10,6 +10,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -24,7 +25,8 @@ type Build struct {
 	selection       generic.Resource[res.Selection]
 	update          generic.Resource[res.UpdateInterval]
 
-	builder generic.Map3[comp.Tile, comp.UpdateTick, comp.Production]
+	builder           generic.Map2[comp.Tile, comp.UpdateTick]
+	productionBuilder generic.Map3[comp.Tile, comp.UpdateTick, comp.Production]
 }
 
 // Initialize the system
@@ -36,7 +38,8 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.selection = generic.NewResource[res.Selection](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 
-	s.builder = generic.NewMap3[comp.Tile, comp.UpdateTick, comp.Production](world)
+	s.builder = generic.NewMap2[comp.Tile, comp.UpdateTick](world)
+	s.productionBuilder = generic.NewMap3[comp.Tile, comp.UpdateTick, comp.Production](world)
 }
 
 // Update the system
@@ -101,11 +104,20 @@ func (s *Build) Update(world *ecs.World) {
 		if landUse.Get(cursor.X, cursor.Y) != terr.Air {
 			return
 		}
-		e := s.builder.NewWith(
-			&comp.Tile{Point: cursor},
-			&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
-			&comp.Production{Amount: 0},
-		)
+		prod := terr.Properties[sel.Build].Production.Produces
+		var e ecs.Entity
+		if prod == resource.EndResources {
+			e = s.builder.NewWith(
+				&comp.Tile{Point: cursor},
+				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
+			)
+		} else {
+			e = s.productionBuilder.NewWith(
+				&comp.Tile{Point: cursor},
+				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
+				&comp.Production{Type: prod, Amount: 0},
+			)
+		}
 		landUseE.Set(cursor.X, cursor.Y, e)
 		landUse.Set(cursor.X, cursor.Y, sel.Build)
 	}

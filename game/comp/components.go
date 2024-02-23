@@ -2,6 +2,8 @@ package comp
 
 import (
 	"image"
+
+	"github.com/mlange-42/tiny-world/game/resource"
 )
 
 type Tile struct {
@@ -13,5 +15,6 @@ type UpdateTick struct {
 }
 
 type Production struct {
+	Type   resource.Resource
 	Amount int
 }

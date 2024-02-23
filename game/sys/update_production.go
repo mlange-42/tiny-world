@@ -6,12 +6,11 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
-// Production system.
-type Production struct {
+// UpdateProduction system.
+type UpdateProduction struct {
 	time    generic.Resource[ares.Tick]
 	update  generic.Resource[res.UpdateInterval]
 	terrain generic.Resource[res.Terrain]
@@ -21,7 +20,7 @@ type Production struct {
 }
 
 // Initialize the system
-func (s *Production) Initialize(world *ecs.World) {
+func (s *UpdateProduction) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[ares.Tick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
@@ -31,7 +30,7 @@ func (s *Production) Initialize(world *ecs.World) {
 }
 
 // Update the system
-func (s *Production) Update(world *ecs.World) {
+func (s *UpdateProduction) Update(world *ecs.World) {
 	terrain := s.terrain.Get()
 	landUse := s.landUse.Get()
 	tick := s.time.Get().Tick
@@ -50,9 +49,6 @@ func (s *Production) Update(world *ecs.World) {
 		lu := landUse.Get(tile.X, tile.Y)
 
 		prod := terr.Properties[lu].Production
-		if prod.Produces == resource.EndResources {
-			continue
-		}
 		if prod.RequiredTerrain != terr.Air && terrain.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 {
 			continue
 		}
@@ -71,4 +67,4 @@ func (s *Production) Update(world *ecs.World) {
 }
 
 // Finalize the system
-func (s *Production) Finalize(world *ecs.World) {}
+func (s *UpdateProduction) Finalize(world *ecs.World) {}

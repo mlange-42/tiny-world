@@ -53,11 +53,17 @@ func main() {
 	sprites := res.NewSprites("./assets/sprites")
 	ecs.AddResource(&g.Model.World, &sprites)
 
+	production := res.Production{}
+	stock := res.Stock{}
+	ecs.AddResource(&g.Model.World, &production)
+	ecs.AddResource(&g.Model.World, &stock)
+
 	// =========== Systems ===========
 
 	g.Model.AddSystem(&sys.InitTerrain{})
 
-	g.Model.AddSystem(&sys.Production{})
+	g.Model.AddSystem(&sys.UpdateProduction{})
+	g.Model.AddSystem(&sys.UpdateStats{})
 
 	g.Model.AddSystem(&sys.Build{
 		AllowStroke: true,

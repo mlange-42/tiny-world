@@ -55,6 +55,7 @@ func NewUserInterface(font font.Face) UserInterface {
 	eui := ebitenui.UI{
 		Container: rootContainer,
 	}
+	ui.UI = &eui
 
-	return UserInterface{UI: &eui}
+	return ui
 }
