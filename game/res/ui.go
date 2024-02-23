@@ -23,8 +23,13 @@ func NewUserInterface(font font.Face) UserInterface {
 	)
 
 	innerContainer := widget.NewContainer(
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{255, 0, 0, 255})),
-		widget.ContainerOpts.Layout(widget.NewRowLayout()),
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.Layout(
+			widget.NewRowLayout(
+				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+				widget.RowLayoutOpts.Spacing(4),
+			),
+		),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
@@ -38,16 +43,16 @@ func NewUserInterface(font font.Face) UserInterface {
 
 	for i := resource.Resource(0); i < resource.EndResources; i++ {
 		label := widget.NewText(
-			widget.TextOpts.Text("0", font, color.White),
+			widget.TextOpts.Text("  "+resource.Properties[i].Short, font, color.White),
 			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-			widget.TextOpts.WidgetOpts(
-				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-					Position: widget.RowLayoutPositionCenter,
-				}),
-			),
 		)
 		innerContainer.AddChild(label)
-		ui.ResourceLabels[i] = label
+		counter := widget.NewText(
+			widget.TextOpts.Text("0", font, color.White),
+			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		)
+		innerContainer.AddChild(counter)
+		ui.ResourceLabels[i] = counter
 	}
 
 	rootContainer.AddChild(innerContainer)
