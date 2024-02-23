@@ -1,6 +1,7 @@
 package res
 
 import (
+	stdimage "image"
 	"image/color"
 
 	"github.com/ebitenui/ebitenui"
@@ -16,6 +17,10 @@ import (
 type UI struct {
 	UI             *ebitenui.UI
 	ResourceLabels [resource.EndResources]*widget.Text
+}
+
+func (ui *UI) MouseInside(x, y int) bool {
+	return stdimage.Pt(x, y).In(ui.UI.Container.Children()[0].GetWidget().Rect)
 }
 
 func NewUI(selection *Selection, font font.Face, sprites *Sprites) UI {

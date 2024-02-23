@@ -49,9 +49,9 @@ func (s *UpdateStats) Update(world *ecs.World) {
 
 	for i := resource.Resource(0); i < resource.EndResources; i++ {
 		if i == resource.Food {
-			ui.ResourceLabels[i].Label = fmt.Sprintf("%d-%d/%d", production.Prod[i], production.Cons[i], stock.Res[i])
+			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d-%d (%d)", production.Prod[i], production.Cons[i], stock.Res[i])
 		} else {
-			ui.ResourceLabels[i].Label = fmt.Sprintf("%d/%d", production.Prod[i], stock.Res[i])
+			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i])
 		}
 	}
 }
