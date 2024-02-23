@@ -1,3 +1,6 @@
+// Collects sprites from folder artwork/sprites and creates sprite sheets and JSON file
+// in artwork/sprites. Run this after changes to sprites.
+
 package main
 
 import (
