@@ -115,7 +115,7 @@ func (s *Build) Update(world *ecs.World) {
 			e = s.productionBuilder.NewWith(
 				&comp.Tile{Point: cursor},
 				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
-				&comp.Production{Type: prod, Amount: 0},
+				&comp.Production{Type: prod, Amount: 0, Countdown: 100},
 			)
 		}
 		landUseE.Set(cursor.X, cursor.Y, e)

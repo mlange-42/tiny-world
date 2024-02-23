@@ -13,6 +13,7 @@ import (
 // UpdateStats system.
 type UpdateStats struct {
 	production generic.Resource[res.Production]
+	stock      generic.Resource[res.Stock]
 	ui         generic.Resource[res.UserInterface]
 	filter     generic.Filter1[comp.Production]
 }
@@ -20,6 +21,7 @@ type UpdateStats struct {
 // Initialize the system
 func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.production = generic.NewResource[res.Production](world)
+	s.stock = generic.NewResource[res.Stock](world)
 	s.ui = generic.NewResource[res.UserInterface](world)
 	s.filter = *generic.NewFilter1[comp.Production]()
 }
@@ -28,6 +30,7 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 func (s *UpdateStats) Update(world *ecs.World) {
 	ui := s.ui.Get()
 	production := s.production.Get()
+	stock := s.stock.Get()
 	production.Reset()
 
 	query := s.filter.Query(world)
@@ -37,7 +40,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	}
 
 	for i := resource.Resource(0); i < resource.EndResources; i++ {
-		ui.ResourceLabels[i].Label = fmt.Sprint(production.Res[i])
+		ui.ResourceLabels[i].Label = fmt.Sprintf("%d/%d", production.Res[i], stock.Res[i])
 	}
 }
 

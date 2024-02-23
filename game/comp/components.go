@@ -15,6 +15,7 @@ type UpdateTick struct {
 }
 
 type Production struct {
-	Type   resource.Resource
-	Amount int
+	Type      resource.Resource
+	Amount    int
+	Countdown int
 }
