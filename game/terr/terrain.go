@@ -9,7 +9,6 @@ const (
 	Buildable
 	Grass
 	Path
-	Cursor
 	EndTerrain
 )
 
@@ -50,5 +49,4 @@ var Properties = [EndTerrain]TerrainProps{
 	{"buildable", true, NewTerrains(), false, ebiten.KeyEscape},
 	{"grass", true, NewTerrains(Buildable), true, ebiten.Key1},
 	{"path", false, NewTerrains(Grass), true, ebiten.Key2},
-	{"cursor", false, NewTerrains(), false, ebiten.KeyEscape},
 }

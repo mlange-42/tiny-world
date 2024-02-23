@@ -3,8 +3,22 @@
  "SpriteHeight": 96,
  "Sprites": [
   {
-   "Name": "cursor",
+   "Name": "cursor_blue",
    "Index": 0,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "cursor_green",
+   "Index": 1,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "cursor_red",
+   "Index": 2,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
