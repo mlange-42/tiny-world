@@ -37,7 +37,10 @@ func main() {
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
 
-	update := res.UpdateInterval{Interval: 60}
+	update := res.UpdateInterval{
+		Interval:  60,
+		Countdown: 60,
+	}
 	ecs.AddResource(&g.Model.World, &update)
 
 	sprites := res.NewSprites("./assets/sprites")
@@ -65,6 +68,7 @@ func main() {
 
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.DoProduction{})
+	g.Model.AddSystem(&sys.DoConsumption{})
 	g.Model.AddSystem(&sys.UpdateStats{})
 
 	g.Model.AddSystem(&sys.Build{

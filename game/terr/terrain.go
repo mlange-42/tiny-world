@@ -59,6 +59,7 @@ type TerrainProps struct {
 
 type Production struct {
 	Produces          resource.Resource
+	ConsumesFood      int
 	RequiredTerrain   Terrain
 	RequiredLandUse   Terrain
 	ProductionTerrain Terrain
@@ -114,21 +115,21 @@ var Properties = [EndTerrain]TerrainProps{
 	{Name: "farm", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
-		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field},
+		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
 	},
 	{Name: "fisherman", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
-		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionTerrain: Water},
+		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionTerrain: Water, ConsumesFood: 1},
 	},
 	{Name: "lumberjack", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
-		Production: Production{Produces: resource.Wood, RequiredLandUse: Path, ProductionLandUse: Tree},
+		Production: Production{Produces: resource.Wood, RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
 	},
 	{Name: "mason", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
-		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock},
+		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
 	},
 }
