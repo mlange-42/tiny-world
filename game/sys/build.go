@@ -84,6 +84,9 @@ func (s *Build) Update(world *ecs.World) {
 	if p.IsTerrain {
 		terrain.Set(cursor.X, cursor.Y, sel.Build)
 	} else {
+		if landUse.Get(cursor.X, cursor.Y) != terr.Air {
+			return
+		}
 		landUse.Set(cursor.X, cursor.Y, sel.Build)
 	}
 }

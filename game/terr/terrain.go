@@ -8,6 +8,9 @@ const (
 	Air Terrain = iota
 	Buildable
 	Grass
+	Water
+	Desert
+	Field
 	Path
 	EndTerrain
 )
@@ -48,5 +51,8 @@ var Properties = [EndTerrain]TerrainProps{
 	{"air", true, NewTerrains(), false, ebiten.KeyEscape},
 	{"buildable", true, NewTerrains(), false, ebiten.KeyEscape},
 	{"grass", true, NewTerrains(Buildable), true, ebiten.Key1},
-	{"path", false, NewTerrains(Grass), true, ebiten.Key2},
+	{"water", true, NewTerrains(Buildable), true, ebiten.Key2},
+	{"desert", true, NewTerrains(Buildable), true, ebiten.Key3},
+	{"field", false, NewTerrains(Grass), true, ebiten.Key4},
+	{"path", false, NewTerrains(Grass, Desert), true, ebiten.Key5},
 }

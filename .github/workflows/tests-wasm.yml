@@ -1,0 +1,68 @@
+name: Tests (WASM)
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+env:
+  GOOS: js
+  GOARCH: wasm
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: go get ./...
+      - name: Build WebAssembly
+        run: |
+          go build -o test/main.wasm .
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.21.x'
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        go get ./...
+    - name: Run Unit tests
+      run: |
+        go test -v -covermode atomic -coverprofile="coverage.out" ./...
+        go tool cover -func="coverage.out"
+
+  lint:
+    name: Run linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: |
+          go get ./...
+      - name: Check format
+        run: |
+          if gofmt -e -l . >&1 | grep '^'; then
+            exit 1
+          fi
+      - name: Lint with vet
+        run: go vet ./...
