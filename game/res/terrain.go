@@ -1,6 +1,7 @@
 package res
 
 import (
+	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -26,4 +27,9 @@ func (t *Terrain) setNeighbor(x, y, dx, dy int) {
 // LandUse resource
 type LandUse struct {
 	Grid[terr.Terrain]
+}
+
+// LandUseEntities resource
+type LandUseEntities struct {
+	Grid[ecs.Entity]
 }

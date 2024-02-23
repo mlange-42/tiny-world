@@ -27,6 +27,9 @@ func main() {
 	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](100, 100)}
 	ecs.AddResource(&g.Model.World, &landUse)
 
+	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](100, 100)}
+	ecs.AddResource(&g.Model.World, &landUseEntities)
+
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
 
