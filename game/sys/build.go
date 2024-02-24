@@ -22,6 +22,7 @@ type Build struct {
 	terrain         generic.Resource[res.Terrain]
 	landUse         generic.Resource[res.LandUse]
 	landUseEntities generic.Resource[res.LandUseEntities]
+	stock           generic.Resource[res.Stock]
 	selection       generic.Resource[res.Selection]
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
@@ -36,6 +37,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.landUseEntities = generic.NewResource[res.LandUseEntities](world)
+	s.stock = generic.NewResource[res.Stock](world)
 	s.selection = generic.NewResource[res.Selection](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
@@ -68,6 +70,10 @@ func (s *Build) Update(world *ecs.World) {
 	if !p.CanBuild ||
 		!(mouseFn(ebiten.MouseButton0) ||
 			mouseFn(ebiten.MouseButton2)) {
+		return
+	}
+
+	if !s.stock.Get().CanPay(p.BuildCost) {
 		return
 	}
 

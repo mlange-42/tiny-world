@@ -56,6 +56,7 @@ type TerrainProps struct {
 	CanBuild   bool
 	CanBuy     bool
 	Production Production
+	BuildCost  []BuildCost
 }
 
 type Production struct {
@@ -65,6 +66,11 @@ type Production struct {
 	RequiredLandUse   Terrain
 	ProductionTerrain Terrain
 	ProductionLandUse Terrain
+}
+
+type BuildCost struct {
+	Type   resource.Resource
+	Amount int
 }
 
 var Properties = [EndTerrain]TerrainProps{
@@ -103,12 +109,19 @@ var Properties = [EndTerrain]TerrainProps{
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.EndResources},
+		BuildCost: []BuildCost{
+			{resource.Wood, 1},
+		},
 	},
 	{Name: "field", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.EndResources},
+		BuildCost: []BuildCost{
+			{resource.Wood, 1},
+			{resource.Stones, 1},
+		},
 	},
 	{Name: "tree", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
@@ -127,24 +140,40 @@ var Properties = [EndTerrain]TerrainProps{
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
+		BuildCost: []BuildCost{
+			{resource.Wood, 5},
+			{resource.Stones, 2},
+		},
 	},
 	{Name: "fisherman", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionTerrain: Water, ConsumesFood: 1},
+		BuildCost: []BuildCost{
+			{resource.Wood, 3},
+			{resource.Stones, 0},
+		},
 	},
 	{Name: "lumberjack", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.Wood, RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
+		BuildCost: []BuildCost{
+			{resource.Wood, 2},
+			{resource.Stones, 3},
+		},
 	},
 	{Name: "mason", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
+		BuildCost: []BuildCost{
+			{resource.Wood, 5},
+			{resource.Stones, 1},
+		},
 	},
 }
 

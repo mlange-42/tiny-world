@@ -8,6 +8,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // UpdateStats system.
@@ -53,6 +54,16 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		} else {
 			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i])
 		}
+	}
+
+	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		props := &terr.Properties[i]
+		button := ui.TerrainButtons[i]
+		if !props.CanBuy || button == nil {
+			continue
+		}
+		canPay := stock.CanPay(props.BuildCost)
+		button.GetWidget().Disabled = !canPay
 	}
 }
 
