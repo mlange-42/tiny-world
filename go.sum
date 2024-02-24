@@ -18,8 +18,8 @@ github.com/mlange-42/arche v0.11.0 h1:zVvRlhYmZQBYKgXJQ4F6/4trEVmTKp3LrRtrNbRjwJ
 github.com/mlange-42/arche v0.11.0/go.mod h1:gJ5J8vBreqrf4TcBomBFPGnWdE5P3qa4LtxYHn1gDcg=
 github.com/mlange-42/arche-model v0.7.0 h1:l8hcZXpENZBBGyrE5Ndczg7PXkvyzPlAGQ0iTjBziB4=
 github.com/mlange-42/arche-model v0.7.0/go.mod h1:Di0S5w5ljyZbD4NmcYV7otZ52mm+X71j35VKkf4FC/A=
-github.com/mlange-42/arche-serde v0.1.1-0.20240224184015-27e3e9f0f343 h1:eqL01cj1MgFAOnZptVABTaPJaug0w0KTBJgE/BIJ1c8=
-github.com/mlange-42/arche-serde v0.1.1-0.20240224184015-27e3e9f0f343/go.mod h1:vupif19flqDr80O4B4yrO/+nnn+Lvce+v4b2dCBshMM=
+github.com/mlange-42/arche-serde v0.2.0 h1:P6lzgHyyvjnG+1QbgFYjzDP2psSOI9oLbp1felCVGm4=
+github.com/mlange-42/arche-serde v0.2.0/go.mod h1:vupif19flqDr80O4B4yrO/+nnn+Lvce+v4b2dCBshMM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.5.0 h1:1zr/of2m5FGMsad5YfcqgdqdWrIhu+EBEJRhR1U7z/c=

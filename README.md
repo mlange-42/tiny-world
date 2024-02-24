@@ -16,3 +16,16 @@ git clone https://github.com/mlange-42/tiny-world.git
 cd tiny-world
 go run .
 ```
+
+## Controls
+
+* Middle mouse button / mouse wheel: pan and zoom.
+* Left click with selected terrain or land use: place it.
+* Right click with selected terrain or land use: remove it.
+* Ctrl+S: saves the game to `save/autosave.json`
+
+Load a saved game by running with the file as argument:
+
+```shell
+go run . save/autosave.json
+```
