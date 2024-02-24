@@ -6,7 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche-model/model"
-	archeserde "github.com/mlange-42/arche-serde"
+	serde "github.com/mlange-42/arche-serde"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -62,9 +62,7 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	hud := res.NewHUD(fonts.Default)
 	ui := res.NewUI(&selection, fonts.Default, &sprites)
-	ecs.AddResource(&g.Model.World, &hud)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	// =========== Systems ===========
@@ -130,7 +128,7 @@ func load(world *ecs.World, path string) {
 		panic(err)
 	}
 
-	err = archeserde.Deserialize(js, world)
+	err = serde.Deserialize(js, world)
 	if err != nil {
 		panic(err)
 	}

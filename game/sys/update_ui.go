@@ -8,23 +8,19 @@ import (
 
 // UpdateUI system.
 type UpdateUI struct {
-	hud generic.Resource[res.HUD]
-	ui  generic.Resource[res.UI]
+	ui generic.Resource[res.UI]
 }
 
 // Initialize the system
 func (s *UpdateUI) Initialize(world *ecs.World) {
-	s.hud = generic.NewResource[res.HUD](world)
 	s.ui = generic.NewResource[res.UI](world)
 }
 
 // Update the system
 func (s *UpdateUI) Update(world *ecs.World) {
-	hud := s.hud.Get()
 	ui := s.ui.Get()
 
 	ui.UI.Update()
-	hud.UI.Update()
 }
 
 // Finalize the system

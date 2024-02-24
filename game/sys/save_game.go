@@ -33,7 +33,6 @@ func (s *SaveGame) Update(world *ecs.World) {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
 			generic.T[res.Fonts](),
-			generic.T[res.HUD](),
 			generic.T[res.EbitenImage](),
 			generic.T[res.Sprites](),
 			generic.T[res.UI](),

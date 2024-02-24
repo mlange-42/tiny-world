@@ -9,13 +9,11 @@ import (
 // UI is a system to render the user interface.
 type UI struct {
 	screen generic.Resource[res.EbitenImage]
-	hud    generic.Resource[res.HUD]
 	ui     generic.Resource[res.UI]
 }
 
 // InitializeUI the system
 func (s *UI) InitializeUI(world *ecs.World) {
-	s.hud = generic.NewResource[res.HUD](world)
 	s.ui = generic.NewResource[res.UI](world)
 	s.screen = generic.NewResource[res.EbitenImage](world)
 }
@@ -23,11 +21,9 @@ func (s *UI) InitializeUI(world *ecs.World) {
 // UpdateUI the system
 func (s *UI) UpdateUI(world *ecs.World) {
 	screen := s.screen.Get()
-	hud := s.hud.Get()
 	ui := s.ui.Get()
 
 	ui.UI.Draw(screen.Image)
-	hud.UI.Draw(screen.Image)
 }
 
 // PostUpdateUI the system
