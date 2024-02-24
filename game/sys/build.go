@@ -47,14 +47,15 @@ func (s *Build) Initialize(world *ecs.World) {
 // Update the system
 func (s *Build) Update(world *ecs.World) {
 	sel := s.selection.Get()
+	ui := s.ui.Get()
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		sel.Build = terr.Air
+		sel.SetBuild(terr.Air, -1)
 		fmt.Println("paint nothing")
 	}
 
 	x, y := ebiten.CursorPosition()
-	if s.ui.Get().MouseInside(x, y) {
+	if ui.MouseInside(x, y) {
 		return
 	}
 
@@ -63,7 +64,7 @@ func (s *Build) Update(world *ecs.World) {
 		mouseFn = ebiten.IsMouseButtonPressed
 	}
 
-	p := &terr.Properties[sel.Build]
+	p := &terr.Properties[sel.BuildType]
 	if !p.CanBuild ||
 		!(mouseFn(ebiten.MouseButton0) ||
 			mouseFn(ebiten.MouseButton2)) {
@@ -82,7 +83,7 @@ func (s *Build) Update(world *ecs.World) {
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		if luHere == sel.Build {
+		if luHere == sel.BuildType {
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
@@ -100,10 +101,10 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 	if p.IsTerrain {
-		terrain.Set(cursor.X, cursor.Y, sel.Build)
+		terrain.Set(cursor.X, cursor.Y, sel.BuildType)
 	} else {
 		update := s.update.Get()
-		prod := terr.Properties[sel.Build].Production
+		prod := terr.Properties[sel.BuildType].Production
 		var e ecs.Entity
 		if prod.Produces == resource.EndResources {
 			e = s.builder.NewWith(
@@ -119,8 +120,13 @@ func (s *Build) Update(world *ecs.World) {
 			)
 		}
 		landUseE.Set(cursor.X, cursor.Y, e)
-		landUse.Set(cursor.X, cursor.Y, sel.Build)
+		landUse.Set(cursor.X, cursor.Y, sel.BuildType)
 	}
+
+	if ui.RemoveButton(sel.ButtonID) {
+		ui.CreateRandomButton()
+	}
+	sel.SetBuild(terr.Air, -1)
 }
 
 // Finalize the system

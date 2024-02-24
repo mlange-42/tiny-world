@@ -135,13 +135,13 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				prop := terr.Properties[sel.Build]
+				prop := terr.Properties[sel.BuildType]
 				if prop.CanBuild {
 					terrHere := terrain.Get(cursor.X, cursor.Y)
 					if prop.IsTerrain {
 						height = 0
 					}
-					drawSprite(&landUse.Grid, i, j, sel.Build, &point, height)
+					drawSprite(&landUse.Grid, i, j, sel.BuildType, &point, height)
 					if prop.BuildOn.Contains(terrHere) {
 						drawCursor(&point, s.cursorGreen)
 					} else {

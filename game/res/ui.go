@@ -3,6 +3,7 @@ package res
 import (
 	stdimage "image"
 	"image/color"
+	"math/rand"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
@@ -11,6 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
 )
 
@@ -19,7 +21,13 @@ type UI struct {
 	ResourceLabels [resource.EndResources]*widget.Text
 	TerrainButtons [terr.EndTerrain]*widget.Button
 
-	ButtonImages [terr.EndTerrain]widget.ButtonImage
+	buttonImages           [terr.EndTerrain]widget.ButtonImage
+	randomButtonsContainer *widget.Container
+	randomButtons          map[int]*widget.Button
+
+	selection *Selection
+	font      font.Face
+	idPool    util.IntPool[int]
 }
 
 func (ui *UI) MouseInside(x, y int) bool {
@@ -34,7 +42,12 @@ func (ui *UI) MouseInside(x, y int) bool {
 }
 
 func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int) UI {
-	ui := UI{}
+	ui := UI{
+		randomButtons: map[int]*widget.Button{},
+		selection:     selection,
+		font:          font,
+		idPool:        util.NewIntPool[int](8),
+	}
 
 	ui.createImages(sprites, tileWidth)
 
@@ -42,7 +55,7 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 	)
 
-	uiContainer := ui.createUI(sprites, selection, font)
+	uiContainer := ui.createUI(sprites)
 	hudContainer := ui.createHUD(font)
 	rootContainer.AddChild(uiContainer)
 	rootContainer.AddChild(hudContainer)
@@ -55,7 +68,23 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 	return ui
 }
 
-func (ui *UI) createUI(sprites *Sprites, selection *Selection, font font.Face) *widget.Container {
+func (ui *UI) CreateRandomButton() {
+	t := terr.RandomTerrain[rand.Intn(len(terr.RandomTerrain))]
+	button, id := ui.createButton(t)
+	ui.randomButtonsContainer.AddChild(button)
+	ui.randomButtons[id] = button
+}
+
+func (ui *UI) RemoveButton(id int) bool {
+	if bt, ok := ui.randomButtons[id]; ok {
+		ui.randomButtonsContainer.RemoveChild(bt)
+		delete(ui.randomButtons, id)
+		return true
+	}
+	return false
+}
+
+func (ui *UI) createUI(sprites *Sprites) *widget.Container {
 	innerContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
@@ -72,18 +101,43 @@ func (ui *UI) createUI(sprites *Sprites, selection *Selection, font font.Face) *
 				StretchHorizontal:  false,
 				StretchVertical:    false,
 			}),
-			widget.WidgetOpts.MinSize(40, 200),
+			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
 
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
-		if !terr.Properties[i].CanBuild {
+		if !terr.Properties[i].CanBuy {
 			continue
 		}
-		button := ui.createButton(selection, i, font)
+		button, _ := ui.createButton(i)
 		innerContainer.AddChild(button)
 		ui.TerrainButtons[i] = button
 	}
+
+	ui.randomButtonsContainer = widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.Layout(
+			widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+				widget.RowLayoutOpts.Spacing(4),
+			),
+		),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionEnd,
+				VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				StretchHorizontal:  false,
+				StretchVertical:    false,
+			}),
+			widget.WidgetOpts.MinSize(40, 10),
+		),
+	)
+	for i := 0; i < 5; i++ {
+		ui.CreateRandomButton()
+	}
+
+	innerContainer.AddChild(ui.randomButtonsContainer)
 
 	return innerContainer
 }
@@ -136,7 +190,7 @@ func (ui *UI) createImages(sprites *Sprites, tileWidth int) {
 			color.RGBA{0, 0, 0, 80}, false)
 		slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
 
-		ui.ButtonImages[i] = widget.ButtonImage{
+		ui.buttonImages[i] = widget.ButtonImage{
 			Idle:     slice,
 			Hover:    slicePressed,
 			Pressed:  slicePressed,
@@ -145,21 +199,22 @@ func (ui *UI) createImages(sprites *Sprites, tileWidth int) {
 	}
 }
 
-func (ui *UI) createButton(selection *Selection, terrain terr.Terrain, font font.Face) *widget.Button {
+func (ui *UI) createButton(terrain terr.Terrain) (*widget.Button, int) {
+	id := ui.idPool.Get()
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionCenter,
 			}),
 		),
-		widget.ButtonOpts.Image(&ui.ButtonImages[terrain]),
+		widget.ButtonOpts.Image(&ui.buttonImages[terrain]),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 			p := &terr.Properties[terrain]
 			println("paint", p.Name)
-			selection.Build = terrain
+			ui.selection.SetBuild(terrain, id)
 		}),
 	)
 
-	return button
+	return button, id
 }

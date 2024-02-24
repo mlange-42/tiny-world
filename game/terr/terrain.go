@@ -147,3 +147,11 @@ var Properties = [EndTerrain]TerrainProps{
 		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
 	},
 }
+
+var RandomTerrain = []Terrain{
+	Grass, Grass, Grass, Grass, Grass,
+	Water,
+	Desert,
+	Tree, Tree, Tree,
+	Rock,
+}
