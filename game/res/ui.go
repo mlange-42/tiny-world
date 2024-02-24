@@ -20,7 +20,14 @@ type UI struct {
 }
 
 func (ui *UI) MouseInside(x, y int) bool {
-	return stdimage.Pt(x, y).In(ui.UI.Container.Children()[0].GetWidget().Rect)
+	pt := stdimage.Pt(x, y)
+	for _, w := range ui.UI.Container.Children() {
+		if pt.In(w.GetWidget().Rect) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func NewUI(selection *Selection, font font.Face, sprites *Sprites) UI {
