@@ -17,6 +17,9 @@ import (
 type UI struct {
 	UI             *ebitenui.UI
 	ResourceLabels [resource.EndResources]*widget.Text
+	TerrainButtons [terr.EndTerrain]*widget.Button
+
+	ButtonImages [terr.EndTerrain]widget.ButtonImage
 }
 
 func (ui *UI) MouseInside(x, y int) bool {
@@ -30,8 +33,11 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(selection *Selection, font font.Face, sprites *Sprites) UI {
+func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int) UI {
 	ui := UI{}
+
+	ui.createImages(sprites, tileWidth)
+
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 	)
@@ -74,22 +80,9 @@ func (ui *UI) createUI(sprites *Sprites, selection *Selection, font font.Face) *
 		if !terr.Properties[i].CanBuild {
 			continue
 		}
-		idx := sprites.GetTerrainIndex(i)
-		img, _ := sprites.Get(idx)
-		slice := image.NewNineSliceSimple(img, 0, 48)
-		pressed := ebiten.NewImageFromImage(img)
-		vector.DrawFilledRect(pressed, 0, 0,
-			float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
-			color.RGBA{0, 0, 0, 80}, false)
-		slicePressed := image.NewNineSliceSimple(pressed, 0, 48)
-
-		buttonImage := widget.ButtonImage{
-			Idle:    slice,
-			Hover:   slicePressed,
-			Pressed: slicePressed,
-		}
-		button := createButton(selection, i, &buttonImage, font)
+		button := ui.createButton(selection, i, font)
 		innerContainer.AddChild(button)
+		ui.TerrainButtons[i] = button
 	}
 
 	return innerContainer
@@ -132,14 +125,34 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	return innerContainer
 }
 
-func createButton(selection *Selection, terrain terr.Terrain, buttonImage *widget.ButtonImage, font font.Face) *widget.Button {
+func (ui *UI) createImages(sprites *Sprites, tileWidth int) {
+	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		idx := sprites.GetTerrainIndex(i)
+		img, _ := sprites.Get(idx)
+		slice := image.NewNineSliceSimple(img, 0, tileWidth)
+		pressed := ebiten.NewImageFromImage(img)
+		vector.DrawFilledRect(pressed, 0, 0,
+			float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
+			color.RGBA{0, 0, 0, 80}, false)
+		slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
+
+		ui.ButtonImages[i] = widget.ButtonImage{
+			Idle:     slice,
+			Hover:    slicePressed,
+			Pressed:  slicePressed,
+			Disabled: slicePressed,
+		}
+	}
+}
+
+func (ui *UI) createButton(selection *Selection, terrain terr.Terrain, font font.Face) *widget.Button {
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionCenter,
 			}),
 		),
-		widget.ButtonOpts.Image(buttonImage),
+		widget.ButtonOpts.Image(&ui.ButtonImages[terrain]),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 			p := &terr.Properties[terrain]

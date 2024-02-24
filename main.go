@@ -62,7 +62,7 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites)
+	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	// =========== Systems ===========
