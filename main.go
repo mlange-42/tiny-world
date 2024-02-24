@@ -17,7 +17,13 @@ import (
 )
 
 const (
-	worldSize = 128
+	WORLD_SIZE = 128
+
+	FOOD   = 25
+	WOOD   = 10
+	STONES = 5
+
+	RANDOM_TERRAINS = 5
 )
 
 func main() {
@@ -28,13 +34,13 @@ func main() {
 
 	// =========== Resources ===========
 
-	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](worldSize, worldSize)}
+	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](WORLD_SIZE, WORLD_SIZE)}
 	ecs.AddResource(&g.Model.World, &terrain)
 
-	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](worldSize, worldSize)}
+	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](WORLD_SIZE, WORLD_SIZE)}
 	ecs.AddResource(&g.Model.World, &landUse)
 
-	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](worldSize, worldSize)}
+	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](WORLD_SIZE, WORLD_SIZE)}
 	ecs.AddResource(&g.Model.World, &landUseEntities)
 
 	selection := res.Selection{}
@@ -50,7 +56,7 @@ func main() {
 	ecs.AddResource(&g.Model.World, &view)
 
 	production := res.Production{}
-	stock := res.Stock{}
+	stock := res.Stock{Res: [3]int{FOOD, WOOD, STONES}}
 	ecs.AddResource(&g.Model.World, &production)
 	ecs.AddResource(&g.Model.World, &stock)
 
@@ -62,7 +68,7 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth)
+	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth, RANDOM_TERRAINS)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	// =========== Systems ===========

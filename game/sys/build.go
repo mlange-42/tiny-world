@@ -73,10 +73,6 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
-	if !s.stock.Get().CanPay(p.BuildCost) {
-		return
-	}
-
 	view := s.view.Get()
 	landUse := s.landUse.Get()
 	landUseE := s.landUseEntities.Get()
@@ -97,6 +93,11 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 	if landUse.Get(cursor.X, cursor.Y) != terr.Air {
+		return
+	}
+
+	stock := s.stock.Get()
+	if !stock.CanPay(p.BuildCost) {
 		return
 	}
 
@@ -129,6 +130,7 @@ func (s *Build) Update(world *ecs.World) {
 		landUse.Set(cursor.X, cursor.Y, sel.BuildType)
 	}
 
+	stock.Pay(p.BuildCost)
 	if ui.RemoveButton(sel.ButtonID) {
 		ui.CreateRandomButton()
 	}

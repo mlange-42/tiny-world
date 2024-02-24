@@ -29,3 +29,9 @@ func (s *Stock) CanPay(cost []terr.BuildCost) bool {
 	}
 	return true
 }
+
+func (s *Stock) Pay(cost []terr.BuildCost) {
+	for _, c := range cost {
+		s.Res[c.Type] -= c.Amount
+	}
+}
