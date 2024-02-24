@@ -2,11 +2,14 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche-model/model"
+	archeserde "github.com/mlange-42/arche-serde"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game"
+	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sys"
@@ -14,16 +17,16 @@ import (
 )
 
 const (
-	worldSize = 256
+	worldSize = 128
 )
 
 func main() {
+	loadGame := len(os.Args) == 2
+
 	ebiten.SetVsyncEnabled(true)
 	g := game.NewGame(model.New())
 
 	// =========== Resources ===========
-
-	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](worldSize, worldSize)}
 	ecs.AddResource(&g.Model.World, &terrain)
@@ -43,6 +46,16 @@ func main() {
 	}
 	ecs.AddResource(&g.Model.World, &update)
 
+	view := res.NewView(48, 24)
+	ecs.AddResource(&g.Model.World, &view)
+
+	production := res.Production{}
+	stock := res.Stock{}
+	ecs.AddResource(&g.Model.World, &production)
+	ecs.AddResource(&g.Model.World, &stock)
+
+	ecs.AddResource(&g.Model.World, &g.Screen)
+
 	sprites := res.NewSprites("./assets/sprites")
 	ecs.AddResource(&g.Model.World, &sprites)
 
@@ -54,17 +67,11 @@ func main() {
 	ecs.AddResource(&g.Model.World, &hud)
 	ecs.AddResource(&g.Model.World, &ui)
 
-	view := res.NewView(48, 24)
-	ecs.AddResource(&g.Model.World, &view)
-
-	production := res.Production{}
-	stock := res.Stock{}
-	ecs.AddResource(&g.Model.World, &production)
-	ecs.AddResource(&g.Model.World, &stock)
-
 	// =========== Systems ===========
 
-	g.Model.AddSystem(&sys.InitTerrain{})
+	if !loadGame {
+		g.Model.AddSystem(&sys.InitTerrain{})
+	}
 
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.DoProduction{})
@@ -83,6 +90,9 @@ func main() {
 	})
 
 	g.Model.AddSystem(&sys.UpdateUI{})
+	g.Model.AddSystem(&sys.SaveGame{
+		Path: "./save/autosave.json",
+	})
 
 	// =========== UI Systems ===========
 
@@ -95,10 +105,33 @@ func main() {
 	})
 	g.Model.AddUISystem(&render.UI{})
 
+	// =========== Load game ===========
+	if loadGame {
+		load(&g.Model.World, os.Args[1])
+	}
+
 	// =========== Run ===========
 
 	g.Initialize()
 	if err := g.Run(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func load(world *ecs.World, path string) {
+	_ = ecs.ComponentID[comp.Tile](world)
+	_ = ecs.ComponentID[comp.UpdateTick](world)
+	_ = ecs.ComponentID[comp.Consumption](world)
+	_ = ecs.ComponentID[comp.Production](world)
+	_ = ecs.ComponentID[comp.ProductionMarker](world)
+
+	js, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	err = archeserde.Deserialize(js, world)
+	if err != nil {
+		panic(err)
 	}
 }

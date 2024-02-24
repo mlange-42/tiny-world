@@ -1,6 +1,10 @@
 package res
 
-import "github.com/mlange-42/tiny-world/game/terr"
+import (
+	"encoding/json"
+
+	"github.com/mlange-42/tiny-world/game/terr"
+)
 
 // Grid data structure
 type Grid[T comparable] struct {
@@ -128,4 +132,31 @@ func (g *Grid[T]) CountNeighbors8(x, y int, tp T) int {
 		cnt++
 	}
 	return cnt
+}
+
+func (g *Grid[T]) MarshalJSON() ([]byte, error) {
+	helper := gridHelper[T]{
+		Data:   g.data,
+		Width:  g.width,
+		Height: g.height,
+	}
+	return json.Marshal(helper)
+}
+
+func (g *Grid[T]) UnmarshalJSON(data []byte) error {
+	helper := gridHelper[T]{}
+	if err := json.Unmarshal(data, &helper); err != nil {
+		return err
+	}
+	g.data = helper.Data
+	g.width = helper.Width
+	g.height = helper.Height
+
+	return nil
+}
+
+type gridHelper[T comparable] struct {
+	Data   []T
+	Width  int
+	Height int
 }

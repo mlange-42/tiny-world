@@ -7,8 +7,9 @@ toolchain go1.22.0
 require (
 	github.com/ebitenui/ebitenui v0.5.5
 	github.com/hajimehoshi/ebiten/v2 v2.6.6
-	github.com/mlange-42/arche v0.10.0
+	github.com/mlange-42/arche v0.11.0
 	github.com/mlange-42/arche-model v0.7.0
+	github.com/mlange-42/arche-serde v0.1.1-0.20240224184015-27e3e9f0f343
 	golang.org/x/image v0.12.0
 )
 
