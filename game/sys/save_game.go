@@ -1,8 +1,9 @@
 package sys
 
 import (
-	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -15,7 +16,9 @@ import (
 )
 
 // SaveGame system.
-type SaveGame struct{}
+type SaveGame struct {
+	Path string
+}
 
 // Initialize the system
 func (s *SaveGame) Initialize(world *ecs.World) {}
@@ -25,7 +28,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 	if !(ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyS)) {
 		return
 	}
-	println("Saving game")
+	print("Saving game... ")
 
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
@@ -41,7 +44,23 @@ func (s *SaveGame) Update(world *ecs.World) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(js))
+
+	dir := filepath.Dir(s.Path)
+	err = os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		log.Printf("Error saving game: %s", err.Error())
+		return
+	}
+
+	f, err := os.Create(s.Path)
+	if err != nil {
+		log.Printf("Error saving game: %s", err.Error())
+		return
+	}
+	defer f.Close()
+
+	f.Write(js)
+	println("done.")
 }
 
 // Finalize the system

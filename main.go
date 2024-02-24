@@ -83,7 +83,9 @@ func main() {
 	})
 
 	g.Model.AddSystem(&sys.UpdateUI{})
-	g.Model.AddSystem(&sys.SaveGame{})
+	g.Model.AddSystem(&sys.SaveGame{
+		Path: "./save/autosave.json",
+	})
 
 	// =========== UI Systems ===========
 
