@@ -232,17 +232,22 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 		idx := sprites.GetTerrainIndex(i)
 		img, _ := sprites.Get(idx)
 		slice := image.NewNineSliceSimple(img, 0, tileWidth)
+
 		pressed := ebiten.NewImageFromImage(img)
 		vector.DrawFilledRect(pressed, 0, 0,
 			float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
 			color.RGBA{0, 0, 0, 80}, false)
 		slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
 
+		disabled := ebiten.NewImageFromImage(img)
+		vector.StrokeLine(disabled, 0, 0, float32(img.Bounds().Dx()), float32(img.Bounds().Dy()), 6, color.RGBA{120, 0, 0, 160}, false)
+		sliceDisabled := image.NewNineSliceSimple(disabled, 0, tileWidth)
+
 		ui.buttonImages[i] = widget.ButtonImage{
 			Idle:     slice,
 			Hover:    slicePressed,
 			Pressed:  slicePressed,
-			Disabled: slicePressed,
+			Disabled: sliceDisabled,
 		}
 
 		props := &terr.Properties[i]
