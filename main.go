@@ -68,7 +68,7 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth, RANDOM_TERRAINS)
+	ui := res.NewUI(&selection, fonts.Default, &sprites, RANDOM_TERRAINS, view.TileWidth)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	// =========== Systems ===========
@@ -112,6 +112,7 @@ func main() {
 	// =========== Load game ===========
 	if loadGame {
 		load(&g.Model.World, os.Args[1])
+		selection.Reset()
 	}
 
 	// =========== Run ===========

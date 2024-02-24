@@ -35,7 +35,6 @@ func (s *SaveGame) Update(world *ecs.World) {
 			generic.T[res.Fonts](),
 			generic.T[res.EbitenImage](),
 			generic.T[res.Sprites](),
-			generic.T[res.UI](),
 			generic.T[resource.Termination](),
 			generic.T[model.Systems](),
 		),

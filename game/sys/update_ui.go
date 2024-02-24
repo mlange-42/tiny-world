@@ -20,7 +20,7 @@ func (s *UpdateUI) Initialize(world *ecs.World) {
 func (s *UpdateUI) Update(world *ecs.World) {
 	ui := s.ui.Get()
 
-	ui.UI.Update()
+	ui.UI().Update()
 }
 
 // Finalize the system

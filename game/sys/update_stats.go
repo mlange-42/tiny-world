@@ -50,20 +50,18 @@ func (s *UpdateStats) Update(world *ecs.World) {
 
 	for i := resource.Resource(0); i < resource.EndResources; i++ {
 		if i == resource.Food {
-			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d-%d (%d)", production.Prod[i], production.Cons[i], stock.Res[i])
+			ui.SetResourceLabel(i, fmt.Sprintf("+%d-%d (%d)", production.Prod[i], production.Cons[i], stock.Res[i]))
 		} else {
-			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i])
+			ui.SetResourceLabel(i, fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i]))
 		}
 	}
 
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
 		props := &terr.Properties[i]
-		button := ui.TerrainButtons[i]
-		if !props.CanBuy || button == nil {
+		if !props.CanBuy {
 			continue
 		}
-		canPay := stock.CanPay(props.BuildCost)
-		button.GetWidget().Disabled = !canPay
+		ui.SetButtonEnabled(i, stock.CanPay(props.BuildCost))
 	}
 }
 

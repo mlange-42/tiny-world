@@ -52,7 +52,7 @@ func (s *Build) Update(world *ecs.World) {
 	ui := s.ui.Get()
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		sel.SetBuild(terr.Air, -1)
+		sel.Reset()
 		fmt.Println("paint nothing")
 	}
 
@@ -134,7 +134,7 @@ func (s *Build) Update(world *ecs.World) {
 	if ui.RemoveButton(sel.ButtonID) {
 		ui.CreateRandomButton()
 	}
-	sel.SetBuild(terr.Air, -1)
+	sel.Reset()
 }
 
 // Finalize the system

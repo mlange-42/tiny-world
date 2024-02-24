@@ -17,9 +17,9 @@ import (
 )
 
 type UI struct {
-	UI             *ebitenui.UI
-	ResourceLabels [resource.EndResources]*widget.Text
-	TerrainButtons [terr.EndTerrain]*widget.Button
+	ui             *ebitenui.UI
+	resourceLabels [resource.EndResources]*widget.Text
+	terrainButtons [terr.EndTerrain]*widget.Button
 
 	buttonImages           [terr.EndTerrain]widget.ButtonImage
 	randomButtonsContainer *widget.Container
@@ -30,9 +30,25 @@ type UI struct {
 	idPool    util.IntPool[int]
 }
 
+func (ui *UI) UI() *ebitenui.UI {
+	return ui.ui
+}
+
+func (ui *UI) SetResourceLabel(id resource.Resource, text string) {
+	ui.resourceLabels[id].Label = text
+}
+
+func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
+	button := ui.terrainButtons[id]
+	if button == nil {
+		return
+	}
+	button.GetWidget().Disabled = !enabled
+}
+
 func (ui *UI) MouseInside(x, y int) bool {
 	pt := stdimage.Pt(x, y)
-	for _, w := range ui.UI.Container.Children() {
+	for _, w := range ui.ui.Container.Children() {
 		if pt.In(w.GetWidget().Rect) {
 			return true
 		}
@@ -63,7 +79,7 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, randomTerrain
 	eui := ebitenui.UI{
 		Container: rootContainer,
 	}
-	ui.UI = &eui
+	ui.ui = &eui
 
 	return ui
 }
@@ -111,7 +127,7 @@ func (ui *UI) createUI(sprites *Sprites, randomTerrains int) *widget.Container {
 		}
 		button, _ := ui.createButton(i)
 		innerContainer.AddChild(button)
-		ui.TerrainButtons[i] = button
+		ui.terrainButtons[i] = button
 	}
 
 	ui.randomButtonsContainer = widget.NewContainer(
@@ -173,7 +189,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		)
 		innerContainer.AddChild(counter)
-		ui.ResourceLabels[i] = counter
+		ui.resourceLabels[i] = counter
 	}
 
 	return innerContainer
