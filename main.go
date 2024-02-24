@@ -70,6 +70,9 @@ func main() {
 	g.Model.AddSystem(&sys.DoProduction{})
 	g.Model.AddSystem(&sys.DoConsumption{})
 	g.Model.AddSystem(&sys.UpdateStats{})
+	g.Model.AddSystem(&sys.RemoveMarkers{
+		MaxTime: 180,
+	})
 
 	g.Model.AddSystem(&sys.Build{
 		AllowStroke: true,
@@ -85,6 +88,11 @@ func main() {
 
 	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
+	g.Model.AddUISystem(&render.Markers{
+		MinOffset: view.TileHeight * 2,
+		MaxOffset: 250,
+		Duration:  180,
+	})
 	g.Model.AddUISystem(&render.UI{})
 
 	// =========== Run ===========

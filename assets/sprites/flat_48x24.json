@@ -3,113 +3,134 @@
  "SpriteHeight": 24,
  "Sprites": [
   {
-   "Name": "path",
+   "Name": "food",
    "Index": 0,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path",
+   "Index": 1,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": true
   },
   {
    "Name": "path_1",
-   "Index": 1,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "path_2",
    "Index": 2,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_3",
+   "Name": "path_2",
    "Index": 3,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_4",
+   "Name": "path_3",
    "Index": 4,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_5",
+   "Name": "path_4",
    "Index": 5,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_6",
+   "Name": "path_5",
    "Index": 6,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_7",
+   "Name": "path_6",
    "Index": 7,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_8",
+   "Name": "path_7",
    "Index": 8,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_9",
+   "Name": "path_8",
    "Index": 9,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_10",
+   "Name": "path_9",
    "Index": 10,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_11",
+   "Name": "path_10",
    "Index": 11,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_12",
+   "Name": "path_11",
    "Index": 12,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_13",
+   "Name": "path_12",
    "Index": 13,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_14",
+   "Name": "path_13",
    "Index": 14,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false
   },
   {
-   "Name": "path_15",
+   "Name": "path_14",
    "Index": 15,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "path_15",
+   "Index": 16,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "stones",
+   "Index": 17,
+   "Height": 0,
+   "YOffset": 0,
+   "MultiTile": false
+  },
+  {
+   "Name": "wood",
+   "Index": 18,
    "Height": 0,
    "YOffset": 0,
    "MultiTile": false

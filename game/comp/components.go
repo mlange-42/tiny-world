@@ -25,3 +25,8 @@ type Consumption struct {
 	Amount    int
 	Countdown int
 }
+
+type ProductionMarker struct {
+	StartTick int64
+	Resource  resource.Resource
+}
