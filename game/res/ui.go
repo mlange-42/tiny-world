@@ -70,7 +70,6 @@ func (ui *UI) createUI(sprites *Sprites, selection *Selection, font font.Face) *
 		),
 	)
 
-	buttons := []widget.RadioGroupElement{}
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
 		if !terr.Properties[i].CanBuild {
 			continue
@@ -91,36 +90,9 @@ func (ui *UI) createUI(sprites *Sprites, selection *Selection, font font.Face) *
 		}
 		button := createButton(selection, i, &buttonImage, font)
 		innerContainer.AddChild(button)
-		buttons = append(buttons, button)
 	}
-	widget.NewRadioGroup(
-		widget.RadioGroupOpts.Elements(buttons...),
-
-		widget.RadioGroupOpts.ChangedHandler(func(args *widget.RadioGroupChangedEventArgs) {
-
-		}),
-	)
 
 	return innerContainer
-}
-
-func createButton(selection *Selection, terrain terr.Terrain, buttonImage *widget.ButtonImage, font font.Face) *widget.Button {
-	button := widget.NewButton(
-		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
-			}),
-		),
-		widget.ButtonOpts.Image(buttonImage),
-
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			p := &terr.Properties[terrain]
-			println("paint", p.Name)
-			selection.Build = terrain
-		}),
-	)
-
-	return button
 }
 
 func (ui *UI) createHUD(font font.Face) *widget.Container {
@@ -158,4 +130,23 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	}
 
 	return innerContainer
+}
+
+func createButton(selection *Selection, terrain terr.Terrain, buttonImage *widget.ButtonImage, font font.Face) *widget.Button {
+	button := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+			}),
+		),
+		widget.ButtonOpts.Image(buttonImage),
+
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			p := &terr.Properties[terrain]
+			println("paint", p.Name)
+			selection.Build = terrain
+		}),
+	)
+
+	return button
 }
