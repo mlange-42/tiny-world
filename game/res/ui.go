@@ -1,9 +1,12 @@
 package res
 
 import (
+	"fmt"
 	stdimage "image"
 	"image/color"
 	"math/rand"
+	"strings"
+	"time"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
@@ -22,6 +25,7 @@ type UI struct {
 	terrainButtons [terr.EndTerrain]*widget.Button
 
 	buttonImages           [terr.EndTerrain]widget.ButtonImage
+	buttonTooltip          [terr.EndTerrain]string
 	randomButtonsContainer *widget.Container
 	randomButtons          map[int]*widget.Button
 
@@ -65,7 +69,7 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, randomTerrain
 		idPool:        util.NewIntPool[int](8),
 	}
 
-	ui.createImages(sprites, tileWidth)
+	ui.prepareButtons(sprites, tileWidth)
 
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
@@ -195,7 +199,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	return innerContainer
 }
 
-func (ui *UI) createImages(sprites *Sprites, tileWidth int) {
+func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
 		idx := sprites.GetTerrainIndex(i)
 		img, _ := sprites.Get(idx)
@@ -212,16 +216,54 @@ func (ui *UI) createImages(sprites *Sprites, tileWidth int) {
 			Pressed:  slicePressed,
 			Disabled: slicePressed,
 		}
+
+		props := &terr.Properties[i]
+		costs := ""
+		if len(props.BuildCost) > 0 {
+			costs = "Cost: "
+			for _, cost := range props.BuildCost {
+				costs += fmt.Sprintf("%d %s, ", cost.Amount, resource.Properties[cost.Type].Short)
+			}
+			costs += "\n"
+		}
+		requires := ""
+		if props.Production.ConsumesFood > 0 {
+			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.ConsumesFood)
+		}
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s", strings.ToUpper(props.Name), costs, requires, terr.Descriptions[i])
 	}
 }
 
 func (ui *UI) createButton(terrain terr.Terrain) (*widget.Button, int) {
 	id := ui.idPool.Get()
+
+	tooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255})),
+	)
+	label := widget.NewText(
+		widget.TextOpts.Text(ui.buttonTooltip[terrain], ui.font, color.White),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(250),
+	)
+	tooltipContainer.AddChild(label)
+
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionCenter,
 			}),
+
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(tooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
 		),
 		widget.ButtonOpts.Image(&ui.buttonImages[terrain]),
 

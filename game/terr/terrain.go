@@ -73,6 +73,22 @@ type BuildCost struct {
 	Amount int
 }
 
+var Descriptions = [EndTerrain]string{
+	"Nothing",
+	"Nothing",
+	"A basic land tile.",
+	"A land tile with water. Can be used by fisherman.",
+	"A desert land tile.",
+	"A path. Required by all buildings.",
+	"Can be used by farms to produce food.",
+	"Can be used by lumberjacks to produce wood.",
+	"Can be used by masons to produce stones.",
+	"Produces 1 food/min per neighboring field.",
+	"Produces 1 food/min per neighboring water.",
+	"Produces 1 wood/min per neighboring tree.",
+	"Produces 1 stone/min per neighboring rock.",
+}
+
 var Properties = [EndTerrain]TerrainProps{
 	{Name: "air", IsTerrain: true,
 		BuildOn:    NewTerrains(),
