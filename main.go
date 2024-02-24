@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	worldSize = 256
+	worldSize = 128
 )
 
 func main() {
@@ -83,6 +83,7 @@ func main() {
 	})
 
 	g.Model.AddSystem(&sys.UpdateUI{})
+	g.Model.AddSystem(&sys.SaveGame{})
 
 	// =========== UI Systems ===========
 
