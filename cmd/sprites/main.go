@@ -43,8 +43,9 @@ var multiTileOrder = [16]int{
 func main() {
 	dirs := extractFiles()
 
+	allNames := map[string]bool{}
 	for _, dir := range dirs {
-		processDirectory(dir)
+		processDirectory(dir, allNames)
 	}
 }
 
@@ -53,7 +54,7 @@ type ImagePair struct {
 	Base  image.Image
 }
 
-func processDirectory(info dirInfo) {
+func processDirectory(info dirInfo, names map[string]bool) {
 	fmt.Printf("Processing %s (%d images)\n", info.Directory, len(info.Files))
 
 	if len(info.Files) == 0 {
@@ -115,6 +116,11 @@ func processDirectory(info dirInfo) {
 				if i > 0 {
 					name = fmt.Sprintf("%s_%d", name, i)
 				}
+				if _, ok := names[name]; ok {
+					log.Fatalf("duplicate sprite name: %s", name)
+				}
+				names[name] = true
+
 				subInfo := util.SpriteInfo{
 					Name:      name,
 					Index:     index,
@@ -131,6 +137,10 @@ func processDirectory(info dirInfo) {
 			if sprite.Bounds().Dx() != info.Width || sprite.Bounds().Dy() != info.Height {
 				log.Fatalf("unexpected tile size in %s: got %dx%d", file, sprite.Bounds().Dx(), sprite.Bounds().Dy())
 			}
+			if _, ok := names[baseName]; ok {
+				log.Fatalf("duplicate sprite name: %s", baseName)
+			}
+			names[baseName] = true
 
 			images = append(images, ImagePair{sprite, nil})
 			infos = append(infos, spriteInfo)
