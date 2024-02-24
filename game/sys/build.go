@@ -131,9 +131,7 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	stock.Pay(p.BuildCost)
-	if ui.RemoveButton(sel.ButtonID) {
-		ui.CreateRandomButton()
-	}
+	ui.ReplaceButton(sel.ButtonID)
 	sel.Reset()
 }
 

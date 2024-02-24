@@ -19,7 +19,14 @@ import (
 	"golang.org/x/image/font"
 )
 
+type randomButton struct {
+	Terrain terr.Terrain
+	Button  *widget.Button
+}
+
 type UI struct {
+	RandomTerrains []terr.Terrain
+
 	ui             *ebitenui.UI
 	resourceLabels [resource.EndResources]*widget.Text
 	terrainButtons [terr.EndTerrain]*widget.Button
@@ -27,7 +34,7 @@ type UI struct {
 	buttonImages           [terr.EndTerrain]widget.ButtonImage
 	buttonTooltip          [terr.EndTerrain]string
 	randomButtonsContainer *widget.Container
-	randomButtons          map[int]*widget.Button
+	randomButtons          map[int]randomButton
 
 	selection *Selection
 	font      font.Face
@@ -61,9 +68,9 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(selection *Selection, font font.Face, sprites *Sprites, randomTerrains int, tileWidth int) UI {
+func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int) UI {
 	ui := UI{
-		randomButtons: map[int]*widget.Button{},
+		randomButtons: map[int]randomButton{},
 		selection:     selection,
 		font:          font,
 		idPool:        util.NewIntPool[int](8),
@@ -75,7 +82,7 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, randomTerrain
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 	)
 
-	uiContainer := ui.createUI(sprites, randomTerrains)
+	uiContainer := ui.createUI(sprites)
 	hudContainer := ui.createHUD(font)
 	rootContainer.AddChild(uiContainer)
 	rootContainer.AddChild(hudContainer)
@@ -88,23 +95,25 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, randomTerrain
 	return ui
 }
 
-func (ui *UI) CreateRandomButton() {
+func (ui *UI) createRandomButton() {
 	t := terr.RandomTerrain[rand.Intn(len(terr.RandomTerrain))]
 	button, id := ui.createButton(t)
 	ui.randomButtonsContainer.AddChild(button)
-	ui.randomButtons[id] = button
+	ui.randomButtons[id] = randomButton{t, button}
 }
 
-func (ui *UI) RemoveButton(id int) bool {
+func (ui *UI) ReplaceButton(id int) bool {
 	if bt, ok := ui.randomButtons[id]; ok {
-		ui.randomButtonsContainer.RemoveChild(bt)
+		ui.randomButtonsContainer.RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
+		ui.createRandomButton()
+		ui.updateRandomTerrains()
 		return true
 	}
 	return false
 }
 
-func (ui *UI) createUI(sprites *Sprites, randomTerrains int) *widget.Container {
+func (ui *UI) createUI(sprites *Sprites) *widget.Container {
 	innerContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
@@ -153,13 +162,32 @@ func (ui *UI) createUI(sprites *Sprites, randomTerrains int) *widget.Container {
 			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
-	for i := 0; i < randomTerrains; i++ {
-		ui.CreateRandomButton()
-	}
 
 	innerContainer.AddChild(ui.randomButtonsContainer)
 
 	return innerContainer
+}
+
+func (ui *UI) CreateRandomButtons(randomTerrains int) {
+	if len(ui.RandomTerrains) == 0 {
+		for i := 0; i < randomTerrains; i++ {
+			ui.createRandomButton()
+		}
+		ui.updateRandomTerrains()
+	} else {
+		for _, t := range ui.RandomTerrains {
+			button, id := ui.createButton(t)
+			ui.randomButtonsContainer.AddChild(button)
+			ui.randomButtons[id] = randomButton{t, button}
+		}
+	}
+}
+
+func (ui *UI) updateRandomTerrains() {
+	ui.RandomTerrains = ui.RandomTerrains[:0]
+	for _, bt := range ui.randomButtons {
+		ui.RandomTerrains = append(ui.RandomTerrains, bt.Terrain)
+	}
 }
 
 func (ui *UI) createHUD(font font.Face) *widget.Container {

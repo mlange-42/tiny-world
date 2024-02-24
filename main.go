@@ -68,7 +68,7 @@ func main() {
 	fonts := res.NewFonts()
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites, RANDOM_TERRAINS, view.TileWidth)
+	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	// =========== Systems ===========
@@ -93,7 +93,9 @@ func main() {
 		PanButton: ebiten.MouseButton1,
 	})
 
-	g.Model.AddSystem(&sys.UpdateUI{})
+	g.Model.AddSystem(&sys.UpdateUI{
+		RandomTerrains: RANDOM_TERRAINS,
+	})
 	g.Model.AddSystem(&sys.SaveGame{
 		Path: "./save/autosave.json",
 	})
