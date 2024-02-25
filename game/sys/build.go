@@ -76,6 +76,7 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
+	stock := s.stock.Get()
 	view := s.view.Get()
 	landUse := s.landUse.Get()
 	landUseE := s.landUseEntities.Get()
@@ -85,18 +86,22 @@ func (s *Build) Update(world *ecs.World) {
 	remove := mouseFn(ebiten.MouseButton2)
 	if remove {
 		if p.IsTerrain {
+			sel.Reset()
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
 		canBuy := p.CanBuy
 		if luHere == sel.BuildType &&
-			((s.AllowRemoveBuilt && canBuy) || (s.AllowRemoveNatural && !canBuy)) {
+			((s.AllowRemoveBuilt && canBuy) || (s.AllowRemoveNatural && !canBuy) &&
+				stock.CanPay(p.BuildCost)) {
 
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
 
-			ui.ReplaceButton(sel.ButtonID)
+			stock.Pay(p.BuildCost)
+			ui.ReplaceButton(stock)
+		} else {
 			sel.Reset()
 		}
 		return
@@ -105,7 +110,6 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
-	stock := s.stock.Get()
 	if !stock.CanPay(p.BuildCost) {
 		return
 	}
@@ -148,8 +152,7 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	stock.Pay(p.BuildCost)
-	ui.ReplaceButton(sel.ButtonID)
-	sel.Reset()
+	ui.ReplaceButton(stock)
 }
 
 // Finalize the system

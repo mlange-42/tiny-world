@@ -102,13 +102,25 @@ func (ui *UI) createRandomButton() {
 	ui.randomButtons[id] = randomButton{t, button}
 }
 
-func (ui *UI) ReplaceButton(id int) bool {
+func (ui *UI) ReplaceButton(stock *Stock) bool {
+	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
 		ui.randomButtonsContainer.RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
 		ui.createRandomButton()
 		ui.updateRandomTerrains()
+
+		ui.selection.Reset()
+		for id2, bt2 := range ui.randomButtons {
+			if bt2.Terrain == bt.Terrain {
+				ui.selection.SetBuild(bt2.Terrain, id2)
+				break
+			}
+		}
 		return true
+	}
+	if !stock.CanPay(terr.Properties[ui.selection.BuildType].BuildCost) {
+		ui.selection.Reset()
 	}
 	return false
 }
