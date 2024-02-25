@@ -120,6 +120,7 @@ func (s *Build) Update(world *ecs.World) {
 		if !p.BuildOn.Contains(terrHere) {
 			return
 		}
+
 		e := fac.Create(cursor, sel.BuildType)
 		landUseE.Set(cursor.X, cursor.Y, e)
 		landUse.Set(cursor.X, cursor.Y, sel.BuildType)
