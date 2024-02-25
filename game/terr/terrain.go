@@ -50,13 +50,14 @@ func (d Terrains) Contains(dir Terrain) bool {
 }
 
 type TerrainProps struct {
-	Name       string
-	IsTerrain  bool
-	BuildOn    Terrains
-	CanBuild   bool
-	CanBuy     bool
-	Production Production
-	BuildCost  []BuildCost
+	Name        string
+	IsTerrain   bool
+	BuildOn     Terrains
+	BuildOnFree Terrains
+	CanBuild    bool
+	CanBuy      bool
+	Production  Production
+	BuildCost   []BuildCost
 }
 
 type Production struct {
@@ -91,34 +92,35 @@ var Descriptions = [EndTerrain]string{
 
 var Properties = [EndTerrain]TerrainProps{
 	{Name: "air", IsTerrain: true,
-		BuildOn:    NewTerrains(),
 		CanBuild:   false,
 		CanBuy:     false,
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "buildable", IsTerrain: true,
-		BuildOn:    NewTerrains(),
 		CanBuild:   false,
 		CanBuy:     false,
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "grass", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable, Water, Desert),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		BuildOn:     NewTerrains(Buildable),
+		BuildOnFree: NewTerrains(Buildable, Water, Desert),
+		CanBuild:    true,
+		CanBuy:      false,
+		Production:  Production{Produces: resource.EndResources},
 	},
 	{Name: "water", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable, Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		BuildOn:     NewTerrains(Buildable),
+		BuildOnFree: NewTerrains(Buildable, Grass, Desert),
+		CanBuild:    true,
+		CanBuy:      false,
+		Production:  Production{Produces: resource.EndResources},
 	},
 	{Name: "desert", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable, Grass, Water),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		BuildOn:     NewTerrains(Buildable),
+		BuildOnFree: NewTerrains(Buildable, Grass, Water),
+		CanBuild:    true,
+		CanBuy:      false,
+		Production:  Production{Produces: resource.EndResources},
 	},
 	{Name: "path", IsTerrain: false,
 		BuildOn:    NewTerrains(Grass, Desert, Water),
@@ -152,7 +154,7 @@ var Properties = [EndTerrain]TerrainProps{
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "farm", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
+		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
@@ -172,7 +174,7 @@ var Properties = [EndTerrain]TerrainProps{
 		},
 	},
 	{Name: "lumberjack", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
+		BuildOn:    NewTerrains(Grass),
 		CanBuild:   true,
 		CanBuy:     true,
 		Production: Production{Produces: resource.Wood, RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
@@ -194,9 +196,10 @@ var Properties = [EndTerrain]TerrainProps{
 }
 
 var RandomTerrain = []Terrain{
-	Grass, Grass, Grass, Grass, Grass,
-	Water,
+	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
+	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
+	Water, Water, Water, Water,
 	Desert,
-	Tree, Tree, Tree,
+	Tree, Tree, Tree, Tree,
 	Rock,
 }

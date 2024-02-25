@@ -20,8 +20,8 @@ const (
 	WORLD_SIZE = 128
 
 	FOOD   = 25
-	WOOD   = 10
-	STONES = 5
+	WOOD   = 25
+	STONES = 10
 
 	RANDOM_TERRAINS = 5
 )
@@ -86,7 +86,10 @@ func main() {
 	})
 
 	g.Model.AddSystem(&sys.Build{
-		AllowStroke: true,
+		AllowStroke:         false,
+		AllowReplaceTerrain: false,
+		AllowRemoveNatural:  false,
+		AllowRemoveBuilt:    true,
 	})
 
 	g.Model.AddSystem(&sys.PanAndZoom{

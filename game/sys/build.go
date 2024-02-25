@@ -16,7 +16,10 @@ import (
 
 // Build system.
 type Build struct {
-	AllowStroke bool
+	AllowStroke         bool
+	AllowReplaceTerrain bool
+	AllowRemoveNatural  bool
+	AllowRemoveBuilt    bool
 
 	view            generic.Resource[res.View]
 	terrain         generic.Resource[res.Terrain]
@@ -85,10 +88,16 @@ func (s *Build) Update(world *ecs.World) {
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		if luHere == sel.BuildType {
+		canBuy := p.CanBuy
+		if luHere == sel.BuildType &&
+			((s.AllowRemoveBuilt && canBuy) || (s.AllowRemoveNatural && !canBuy)) {
+
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
+
+			ui.ReplaceButton(sel.ButtonID)
+			sel.Reset()
 		}
 		return
 	}
@@ -102,14 +111,22 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	terrain := s.terrain.Get()
-
 	terrHere := terrain.Get(cursor.X, cursor.Y)
-	if !p.BuildOn.Contains(terrHere) {
-		return
-	}
 	if p.IsTerrain {
+		if s.AllowReplaceTerrain {
+			if !p.BuildOnFree.Contains(terrHere) {
+				return
+			}
+		} else {
+			if !p.BuildOn.Contains(terrHere) {
+				return
+			}
+		}
 		terrain.Set(cursor.X, cursor.Y, sel.BuildType)
 	} else {
+		if !p.BuildOn.Contains(terrHere) {
+			return
+		}
 		update := s.update.Get()
 		prod := terr.Properties[sel.BuildType].Production
 		var e ecs.Entity

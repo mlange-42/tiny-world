@@ -301,8 +301,6 @@ func (ui *UI) createButton(terrain terr.Terrain) (*widget.Button, int) {
 		widget.ButtonOpts.Image(&ui.buttonImages[terrain]),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			p := &terr.Properties[terrain]
-			println("paint", p.Name)
 			ui.selection.SetBuild(terrain, id)
 		}),
 	)
