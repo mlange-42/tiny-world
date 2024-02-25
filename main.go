@@ -13,7 +13,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sys"
-	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 func main() {
@@ -38,10 +37,10 @@ func main() {
 	}
 	ecs.AddResource(&g.Model.World, &rules)
 
-	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](rules.WorldSize, rules.WorldSize)}
+	terrain := res.NewTerrain(rules.WorldSize, rules.WorldSize)
 	ecs.AddResource(&g.Model.World, &terrain)
 
-	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](rules.WorldSize, rules.WorldSize)}
+	landUse := res.NewLandUse(rules.WorldSize, rules.WorldSize)
 	ecs.AddResource(&g.Model.World, &landUse)
 
 	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](rules.WorldSize, rules.WorldSize)}
