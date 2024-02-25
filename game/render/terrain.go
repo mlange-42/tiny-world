@@ -131,10 +131,11 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		canBuildHere := prop.BuildOn.Contains(ter)
 		if prop.IsTerrain {
 			height = 0
+			s.drawSprite(img, &s.terrain.Grid, x, y, toBuild, point, height, camOffset)
 		} else {
 			canBuildHere = canBuildHere && luEntity.IsZero()
+			s.drawSprite(img, &s.landUse.Grid, x, y, toBuild, point, height, camOffset)
 		}
-		s.drawSprite(img, &s.landUse.Grid, x, y, toBuild, point, height, camOffset)
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
 		} else {
