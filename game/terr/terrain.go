@@ -191,8 +191,7 @@ var Properties = [EndTerrain]TerrainProps{
 		CanBuy:     true,
 		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
 		BuildCost: []BuildCost{
-			{resource.Wood, 5},
-			{resource.Stones, 1},
+			{resource.Wood, 10},
 		},
 	},
 	{Name: "warehouse", IsTerrain: false,

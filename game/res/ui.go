@@ -183,7 +183,9 @@ func (ui *UI) createUI(sprites *Sprites) *widget.Container {
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
-			ui.createRandomButton()
+			button, id := ui.createButton(terr.Grass)
+			ui.randomButtonsContainer.AddChild(button)
+			ui.randomButtons[id] = randomButton{terr.Grass, button}
 		}
 		ui.updateRandomTerrains()
 	} else {
