@@ -34,6 +34,14 @@ func main() {
 
 	// =========== Resources ===========
 
+	rules := res.Rules{
+		AllowStroke:         false,
+		AllowReplaceTerrain: false,
+		AllowRemoveNatural:  false,
+		AllowRemoveBuilt:    true,
+	}
+	ecs.AddResource(&g.Model.World, &rules)
+
 	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](WORLD_SIZE, WORLD_SIZE)}
 	ecs.AddResource(&g.Model.World, &terrain)
 
@@ -85,12 +93,7 @@ func main() {
 		MaxTime: 180,
 	})
 
-	g.Model.AddSystem(&sys.Build{
-		AllowStroke:         false,
-		AllowReplaceTerrain: false,
-		AllowRemoveNatural:  false,
-		AllowRemoveBuilt:    true,
-	})
+	g.Model.AddSystem(&sys.Build{})
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton: ebiten.MouseButton1,
