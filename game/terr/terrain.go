@@ -22,6 +22,7 @@ const (
 	Fisherman
 	Lumberjack
 	Mason
+	Warehouse
 	EndTerrain
 )
 
@@ -88,6 +89,7 @@ var Descriptions = [EndTerrain]string{
 	"Produces 1 food/min per neighboring water.",
 	"Produces 1 wood/min per neighboring tree.",
 	"Produces 1 stone/min per neighboring rock.",
+	"Stores resources.",
 }
 
 var Properties = [EndTerrain]TerrainProps{
@@ -191,6 +193,16 @@ var Properties = [EndTerrain]TerrainProps{
 		BuildCost: []BuildCost{
 			{resource.Wood, 5},
 			{resource.Stones, 1},
+		},
+	},
+	{Name: "warehouse", IsTerrain: false,
+		BuildOn:    NewTerrains(Grass, Desert),
+		CanBuild:   true,
+		CanBuy:     true,
+		Production: Production{Produces: resource.EndResources},
+		BuildCost: []BuildCost{
+			{resource.Wood, 10},
+			{resource.Stones, 10},
 		},
 	},
 }

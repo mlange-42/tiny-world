@@ -1,15 +1,11 @@
 package sys
 
 import (
-	"math/rand"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
-	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -24,9 +20,7 @@ type Build struct {
 	selection       generic.Resource[res.Selection]
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
-
-	builder           generic.Map2[comp.Tile, comp.UpdateTick]
-	productionBuilder generic.Map4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
+	factory         generic.Resource[res.EntityFactory]
 }
 
 // Initialize the system
@@ -40,9 +34,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.selection = generic.NewResource[res.Selection](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
-
-	s.builder = generic.NewMap2[comp.Tile, comp.UpdateTick](world)
-	s.productionBuilder = generic.NewMap4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption](world)
+	s.factory = generic.NewResource[res.EntityFactory](world)
 }
 
 // Update the system
@@ -50,6 +42,7 @@ func (s *Build) Update(world *ecs.World) {
 	rules := s.rules.Get()
 	sel := s.selection.Get()
 	ui := s.ui.Get()
+	fac := s.factory.Get()
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		sel.Reset()
@@ -127,22 +120,7 @@ func (s *Build) Update(world *ecs.World) {
 		if !p.BuildOn.Contains(terrHere) {
 			return
 		}
-		update := s.update.Get()
-		prod := terr.Properties[sel.BuildType].Production
-		var e ecs.Entity
-		if prod.Produces == resource.EndResources {
-			e = s.builder.NewWith(
-				&comp.Tile{Point: cursor},
-				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
-			)
-		} else {
-			e = s.productionBuilder.NewWith(
-				&comp.Tile{Point: cursor},
-				&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
-				&comp.Production{Type: prod.Produces, Amount: 0, Countdown: update.Countdown},
-				&comp.Consumption{Amount: prod.ConsumesFood, Countdown: update.Countdown},
-			)
-		}
+		e := fac.Create(cursor, sel.BuildType)
 		landUseE.Set(cursor.X, cursor.Y, e)
 		landUse.Set(cursor.X, cursor.Y, sel.BuildType)
 	}

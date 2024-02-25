@@ -64,8 +64,10 @@ func main() {
 	ecs.AddResource(&g.Model.World, &view)
 
 	production := res.Production{}
-	stock := res.Stock{Res: [3]int{FOOD, WOOD, STONES}}
+
 	ecs.AddResource(&g.Model.World, &production)
+
+	stock := res.Stock{Res: [3]int{FOOD, WOOD, STONES}}
 	ecs.AddResource(&g.Model.World, &stock)
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
@@ -78,6 +80,9 @@ func main() {
 
 	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth)
 	ecs.AddResource(&g.Model.World, &ui)
+
+	factory := res.NewEntityFactory(&g.Model.World)
+	ecs.AddResource(&g.Model.World, &factory)
 
 	// =========== Systems ===========
 
