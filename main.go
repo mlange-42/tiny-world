@@ -108,7 +108,8 @@ func main() {
 
 	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
-	g.Model.AddUISystem(&render.Path{})
+	//g.Model.AddUISystem(&render.Path{})
+	g.Model.AddUISystem(&render.HaulerPaths{})
 	g.Model.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
 		MaxOffset: 250,
@@ -136,6 +137,7 @@ func load(world *ecs.World, path string) {
 	_ = ecs.ComponentID[comp.Consumption](world)
 	_ = ecs.ComponentID[comp.Production](world)
 	_ = ecs.ComponentID[comp.Warehouse](world)
+	_ = ecs.ComponentID[comp.Hauler](world)
 	_ = ecs.ComponentID[comp.ProductionMarker](world)
 
 	js, err := os.ReadFile(path)

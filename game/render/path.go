@@ -1,7 +1,6 @@
 package render
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"math/rand"
@@ -53,10 +52,7 @@ func (s *Path) UpdateUI(world *ecs.World) {
 		start := s.tiles[rand.Intn(len(s.tiles))]
 		target := s.tiles[rand.Intn(len(s.tiles))]
 
-		path, err := s.aStar.FindPath(start, target)
-		if err != nil {
-			fmt.Println(err)
-		} else {
+		if path, ok := s.aStar.FindPath(start, target); ok {
 			s.path = path
 		}
 		s.tiles = s.tiles[:0]

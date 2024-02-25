@@ -2,7 +2,6 @@ package nav
 
 import (
 	"container/heap"
-	"fmt"
 	"image"
 
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -26,7 +25,7 @@ func NewAStar(landUse *res.LandUse) AStar {
 	}
 }
 
-func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, error) {
+func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, bool) {
 	initialDist := math.AbsInt(start.X-target.X) + math.AbsInt(start.Y-target.Y)
 
 	open := NewPriorityQueue()
@@ -40,7 +39,7 @@ func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, error) {
 	for open.Len() > 0 {
 		current := heap.Pop(&open).(Score)
 		if current.Tile == target {
-			return reconstruct(cameFrom, current.Tile), nil
+			return reconstruct(cameFrom, current.Tile), true
 		}
 		if current.Tile != start {
 			luOld := a.landUse.Get(current.Tile.X, current.Tile.Y)
@@ -82,7 +81,7 @@ func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("can't find path")
+	return nil, false
 }
 
 func reconstruct(cameFrom map[comp.Tile]comp.Tile, current comp.Tile) []comp.Tile {
