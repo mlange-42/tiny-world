@@ -8,17 +8,18 @@ import (
 
 // UpdateUI system.
 type UpdateUI struct {
-	RandomTerrains int
-
-	ui generic.Resource[res.UI]
+	rules generic.Resource[res.Rules]
+	ui    generic.Resource[res.UI]
 }
 
 // Initialize the system
 func (s *UpdateUI) Initialize(world *ecs.World) {
+	s.rules = generic.NewResource[res.Rules](world)
 	s.ui = generic.NewResource[res.UI](world)
 
+	rules := s.rules.Get()
 	ui := s.ui.Get()
-	ui.CreateRandomButtons(s.RandomTerrains)
+	ui.CreateRandomButtons(rules.RandomTerrains)
 }
 
 // Update the system

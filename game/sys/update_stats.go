@@ -13,25 +13,30 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
-	production generic.Resource[res.Production]
-	stock      generic.Resource[res.Stock]
-	ui         generic.Resource[res.UI]
-	prodFilter generic.Filter1[comp.Production]
-	consFilter generic.Filter1[comp.Consumption]
+	rules       generic.Resource[res.Rules]
+	production  generic.Resource[res.Production]
+	stock       generic.Resource[res.Stock]
+	ui          generic.Resource[res.UI]
+	prodFilter  generic.Filter1[comp.Production]
+	consFilter  generic.Filter1[comp.Consumption]
+	stockFilter generic.Filter1[comp.Warehouse]
 }
 
 // Initialize the system
 func (s *UpdateStats) Initialize(world *ecs.World) {
+	s.rules = generic.NewResource[res.Rules](world)
 	s.production = generic.NewResource[res.Production](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.ui = generic.NewResource[res.UI](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
+	s.stockFilter = *generic.NewFilter1[comp.Warehouse]()
 }
 
 // Update the system
 func (s *UpdateStats) Update(world *ecs.World) {
+	rules := s.rules.Get()
 	ui := s.ui.Get()
 	production := s.production.Get()
 	stock := s.stock.Get()
@@ -48,11 +53,20 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		production.Cons[resource.Food] += cons.Amount
 	}
 
+	stockQuery := s.stockFilter.Query(world)
+	numWarehouses := stockQuery.Count()
+	stockQuery.Close()
+
 	for i := resource.Resource(0); i < resource.EndResources; i++ {
+		stock.Cap[i] = numWarehouses * rules.StockPerWarehouse[i]
+		if stock.Res[i] > stock.Cap[i] {
+			stock.Res[i] = stock.Cap[i]
+		}
+
 		if i == resource.Food {
-			ui.SetResourceLabel(i, fmt.Sprintf("+%d-%d (%d)", production.Prod[i], production.Cons[i], stock.Res[i]))
+			ui.SetResourceLabel(i, fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]))
 		} else {
-			ui.SetResourceLabel(i, fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i]))
+			ui.SetResourceLabel(i, fmt.Sprintf("+%d (%d/%d)", production.Prod[i], stock.Res[i], stock.Cap[i]))
 		}
 	}
 

@@ -16,16 +16,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
-const (
-	WORLD_SIZE = 128
-
-	FOOD   = 25
-	WOOD   = 25
-	STONES = 10
-
-	RANDOM_TERRAINS = 5
-)
-
 func main() {
 	loadGame := len(os.Args) == 2
 
@@ -39,16 +29,22 @@ func main() {
 		AllowReplaceTerrain: false,
 		AllowRemoveNatural:  false,
 		AllowRemoveBuilt:    true,
+
+		WorldSize:      128,
+		RandomTerrains: 5,
+
+		InitialResources:  [3]int{25, 25, 10},
+		StockPerWarehouse: [3]int{25, 25, 25},
 	}
 	ecs.AddResource(&g.Model.World, &rules)
 
-	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](WORLD_SIZE, WORLD_SIZE)}
+	terrain := res.Terrain{Grid: res.NewGrid[terr.Terrain](rules.WorldSize, rules.WorldSize)}
 	ecs.AddResource(&g.Model.World, &terrain)
 
-	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](WORLD_SIZE, WORLD_SIZE)}
+	landUse := res.LandUse{Grid: res.NewGrid[terr.Terrain](rules.WorldSize, rules.WorldSize)}
 	ecs.AddResource(&g.Model.World, &landUse)
 
-	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](WORLD_SIZE, WORLD_SIZE)}
+	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](rules.WorldSize, rules.WorldSize)}
 	ecs.AddResource(&g.Model.World, &landUseEntities)
 
 	selection := res.Selection{}
@@ -67,7 +63,7 @@ func main() {
 
 	ecs.AddResource(&g.Model.World, &production)
 
-	stock := res.Stock{Res: [3]int{FOOD, WOOD, STONES}}
+	stock := res.Stock{Res: rules.InitialResources}
 	ecs.AddResource(&g.Model.World, &stock)
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
@@ -104,9 +100,7 @@ func main() {
 		PanButton: ebiten.MouseButton1,
 	})
 
-	g.Model.AddSystem(&sys.UpdateUI{
-		RandomTerrains: RANDOM_TERRAINS,
-	})
+	g.Model.AddSystem(&sys.UpdateUI{})
 	g.Model.AddSystem(&sys.SaveGame{
 		Path: "./save/autosave.json",
 	})
