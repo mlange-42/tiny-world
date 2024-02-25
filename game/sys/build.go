@@ -16,12 +16,16 @@ import (
 
 // Build system.
 type Build struct {
-	AllowStroke bool
+	AllowStroke         bool
+	AllowReplaceTerrain bool
+	AllowRemoveNatural  bool
+	AllowRemoveBuilt    bool
 
 	view            generic.Resource[res.View]
 	terrain         generic.Resource[res.Terrain]
 	landUse         generic.Resource[res.LandUse]
 	landUseEntities generic.Resource[res.LandUseEntities]
+	stock           generic.Resource[res.Stock]
 	selection       generic.Resource[res.Selection]
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
@@ -36,6 +40,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.landUseEntities = generic.NewResource[res.LandUseEntities](world)
+	s.stock = generic.NewResource[res.Stock](world)
 	s.selection = generic.NewResource[res.Selection](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
@@ -47,14 +52,15 @@ func (s *Build) Initialize(world *ecs.World) {
 // Update the system
 func (s *Build) Update(world *ecs.World) {
 	sel := s.selection.Get()
+	ui := s.ui.Get()
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		sel.Build = terr.Air
+		sel.Reset()
 		fmt.Println("paint nothing")
 	}
 
 	x, y := ebiten.CursorPosition()
-	if s.ui.Get().MouseInside(x, y) {
+	if ui.MouseInside(x, y) {
 		return
 	}
 
@@ -63,7 +69,7 @@ func (s *Build) Update(world *ecs.World) {
 		mouseFn = ebiten.IsMouseButtonPressed
 	}
 
-	p := &terr.Properties[sel.Build]
+	p := &terr.Properties[sel.BuildType]
 	if !p.CanBuild ||
 		!(mouseFn(ebiten.MouseButton0) ||
 			mouseFn(ebiten.MouseButton2)) {
@@ -82,10 +88,16 @@ func (s *Build) Update(world *ecs.World) {
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		if luHere == sel.Build {
+		canBuy := p.CanBuy
+		if luHere == sel.BuildType &&
+			((s.AllowRemoveBuilt && canBuy) || (s.AllowRemoveNatural && !canBuy)) {
+
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
+
+			ui.ReplaceButton(sel.ButtonID)
+			sel.Reset()
 		}
 		return
 	}
@@ -93,17 +105,30 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
-	terrain := s.terrain.Get()
-
-	terrHere := terrain.Get(cursor.X, cursor.Y)
-	if !p.BuildOn.Contains(terrHere) {
+	stock := s.stock.Get()
+	if !stock.CanPay(p.BuildCost) {
 		return
 	}
+
+	terrain := s.terrain.Get()
+	terrHere := terrain.Get(cursor.X, cursor.Y)
 	if p.IsTerrain {
-		terrain.Set(cursor.X, cursor.Y, sel.Build)
+		if s.AllowReplaceTerrain {
+			if !p.BuildOnFree.Contains(terrHere) {
+				return
+			}
+		} else {
+			if !p.BuildOn.Contains(terrHere) {
+				return
+			}
+		}
+		terrain.Set(cursor.X, cursor.Y, sel.BuildType)
 	} else {
+		if !p.BuildOn.Contains(terrHere) {
+			return
+		}
 		update := s.update.Get()
-		prod := terr.Properties[sel.Build].Production
+		prod := terr.Properties[sel.BuildType].Production
 		var e ecs.Entity
 		if prod.Produces == resource.EndResources {
 			e = s.builder.NewWith(
@@ -119,8 +144,12 @@ func (s *Build) Update(world *ecs.World) {
 			)
 		}
 		landUseE.Set(cursor.X, cursor.Y, e)
-		landUse.Set(cursor.X, cursor.Y, sel.Build)
+		landUse.Set(cursor.X, cursor.Y, sel.BuildType)
 	}
+
+	stock.Pay(p.BuildCost)
+	ui.ReplaceButton(sel.ButtonID)
+	sel.Reset()
 }
 
 // Finalize the system

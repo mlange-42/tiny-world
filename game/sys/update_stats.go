@@ -8,13 +8,14 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // UpdateStats system.
 type UpdateStats struct {
 	production generic.Resource[res.Production]
 	stock      generic.Resource[res.Stock]
-	ui         generic.Resource[res.HUD]
+	ui         generic.Resource[res.UI]
 	prodFilter generic.Filter1[comp.Production]
 	consFilter generic.Filter1[comp.Consumption]
 }
@@ -23,7 +24,7 @@ type UpdateStats struct {
 func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.production = generic.NewResource[res.Production](world)
 	s.stock = generic.NewResource[res.Stock](world)
-	s.ui = generic.NewResource[res.HUD](world)
+	s.ui = generic.NewResource[res.UI](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
@@ -49,10 +50,18 @@ func (s *UpdateStats) Update(world *ecs.World) {
 
 	for i := resource.Resource(0); i < resource.EndResources; i++ {
 		if i == resource.Food {
-			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d-%d (%d)", production.Prod[i], production.Cons[i], stock.Res[i])
+			ui.SetResourceLabel(i, fmt.Sprintf("+%d-%d (%d)", production.Prod[i], production.Cons[i], stock.Res[i]))
 		} else {
-			ui.ResourceLabels[i].Label = fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i])
+			ui.SetResourceLabel(i, fmt.Sprintf("+%d (%d)", production.Prod[i], stock.Res[i]))
 		}
+	}
+
+	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		props := &terr.Properties[i]
+		if !props.CanBuy {
+			continue
+		}
+		ui.SetButtonEnabled(i, stock.CanPay(props.BuildCost))
 	}
 }
 
