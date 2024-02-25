@@ -2,8 +2,6 @@ package res
 
 import (
 	"encoding/json"
-
-	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // Grid data structure
@@ -77,61 +75,6 @@ func (g *Grid[T]) Clamp(x, y int) (int, int) {
 		y = g.height - 1
 	}
 	return x, y
-}
-
-func (g *Grid[T]) NeighborsMask(x, y int, tp T) terr.Directions {
-	dirs := terr.Directions(0)
-	if g.isNeighbor(x, y, 0, -1, tp) {
-		dirs.Set(terr.N)
-	}
-	if g.isNeighbor(x, y, 1, 0, tp) {
-		dirs.Set(terr.E)
-	}
-	if g.isNeighbor(x, y, 0, 1, tp) {
-		dirs.Set(terr.S)
-	}
-	if g.isNeighbor(x, y, -1, 0, tp) {
-		dirs.Set(terr.W)
-	}
-	return dirs
-}
-
-func (g *Grid[T]) isNeighbor(x, y, dx, dy int, tp T) bool {
-	return g.Contains(x+dx, y+dy) && g.Get(x+dx, y+dy) == tp
-}
-
-func (g *Grid[T]) CountNeighbors4(x, y int, tp T) int {
-	cnt := 0
-	if g.isNeighbor(x, y, 0, -1, tp) {
-		cnt++
-	}
-	if g.isNeighbor(x, y, 1, 0, tp) {
-		cnt++
-	}
-	if g.isNeighbor(x, y, 0, 1, tp) {
-		cnt++
-	}
-	if g.isNeighbor(x, y, -1, 0, tp) {
-		cnt++
-	}
-	return cnt
-}
-
-func (g *Grid[T]) CountNeighbors8(x, y int, tp T) int {
-	cnt := g.CountNeighbors4(x, y, tp)
-	if g.isNeighbor(x, y, 1, -1, tp) {
-		cnt++
-	}
-	if g.isNeighbor(x, y, 1, 1, tp) {
-		cnt++
-	}
-	if g.isNeighbor(x, y, -1, 1, tp) {
-		cnt++
-	}
-	if g.isNeighbor(x, y, -1, -1, tp) {
-		cnt++
-	}
-	return cnt
 }
 
 func (g *Grid[T]) MarshalJSON() ([]byte, error) {
