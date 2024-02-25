@@ -33,7 +33,7 @@ func main() {
 		WorldSize:      128,
 		RandomTerrains: 5,
 
-		InitialResources:  [3]int{25, 25, 10},
+		InitialResources:  [3]int{25, 25, 25},
 		StockPerWarehouse: [3]int{25, 25, 25},
 	}
 	ecs.AddResource(&g.Model.World, &rules)
