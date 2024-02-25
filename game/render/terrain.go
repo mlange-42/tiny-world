@@ -104,7 +104,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			if cursor.X == i && cursor.Y == j {
 				s.drawCursor(img,
-					i, j, height, &point, &off, t, lu, s.landUseE.Get(i, j), sel.BuildType)
+					i, j, height, &point, &off, sel.BuildType)
 			}
 		}
 	}
@@ -118,9 +118,11 @@ func (s *Terrain) FinalizeUI(world *ecs.World) {}
 
 func (s *Terrain) drawCursor(img *ebiten.Image,
 	x, y, height int, point *image.Point, camOffset *image.Point,
-	ter terr.Terrain, lu terr.Terrain, luEntity ecs.Entity,
 	toBuild terr.Terrain) {
 
+	ter := s.terrain.Get(x, y)
+	lu := s.landUse.Get(x, y)
+	luEntity := s.landUseE.Get(x, y)
 	prop := terr.Properties[toBuild]
 	if prop.CanBuild {
 		canDestroy := lu == toBuild &&
