@@ -88,6 +88,7 @@ func main() {
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.DoProduction{})
 	g.Model.AddSystem(&sys.DoConsumption{})
+	g.Model.AddSystem(&sys.Haul{})
 	g.Model.AddSystem(&sys.UpdateStats{})
 	g.Model.AddSystem(&sys.RemoveMarkers{
 		MaxTime: 180,
