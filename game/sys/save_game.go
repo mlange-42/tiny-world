@@ -34,6 +34,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 		as.Opts.SkipResources(
 			generic.T[res.Fonts](),
 			generic.T[res.EbitenImage](),
+			generic.T[res.EntityFactory](),
 			generic.T[res.Sprites](),
 			generic.T[resource.Termination](),
 			generic.T[model.Systems](),
