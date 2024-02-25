@@ -108,6 +108,7 @@ func main() {
 
 	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
+	g.Model.AddUISystem(&render.Path{})
 	g.Model.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
 		MaxOffset: 250,

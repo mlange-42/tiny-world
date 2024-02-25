@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 
+	gmath "github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/util"
 )
 
@@ -316,7 +317,7 @@ func spiltMultiTile(sprite image.Image, mask *image.RGBA, width, height int) []*
 
 	index := 0
 	for row := 0; row < doubleSize-1; row++ {
-		perRow := MinInt(row, doubleSize-2-row) + 1
+		perRow := gmath.MinInt(row, doubleSize-2-row) + 1
 		halfOffsets := (doubleSize - 2*perRow) / 2
 		xOffset := halfOffsets * dx
 		yOffset := row * dy
