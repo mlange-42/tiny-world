@@ -200,6 +200,6 @@ var RandomTerrain = []Terrain{
 	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
 	Water, Water, Water, Water,
 	Desert,
-	Tree, Tree, Tree, Tree,
+	Tree, Tree, Tree, Tree, Tree, Tree,
 	Rock,
 }
