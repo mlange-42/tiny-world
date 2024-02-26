@@ -34,6 +34,7 @@ func main() {
 
 		InitialResources:  [3]int{25, 25, 25},
 		StockPerWarehouse: [3]int{25, 25, 25},
+		StockPerBuilding:  5,
 	}
 	ecs.AddResource(&g.Model.World, &rules)
 

@@ -20,7 +20,8 @@ type Production struct {
 	Amount          int
 	FoodConsumption int
 	Countdown       int
-	Paused          bool
+	Stock           int
+	IsHauling       bool
 }
 
 type Consumption struct {
