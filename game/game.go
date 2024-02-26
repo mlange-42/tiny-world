@@ -39,7 +39,7 @@ func (g *Game) Run() error {
 
 // Layout the game.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	s := 1.0 //ebiten.DeviceScaleFactor()
+	s := ebiten.DeviceScaleFactor()
 	return int(float64(outsideWidth) * s), int(float64(outsideHeight) * s)
 }
 
