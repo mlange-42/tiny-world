@@ -11,6 +11,7 @@ import (
 
 // DoConsumption system.
 type DoConsumption struct {
+	speed  generic.Resource[res.GameSpeed]
 	time   generic.Resource[ares.Tick]
 	update generic.Resource[res.UpdateInterval]
 	stock  generic.Resource[res.Stock]
@@ -20,6 +21,7 @@ type DoConsumption struct {
 
 // Initialize the system
 func (s *DoConsumption) Initialize(world *ecs.World) {
+	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.time = generic.NewResource[ares.Tick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
@@ -29,6 +31,10 @@ func (s *DoConsumption) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *DoConsumption) Update(world *ecs.World) {
+	if s.speed.Get().Pause {
+		return
+	}
+
 	stock := s.stock.Get()
 	tick := s.time.Get().Tick
 	update := s.update.Get()

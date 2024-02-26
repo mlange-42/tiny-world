@@ -11,6 +11,7 @@ import (
 
 // DoProduction system.
 type DoProduction struct {
+	speed   generic.Resource[res.GameSpeed]
 	time    generic.Resource[ares.Tick]
 	rules   generic.Resource[res.Rules]
 	update  generic.Resource[res.UpdateInterval]
@@ -25,6 +26,7 @@ type DoProduction struct {
 
 // Initialize the system
 func (s *DoProduction) Initialize(world *ecs.World) {
+	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.time = generic.NewResource[ares.Tick](world)
 	s.rules = generic.NewResource[res.Rules](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
@@ -37,7 +39,10 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *DoProduction) Update(world *ecs.World) {
-	//stock := s.stock.Get()
+	if s.speed.Get().Pause {
+		return
+	}
+
 	rules := s.rules.Get()
 	tick := s.time.Get().Tick
 	update := s.update.Get()

@@ -13,6 +13,7 @@ import (
 
 // Haul system.
 type Haul struct {
+	speed    generic.Resource[res.GameSpeed]
 	rules    generic.Resource[res.Rules]
 	update   generic.Resource[res.UpdateInterval]
 	stock    generic.Resource[res.Stock]
@@ -39,6 +40,7 @@ type Haul struct {
 
 // Initialize the system
 func (s *Haul) Initialize(world *ecs.World) {
+	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.rules = generic.NewResource[res.Rules](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
@@ -65,6 +67,10 @@ func (s *Haul) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Haul) Update(world *ecs.World) {
+	if s.speed.Get().Pause {
+		return
+	}
+
 	rules := s.rules.Get()
 	update := s.update.Get()
 	landUse := s.landUse.Get()

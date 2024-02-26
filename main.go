@@ -39,6 +39,9 @@ func main() {
 	}
 	ecs.AddResource(&g.Model.World, &rules)
 
+	gameSpeed := res.GameSpeed{}
+	ecs.AddResource(&g.Model.World, &gameSpeed)
+
 	terrain := res.NewTerrain(rules.WorldSize, rules.WorldSize)
 	ecs.AddResource(&g.Model.World, &terrain)
 
@@ -107,6 +110,9 @@ func main() {
 	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
 		Path: "./save/autosave.json",
+	})
+	g.Model.AddSystem(&sys.Pause{
+		PauseKey: ebiten.KeySpace,
 	})
 
 	// =========== UI Systems ===========
