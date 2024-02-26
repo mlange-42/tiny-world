@@ -9,6 +9,13 @@ Very early work in progress!
 
 ## Usage
 
+### Play in browser
+
+You can play Tiny World in a web browser [here](https://mlange-42.github.io/tiny-world/).
+However, the browser version does not yet support saving a game.
+
+### Play locally
+
 Currently, you need to clone the repository and run the game with [Go](https://go.dev):
 
 ```shell
