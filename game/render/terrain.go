@@ -32,8 +32,11 @@ type Terrain struct {
 	terrain  *res.Terrain
 	landUse  *res.LandUse
 	landUseE *res.LandUseEntities
+	update   *res.UpdateInterval
 
-	prodMapper generic.Map1[comp.Production]
+	prodMapper   generic.Map1[comp.Production]
+	pathMapper   generic.Map1[comp.Path]
+	haulerMapper generic.Map2[comp.Hauler, comp.HaulerSprite]
 
 	font font.Face
 }
@@ -49,6 +52,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	terrainRes := generic.NewResource[res.Terrain](world)
 	landUseRes := generic.NewResource[res.LandUse](world)
 	landUseERes := generic.NewResource[res.LandUseEntities](world)
+	updateRes := generic.NewResource[res.UpdateInterval](world)
 
 	s.rules = rulesRes.Get()
 	s.view = viewRes.Get()
@@ -56,8 +60,11 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.terrain = terrainRes.Get()
 	s.landUse = landUseRes.Get()
 	s.landUseE = landUseERes.Get()
+	s.update = updateRes.Get()
 
 	s.prodMapper = generic.NewMap1[comp.Production](world)
+	s.pathMapper = generic.NewMap1[comp.Path](world)
+	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 
 	s.cursorRed = s.sprites.GetIndex("cursor_red")
 	s.cursorGreen = s.sprites.GetIndex("cursor_green")
@@ -102,6 +109,15 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, lu, &point, height, &off)
 			}
 
+			if lu == terr.Path {
+				path := s.pathMapper.Get(s.landUseE.Get(i, j))
+				offset := 0.1
+				for _, h := range path.Haulers {
+					haul, sp := s.haulerMapper.Get(h.Entity)
+					s.drawHauler(img, sp.SpriteIndex, haul, height, offset, &off)
+				}
+			}
+
 			if cursor.X == i && cursor.Y == j {
 				s.drawCursor(img,
 					i, j, height, &point, &off, sel.BuildType)
@@ -115,6 +131,56 @@ func (s *Terrain) PostUpdateUI(world *ecs.World) {}
 
 // FinalizeUI the system
 func (s *Terrain) FinalizeUI(world *ecs.World) {}
+
+func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, height int, offset float64, camOffset *image.Point) {
+	p1 := haul.Path[haul.Index]
+	p2 := haul.Path[haul.Index-1]
+	midX, midY := float64(p1.X+p2.X)/2, float64(p1.Y+p2.Y)/2
+
+	dx, dy := float64(p2.X-p1.X), float64(p2.Y-p1.Y)
+	dxr, dyr := -dy, dx
+
+	var dxStart, dyStart float64
+	var dxEnd, dyEnd float64
+	var xx, yy float64
+
+	dt := float64(haul.PathFraction) / float64(s.update.Interval)
+	if dt <= 0.5 {
+		if haul.Index < len(haul.Path)-1 {
+			p3 := haul.Path[haul.Index+1]
+			dx2, dy2 := float64(p1.X-p3.X), float64(p1.Y-p3.Y)
+			if !(dx2 == dx && dy2 == dy) {
+				if dx2 == dxr && dy2 == dyr {
+					dxStart, dyStart = -dx, -dy
+				} else {
+					dxStart, dyStart = dx, dy
+				}
+			}
+		}
+		frac := dt * 2
+		xx = (float64(p1.X)+dxStart*offset)*(1-frac) + midX*frac
+		yy = (float64(p1.Y)+dyStart*offset)*(1-frac) + midY*frac
+	} else {
+		if haul.Index > 1 {
+			p3 := haul.Path[haul.Index-2]
+			dx2, dy2 := float64(p3.X-p2.X), float64(p3.Y-p2.Y)
+			if !(dx2 == dx && dy2 == dy) {
+				if dx2 == dxr && dy2 == dyr {
+					dxEnd, dyEnd = dx, dy
+				} else {
+					dxEnd, dyEnd = -dx, -dy
+				}
+			}
+		}
+		frac := (dt - 0.5) * 2
+		xx = midX*(1-frac) + (float64(p2.X)-dxEnd*offset)*frac
+		yy = midY*(1-frac) + (float64(p2.Y)-dyEnd*offset)*frac
+	}
+
+	pt := s.view.SubtileToGlobal(xx+offset*dxr, yy+offset*dyr)
+
+	s.drawSimpleSprite(img, sprite, &pt, height, camOffset)
+}
 
 func (s *Terrain) drawCursor(img *ebiten.Image,
 	x, y, height int, point *image.Point, camOffset *image.Point,
@@ -156,8 +222,8 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	if luEntity.IsZero() {
 		return
 	}
-	prod := s.prodMapper.Get(luEntity).Amount
-	text.Draw(img, fmt.Sprint(prod), s.font,
+	prod := s.prodMapper.Get(luEntity)
+	text.Draw(img, fmt.Sprintf("%d (%d)", prod.Amount, prod.Stock), s.font,
 		int(float64(point.X-s.view.TileWidth/2)*s.view.Zoom-float64(camOffset.X)),
 		int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
 		color.RGBA{255, 255, 255, 255},
@@ -178,7 +244,7 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 	z := s.view.Zoom
 	op.GeoM.Scale(z, z)
 	op.GeoM.Translate(
-		float64(point.X-s.view.TileWidth/2)*z-float64(camOffset.X),
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
 		float64(point.Y-h-info.YOffset)*z-float64(camOffset.Y),
 	)
 	img.DrawImage(sp, &op)
@@ -208,7 +274,31 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 	z := s.view.Zoom
 	op.GeoM.Scale(z, z)
 	op.GeoM.Translate(
-		float64(point.X-s.view.TileWidth/2)*z-float64(camOffset.X),
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
+		float64(point.Y-h-height-info.YOffset)*z-float64(camOffset.Y),
+	)
+	img.DrawImage(sp, &op)
+
+	return height + info.Height
+}
+
+func (s *Terrain) drawSimpleSprite(img *ebiten.Image,
+	idx int, point *image.Point, height int,
+	camOffset *image.Point) int {
+
+	sp, info := s.sprites.Get(idx)
+	h := sp.Bounds().Dy() - s.view.TileHeight
+
+	op := ebiten.DrawImageOptions{}
+	op.Blend = ebiten.BlendSourceOver
+	if s.view.Zoom < 1 {
+		op.Filter = ebiten.FilterLinear
+	}
+
+	z := s.view.Zoom
+	op.GeoM.Scale(z, z)
+	op.GeoM.Translate(
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
 		float64(point.Y-h-height-info.YOffset)*z-float64(camOffset.Y),
 	)
 	img.DrawImage(sp, &op)

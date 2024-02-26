@@ -11,20 +11,25 @@ import (
 
 // DoProduction system.
 type DoProduction struct {
-	time   generic.Resource[ares.Tick]
-	update generic.Resource[res.UpdateInterval]
-	stock  generic.Resource[res.Stock]
+	time    generic.Resource[ares.Tick]
+	rules   generic.Resource[res.Rules]
+	update  generic.Resource[res.UpdateInterval]
+	stock   generic.Resource[res.Stock]
+	landUse generic.Resource[res.LandUse]
 
 	filter        generic.Filter3[comp.Tile, comp.UpdateTick, comp.Production]
 	markerBuilder generic.Map2[comp.Tile, comp.ProductionMarker]
-	toCreate      []markerEntry
+
+	toCreate []markerEntry
 }
 
 // Initialize the system
 func (s *DoProduction) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[ares.Tick](world)
+	s.rules = generic.NewResource[res.Rules](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
+	s.landUse = generic.NewResource[res.LandUse](world)
 
 	s.filter = *generic.NewFilter3[comp.Tile, comp.UpdateTick, comp.Production]()
 	s.markerBuilder = generic.NewMap2[comp.Tile, comp.ProductionMarker](world)
@@ -32,7 +37,8 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *DoProduction) Update(world *ecs.World) {
-	stock := s.stock.Get()
+	//stock := s.stock.Get()
+	rules := s.rules.Get()
 	tick := s.time.Get().Tick
 	update := s.update.Get()
 	tickMod := tick % update.Interval
@@ -44,11 +50,16 @@ func (s *DoProduction) Update(world *ecs.World) {
 		if up.Tick != tickMod {
 			continue
 		}
+
+		if pr.Stock >= rules.StockPerBuilding {
+			continue
+		}
+
 		pr.Countdown -= pr.Amount
 		if pr.Countdown < 0 {
 			pr.Countdown += update.Countdown
-			stock.Res[pr.Type]++
-			s.toCreate = append(s.toCreate, markerEntry{Tile: *tile, Resource: pr.Type})
+			pr.Stock++
+			s.toCreate = append(s.toCreate, markerEntry{Tile: *tile, Resource: pr.Type, Home: query.Entity()})
 		}
 	}
 
@@ -67,4 +78,5 @@ func (s *DoProduction) Finalize(world *ecs.World) {}
 type markerEntry struct {
 	Tile     comp.Tile
 	Resource resource.Resource
+	Home     ecs.Entity
 }

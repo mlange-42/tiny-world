@@ -1,4 +1,4 @@
-package main
+package math
 
 func AbsInt(a int) int {
 	if a < 0 {

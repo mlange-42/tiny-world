@@ -34,6 +34,8 @@ func main() {
 
 		InitialResources:  [3]int{25, 25, 25},
 		StockPerWarehouse: [3]int{25, 25, 25},
+		StockPerBuilding:  5,
+		HaulerCapacity:    2,
 	}
 	ecs.AddResource(&g.Model.World, &rules)
 
@@ -88,18 +90,21 @@ func main() {
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.DoProduction{})
 	g.Model.AddSystem(&sys.DoConsumption{})
+	g.Model.AddSystem(&sys.Haul{})
 	g.Model.AddSystem(&sys.UpdateStats{})
 	g.Model.AddSystem(&sys.RemoveMarkers{
 		MaxTime: 180,
 	})
 
 	g.Model.AddSystem(&sys.Build{})
+	g.Model.AddSystem(&sys.AssignHaulers{})
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton: ebiten.MouseButton1,
 	})
 
 	g.Model.AddSystem(&sys.UpdateUI{})
+	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
 		Path: "./save/autosave.json",
 	})
@@ -108,6 +113,7 @@ func main() {
 
 	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
+	//g.Model.AddUISystem(&render.HaulerPaths{})
 	g.Model.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
 		MaxOffset: 250,
@@ -135,6 +141,9 @@ func load(world *ecs.World, path string) {
 	_ = ecs.ComponentID[comp.Consumption](world)
 	_ = ecs.ComponentID[comp.Production](world)
 	_ = ecs.ComponentID[comp.Warehouse](world)
+	_ = ecs.ComponentID[comp.Path](world)
+	_ = ecs.ComponentID[comp.Hauler](world)
+	_ = ecs.ComponentID[comp.HaulerSprite](world)
 	_ = ecs.ComponentID[comp.ProductionMarker](world)
 
 	js, err := os.ReadFile(path)

@@ -28,6 +28,13 @@ const (
 
 type Terrains uint16
 
+var Buildings Terrains = NewTerrains(Farm,
+	Fisherman,
+	Lumberjack,
+	Mason,
+	Warehouse,
+)
+
 func NewTerrains(dirs ...Terrain) Terrains {
 	d := Terrains(0)
 	for _, dir := range dirs {
