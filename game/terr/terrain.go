@@ -26,9 +26,10 @@ const (
 	EndTerrain
 )
 
-type Terrains uint16
+type Terrains uint32
 
-var Buildings Terrains = NewTerrains(Farm,
+var Buildings Terrains = NewTerrains(
+	Farm,
 	Fisherman,
 	Lumberjack,
 	Mason,

@@ -50,7 +50,7 @@ type TerrainGrid struct {
 	Grid[terr.Terrain]
 }
 
-func (g *TerrainGrid) NeighborsMask(x, y int, tp terr.Terrains) terr.Directions {
+func (g *TerrainGrid) NeighborsMaskMulti(x, y int, tp terr.Terrains) terr.Directions {
 	dirs := terr.Directions(0)
 	if g.isNeighborMask(x, y, 0, -1, tp) {
 		dirs.Set(terr.N)
@@ -62,6 +62,23 @@ func (g *TerrainGrid) NeighborsMask(x, y int, tp terr.Terrains) terr.Directions 
 		dirs.Set(terr.S)
 	}
 	if g.isNeighborMask(x, y, -1, 0, tp) {
+		dirs.Set(terr.W)
+	}
+	return dirs
+}
+
+func (g *TerrainGrid) NeighborsMask(x, y int, tp terr.Terrain) terr.Directions {
+	dirs := terr.Directions(0)
+	if g.isNeighbor(x, y, 0, -1, tp) {
+		dirs.Set(terr.N)
+	}
+	if g.isNeighbor(x, y, 1, 0, tp) {
+		dirs.Set(terr.E)
+	}
+	if g.isNeighbor(x, y, 0, 1, tp) {
+		dirs.Set(terr.S)
+	}
+	if g.isNeighbor(x, y, -1, 0, tp) {
 		dirs.Set(terr.W)
 	}
 	return dirs
