@@ -117,20 +117,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				offset := 0.2
 				for _, h := range path.Haulers {
 					haul := s.haulerMapper.Get(h.Entity)
-
-					p1 := haul.Path[haul.Index]
-					p2 := haul.Path[haul.Index-1]
-					dx, dy := float64(p2.X-p1.X), float64(p2.Y-p1.Y)
-
-					dt := float64(haul.PathFraction) / float64(s.update.Interval)
-					xx := float64(p1.X)*(1-dt) + float64(p2.X)*dt
-					yy := float64(p1.Y)*(1-dt) + float64(p2.Y)*dt
-
-					dx, dy = -dy, dx
-
-					pt := s.view.SubtileToGlobal(xx+offset*dx, yy+offset*dy)
-
-					s.drawSimpleSprite(img, s.haulerSprite, &pt, height, &off)
+					s.drawHauler(img, haul, height, offset, &off)
 				}
 			}
 
@@ -147,6 +134,22 @@ func (s *Terrain) PostUpdateUI(world *ecs.World) {}
 
 // FinalizeUI the system
 func (s *Terrain) FinalizeUI(world *ecs.World) {}
+
+func (s *Terrain) drawHauler(img *ebiten.Image, haul *comp.Hauler, height int, offset float64, camOffset *image.Point) {
+	p1 := haul.Path[haul.Index]
+	p2 := haul.Path[haul.Index-1]
+	dx, dy := float64(p2.X-p1.X), float64(p2.Y-p1.Y)
+
+	dt := float64(haul.PathFraction) / float64(s.update.Interval)
+	xx := float64(p1.X)*(1-dt) + float64(p2.X)*dt
+	yy := float64(p1.Y)*(1-dt) + float64(p2.Y)*dt
+
+	dx, dy = -dy, dx
+
+	pt := s.view.SubtileToGlobal(xx+offset*dx, yy+offset*dy)
+
+	s.drawSimpleSprite(img, s.haulerSprite, &pt, height, camOffset)
+}
 
 func (s *Terrain) drawCursor(img *ebiten.Image,
 	x, y, height int, point *image.Point, camOffset *image.Point,
