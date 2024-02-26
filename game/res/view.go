@@ -43,6 +43,11 @@ func (v View) TileToGlobal(x, y int) image.Point {
 		(x+y)*v.TileHeight/2)
 }
 
+func (v View) SubtileToGlobal(x, y float64) image.Point {
+	return image.Pt(int((x-y)*float64(v.TileWidth)/2),
+		int((x+y)*float64(v.TileHeight/2)))
+}
+
 func (v View) GlobalToTile(x, y int) image.Point {
 	y += v.MouseOffset
 

@@ -114,19 +114,21 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			if lu == terr.Path {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
+				offset := 0.2
 				for _, h := range path.Haulers {
 					haul := s.haulerMapper.Get(h.Entity)
 
-					p1 := haul.Path[len(haul.Path)-2]
-					p2 := haul.Path[len(haul.Path)-1]
-
-					point1 := s.view.TileToGlobal(p1.X, p1.Y)
-					point2 := s.view.TileToGlobal(p2.X, p2.Y)
+					p1 := haul.Path[len(haul.Path)-1]
+					p2 := haul.Path[len(haul.Path)-2]
+					dx, dy := float64(p2.X-p1.X), float64(p2.Y-p1.Y)
 
 					dt := float64(haul.PathFraction) / float64(s.update.Interval)
-					xx := int(float64(point1.X)*dt + float64(point2.X)*(1-dt))
-					yy := int(float64(point1.Y)*dt + float64(point2.Y)*(1-dt))
-					pt := image.Pt(xx, yy)
+					xx := float64(p1.X)*(1-dt) + float64(p2.X)*dt
+					yy := float64(p1.Y)*(1-dt) + float64(p2.Y)*dt
+
+					dx, dy = -dy, dx
+
+					pt := s.view.SubtileToGlobal(xx+offset*dx, yy+offset*dy)
 
 					s.drawSimpleSprite(img, s.haulerSprite, &pt, height, &off)
 				}
