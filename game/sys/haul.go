@@ -24,7 +24,7 @@ type Haul struct {
 
 	haulerMap     generic.Map2[comp.Tile, comp.Hauler]
 	homeMap       generic.Map2[comp.Tile, comp.Production]
-	haulerBuilder generic.Map2[comp.Tile, comp.Hauler]
+	haulerBuilder generic.Map3[comp.Tile, comp.Hauler, comp.HaulerSprite]
 	productionMap generic.Map1[comp.Production]
 
 	aStar nav.AStar
@@ -32,6 +32,8 @@ type Haul struct {
 	warehouses []comp.Tile
 	toCreate   []markerEntry
 	arrived    []ecs.Entity
+
+	haulerSprites [terr.EndTerrain]int
 }
 
 // Initialize the system
@@ -47,10 +49,16 @@ func (s *Haul) Initialize(world *ecs.World) {
 
 	s.haulerMap = generic.NewMap2[comp.Tile, comp.Hauler](world)
 	s.homeMap = generic.NewMap2[comp.Tile, comp.Production](world)
-	s.haulerBuilder = generic.NewMap2[comp.Tile, comp.Hauler](world)
+	s.haulerBuilder = generic.NewMap3[comp.Tile, comp.Hauler, comp.HaulerSprite](world)
 	s.productionMap = generic.NewMap1[comp.Production](world)
 
 	s.aStar = nav.NewAStar(s.landUse.Get())
+
+	spritesRes := generic.NewResource[res.Sprites](world)
+	sprites := spritesRes.Get()
+	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		s.haulerSprites[i] = sprites.GetIndex("hauler_" + terr.Properties[i].Name)
+	}
 }
 
 // Update the system
@@ -113,6 +121,8 @@ func (s *Haul) Update(world *ecs.World) {
 		if len(bestPath) == 0 {
 			continue
 		}
+		luHere := landUse.Get(entry.Tile.X, entry.Tile.Y)
+
 		prod := s.productionMap.Get(entry.Home)
 		prod.Stock -= 1
 		prod.IsHauling = true
@@ -124,6 +134,9 @@ func (s *Haul) Update(world *ecs.World) {
 				Path:         bestPath,
 				PathFraction: uint8(update.Interval/2) + 1,
 				Index:        len(bestPath) - 1,
+			},
+			&comp.HaulerSprite{
+				SpriteIndex: s.haulerSprites[luHere],
 			},
 		)
 	}

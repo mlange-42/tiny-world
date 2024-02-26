@@ -52,3 +52,7 @@ type Hauler struct {
 	Index        int
 	PathFraction uint8
 }
+
+type HaulerSprite struct {
+	SpriteIndex int
+}

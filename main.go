@@ -103,6 +103,7 @@ func main() {
 	})
 
 	g.Model.AddSystem(&sys.UpdateUI{})
+	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
 		Path: "./save/autosave.json",
 	})
@@ -141,6 +142,7 @@ func load(world *ecs.World, path string) {
 	_ = ecs.ComponentID[comp.Warehouse](world)
 	_ = ecs.ComponentID[comp.Path](world)
 	_ = ecs.ComponentID[comp.Hauler](world)
+	_ = ecs.ComponentID[comp.HaulerSprite](world)
 	_ = ecs.ComponentID[comp.ProductionMarker](world)
 
 	js, err := os.ReadFile(path)

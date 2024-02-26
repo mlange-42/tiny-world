@@ -36,10 +36,9 @@ type Terrain struct {
 
 	prodMapper   generic.Map1[comp.Production]
 	pathMapper   generic.Map1[comp.Path]
-	haulerMapper generic.Map1[comp.Hauler]
+	haulerMapper generic.Map2[comp.Hauler, comp.HaulerSprite]
 
-	font         font.Face
-	haulerSprite int
+	font font.Face
 }
 
 // InitializeUI the system
@@ -65,7 +64,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 
 	s.prodMapper = generic.NewMap1[comp.Production](world)
 	s.pathMapper = generic.NewMap1[comp.Path](world)
-	s.haulerMapper = generic.NewMap1[comp.Hauler](world)
+	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 
 	s.cursorRed = s.sprites.GetIndex("cursor_red")
 	s.cursorGreen = s.sprites.GetIndex("cursor_green")
@@ -75,8 +74,6 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()
 	s.font = fonts.Default
-
-	s.haulerSprite = s.sprites.GetIndex("hauler")
 }
 
 // UpdateUI the system
@@ -114,10 +111,10 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			if lu == terr.Path {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
-				offset := 0.2
+				offset := 0.1
 				for _, h := range path.Haulers {
-					haul := s.haulerMapper.Get(h.Entity)
-					s.drawHauler(img, haul, height, offset, &off)
+					haul, sp := s.haulerMapper.Get(h.Entity)
+					s.drawHauler(img, sp.SpriteIndex, haul, height, offset, &off)
 				}
 			}
 
@@ -135,20 +132,54 @@ func (s *Terrain) PostUpdateUI(world *ecs.World) {}
 // FinalizeUI the system
 func (s *Terrain) FinalizeUI(world *ecs.World) {}
 
-func (s *Terrain) drawHauler(img *ebiten.Image, haul *comp.Hauler, height int, offset float64, camOffset *image.Point) {
+func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, height int, offset float64, camOffset *image.Point) {
 	p1 := haul.Path[haul.Index]
 	p2 := haul.Path[haul.Index-1]
+	midX, midY := float64(p1.X+p2.X)/2, float64(p1.Y+p2.Y)/2
+
 	dx, dy := float64(p2.X-p1.X), float64(p2.Y-p1.Y)
+	dxr, dyr := -dy, dx
+
+	var dxStart, dyStart float64
+	var dxEnd, dyEnd float64
+	var xx, yy float64
 
 	dt := float64(haul.PathFraction) / float64(s.update.Interval)
-	xx := float64(p1.X)*(1-dt) + float64(p2.X)*dt
-	yy := float64(p1.Y)*(1-dt) + float64(p2.Y)*dt
+	if dt <= 0.5 {
+		if haul.Index < len(haul.Path)-1 {
+			p3 := haul.Path[haul.Index+1]
+			dx2, dy2 := float64(p1.X-p3.X), float64(p1.Y-p3.Y)
+			if !(dx2 == dx && dy2 == dy) {
+				if dx2 == dxr && dy2 == dyr {
+					dxStart, dyStart = -dx, -dy
+				} else {
+					dxStart, dyStart = dx, dy
+				}
+			}
+		}
+		frac := dt * 2
+		xx = (float64(p1.X)+dxStart*offset)*(1-frac) + midX*frac
+		yy = (float64(p1.Y)+dyStart*offset)*(1-frac) + midY*frac
+	} else {
+		if haul.Index > 1 {
+			p3 := haul.Path[haul.Index-2]
+			dx2, dy2 := float64(p3.X-p2.X), float64(p3.Y-p2.Y)
+			if !(dx2 == dx && dy2 == dy) {
+				if dx2 == dxr && dy2 == dyr {
+					dxEnd, dyEnd = dx, dy
+				} else {
+					dxEnd, dyEnd = -dx, -dy
+				}
+			}
+		}
+		frac := (dt - 0.5) * 2
+		xx = midX*(1-frac) + (float64(p2.X)-dxEnd*offset)*frac
+		yy = midY*(1-frac) + (float64(p2.Y)-dyEnd*offset)*frac
+	}
 
-	dx, dy = -dy, dx
+	pt := s.view.SubtileToGlobal(xx+offset*dxr, yy+offset*dyr)
 
-	pt := s.view.SubtileToGlobal(xx+offset*dx, yy+offset*dy)
-
-	s.drawSimpleSprite(img, s.haulerSprite, &pt, height, camOffset)
+	s.drawSimpleSprite(img, sprite, &pt, height, camOffset)
 }
 
 func (s *Terrain) drawCursor(img *ebiten.Image,

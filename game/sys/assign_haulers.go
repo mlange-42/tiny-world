@@ -53,7 +53,7 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 
 		x := float64(p1.X)*(1-frac) + float64(p2.X)*frac
 		y := float64(p1.Y)*(1-frac) + float64(p2.Y)*frac
-		yPos := y - x/2
+		yPos := x + y
 
 		xx, yy := int(x+0.5), int(y+0.5)
 
