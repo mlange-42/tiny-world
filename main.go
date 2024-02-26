@@ -72,10 +72,10 @@ func main() {
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
-	sprites := res.NewSprites("./assets/sprites")
+	sprites := res.NewSprites(assets, "assets/sprites")
 	ecs.AddResource(&g.Model.World, &sprites)
 
-	fonts := res.NewFonts()
+	fonts := res.NewFonts(assets)
 	ecs.AddResource(&g.Model.World, &fonts)
 
 	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth)

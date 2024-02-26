@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.0
 
 require (
-	github.com/ebitenui/ebitenui v0.5.5
+	github.com/ebitenui/ebitenui v0.5.6-0.20240223001512-8006cb097b40
 	github.com/hajimehoshi/ebiten/v2 v2.6.6
 	github.com/mlange-42/arche v0.11.0
 	github.com/mlange-42/arche-model v0.7.0

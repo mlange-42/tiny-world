@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"io/fs"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -33,10 +33,10 @@ type Sprite struct {
 	MultiTile bool
 }
 
-func NewSprites(dir string) Sprites {
-	entries, err := os.ReadDir(dir)
+func NewSprites(fSys fs.FS, dir string) Sprites {
+	entries, err := fs.ReadDir(fSys, dir)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error reading sprites", err)
 	}
 
 	atlas := []*ebiten.Image{}
@@ -57,7 +57,7 @@ func NewSprites(dir string) Sprites {
 		pngPath := path.Join(dir, fmt.Sprintf("%s.png", baseName))
 
 		sheet := util.SpriteSheet{}
-		content, err := os.ReadFile(path.Join(dir, e.Name()))
+		content, err := fs.ReadFile(fSys, path.Join(dir, e.Name()))
 		if err != nil {
 			log.Fatal("error loading JSON file: ", err)
 		}
@@ -65,7 +65,7 @@ func NewSprites(dir string) Sprites {
 			log.Fatal("error decoding JSON: ", err)
 		}
 
-		img, _, err := ebitenutil.NewImageFromFile(pngPath)
+		img, _, err := ebitenutil.NewImageFromFileSystem(fSys, pngPath)
 		if err != nil {
 			log.Fatal("error reading image: ", err)
 		}

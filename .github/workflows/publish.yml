@@ -1,0 +1,43 @@
+name: Publish
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+permissions: 
+  contents: write
+
+env:
+  GOOS: js
+  GOARCH: wasm
+
+jobs:
+
+  build:
+    name: GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: go get ./...
+
+      - name: Build WebAssembly
+        run: |
+          go build -ldflags="-s -w" -tags tiny -o docs/html/main.wasm .
+
+      - name: Deploy to GitHub Pages
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: gh-pages
+          build_dir: docs/html
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
