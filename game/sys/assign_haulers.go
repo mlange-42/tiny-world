@@ -12,28 +12,34 @@ import (
 
 // AssignHaulers system.
 type AssignHaulers struct {
+	speed    generic.Resource[res.GameSpeed]
+	update   generic.Resource[res.UpdateInterval]
+	landUseE generic.Resource[res.LandUseEntities]
+
 	haulerFilter generic.Filter1[comp.Hauler]
 	pathFilter   generic.Filter1[comp.Path]
 
 	pathMapper generic.Map1[comp.Path]
-
-	update   generic.Resource[res.UpdateInterval]
-	landUseE generic.Resource[res.LandUseEntities]
 }
 
 // Initialize the system
 func (s *AssignHaulers) Initialize(world *ecs.World) {
+	s.speed = generic.NewResource[res.GameSpeed](world)
+	s.update = generic.NewResource[res.UpdateInterval](world)
+	s.landUseE = generic.NewResource[res.LandUseEntities](world)
+
 	s.haulerFilter = *generic.NewFilter1[comp.Hauler]()
 	s.pathFilter = *generic.NewFilter1[comp.Path]()
 
 	s.pathMapper = generic.NewMap1[comp.Path](world)
-
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.landUseE = generic.NewResource[res.LandUseEntities](world)
 }
 
 // Update the system
 func (s *AssignHaulers) Update(world *ecs.World) {
+	if s.speed.Get().Pause {
+		return
+	}
+
 	update := s.update.Get()
 	landUseE := s.landUseE.Get()
 

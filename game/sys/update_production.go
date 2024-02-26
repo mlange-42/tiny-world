@@ -13,6 +13,7 @@ import (
 // UpdateProduction system.
 type UpdateProduction struct {
 	time    generic.Resource[ares.Tick]
+	speed   generic.Resource[res.GameSpeed]
 	update  generic.Resource[res.UpdateInterval]
 	terrain generic.Resource[res.Terrain]
 	landUse generic.Resource[res.LandUse]
@@ -24,6 +25,7 @@ type UpdateProduction struct {
 // Initialize the system
 func (s *UpdateProduction) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[ares.Tick](world)
+	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
@@ -34,6 +36,10 @@ func (s *UpdateProduction) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *UpdateProduction) Update(world *ecs.World) {
+	if s.speed.Get().Pause {
+		return
+	}
+
 	terrain := s.terrain.Get()
 	landUse := s.landUse.Get()
 	tick := s.time.Get().Tick
