@@ -101,12 +101,15 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			height := 0
 			t := s.terrain.Get(i, j)
 			if t != terr.Air && t != terr.Buildable {
-				height = s.drawSprite(img, &s.terrain.TerrainGrid, i, j, t, &point, height, &off)
+				height = s.drawSprite(img, &s.terrain.TerrainGrid, i, j, t, &point, height, &off, false)
 			}
 
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
-				_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, lu, &point, height, &off)
+				if terr.Buildings.Contains(lu) {
+					_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, terr.Path, &point, height, &off, true)
+				}
+				_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, lu, &point, height, &off, false)
 			}
 
 			if lu == terr.Path {
@@ -197,10 +200,10 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		canBuildHere := prop.BuildOn.Contains(ter)
 		if prop.IsTerrain {
 			height = 0
-			s.drawSprite(img, &s.terrain.TerrainGrid, x, y, toBuild, point, height, camOffset)
+			s.drawSprite(img, &s.terrain.TerrainGrid, x, y, toBuild, point, height, camOffset, true)
 		} else {
 			canBuildHere = canBuildHere && luEntity.IsZero()
-			s.drawSprite(img, &s.landUse.TerrainGrid, x, y, toBuild, point, height, camOffset)
+			s.drawSprite(img, &s.landUse.TerrainGrid, x, y, toBuild, point, height, camOffset, true)
 		}
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
@@ -252,15 +255,20 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 
 func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 	x, y int, t terr.Terrain, point *image.Point, height int,
-	camOffset *image.Point) int {
+	camOffset *image.Point,
+	selfConnect bool) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	sp, info := s.sprites.Get(idx)
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
 	if info.MultiTile {
-		mask := terr.Properties[t].ConnectsTo
-		neigh := grid.NeighborsMask(x, y, mask)
+		var neigh terr.Directions
+		if selfConnect {
+			neigh = grid.NeighborsMask(x, y, t)
+		} else {
+			neigh = grid.NeighborsMaskMulti(x, y, terr.Properties[t].ConnectsTo)
+		}
 		idx = s.sprites.GetMultiTileIndex(t, neigh)
 		sp, _ = s.sprites.Get(idx)
 	}
