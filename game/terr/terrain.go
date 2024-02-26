@@ -212,8 +212,8 @@ var Properties = [EndTerrain]TerrainProps{
 		CanBuy:     true,
 		Production: Production{Produces: resource.EndResources},
 		BuildCost: []BuildCost{
-			{resource.Wood, 10},
-			{resource.Stones, 10},
+			{resource.Wood, 25},
+			{resource.Stones, 25},
 		},
 	},
 }
@@ -221,7 +221,7 @@ var Properties = [EndTerrain]TerrainProps{
 var RandomTerrain = []Terrain{
 	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
 	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
-	Water, Water, Water, Water,
+	Water, Water, Water, Water, Water, Water,
 	Desert,
 	Tree, Tree, Tree, Tree,
 	Rock,
