@@ -96,7 +96,7 @@ func main() {
 	g.Model.AddSystem(&sys.Haul{})
 	g.Model.AddSystem(&sys.UpdateStats{})
 	g.Model.AddSystem(&sys.RemoveMarkers{
-		MaxTime: 180,
+		MaxTime: 60,
 	})
 
 	g.Model.AddSystem(&sys.Build{})
@@ -122,8 +122,8 @@ func main() {
 	//g.Model.AddUISystem(&render.HaulerPaths{})
 	g.Model.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
-		MaxOffset: 250,
-		Duration:  180,
+		MaxOffset: view.TileHeight*2 + 30,
+		Duration:  60,
 	})
 	g.Model.AddUISystem(&render.UI{})
 
