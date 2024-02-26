@@ -82,7 +82,7 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 	)
 
-	uiContainer := ui.createUI(sprites)
+	uiContainer := ui.createUI()
 	hudContainer := ui.createHUD(font)
 	rootContainer.AddChild(uiContainer)
 	rootContainer.AddChild(hudContainer)
@@ -125,7 +125,7 @@ func (ui *UI) ReplaceButton(stock *Stock) bool {
 	return false
 }
 
-func (ui *UI) createUI(sprites *Sprites) *widget.Container {
+func (ui *UI) createUI() *widget.Container {
 	innerContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(

@@ -4,6 +4,8 @@ github.com/ebitengine/purego v0.6.0 h1:Yo9uBc1x+ETQbfEaf6wcBsjrQfCEnh/gaGUg7lguE
 github.com/ebitengine/purego v0.6.0/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
 github.com/ebitenui/ebitenui v0.5.5 h1:L9UCWmiMlo4sG5TavQKmjfsnwMmYqkld2tXWZMmKkSA=
 github.com/ebitenui/ebitenui v0.5.5/go.mod h1:CkzAwu9Ks32P+NC/7+iypdLA85Wqnn93UztPFE+kAH4=
+github.com/ebitenui/ebitenui v0.5.6-0.20240223001512-8006cb097b40 h1:V/bBi7mun75zsBeu/MA7dJZk18/VNT+a09APMDVH9O8=
+github.com/ebitenui/ebitenui v0.5.6-0.20240223001512-8006cb097b40/go.mod h1:CkzAwu9Ks32P+NC/7+iypdLA85Wqnn93UztPFE+kAH4=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF08vX0COfcOBJRhZ8lUbR+ZWIs0Y5g=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/hajimehoshi/bitmapfont/v3 v3.0.0 h1:r2+6gYK38nfztS/et50gHAswb9hXgxXECYgE8Nczmi4=

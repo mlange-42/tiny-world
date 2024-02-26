@@ -1,23 +1,23 @@
 package res
 
 import (
+	"io/fs"
 	"log"
-	"os"
 
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 )
 
-const fontFile = "./assets/fonts/JupiteroidRegular.ttf"
+const fontFile = "assets/fonts/JupiteroidRegular.ttf"
 const fontSize = 20
 
 type Fonts struct {
 	Default font.Face
 }
 
-func NewFonts() Fonts {
-	content, err := os.ReadFile(fontFile)
+func NewFonts(fSys fs.FS) Fonts {
+	content, err := fs.ReadFile(fSys, fontFile)
 	if err != nil {
 		log.Fatal("error loading font file: ", err)
 	}
