@@ -32,10 +32,14 @@ type Terrain struct {
 	terrain  *res.Terrain
 	landUse  *res.LandUse
 	landUseE *res.LandUseEntities
+	update   *res.UpdateInterval
 
-	prodMapper generic.Map1[comp.Production]
+	prodMapper   generic.Map1[comp.Production]
+	pathMapper   generic.Map1[comp.Path]
+	haulerMapper generic.Map1[comp.Hauler]
 
-	font font.Face
+	font         font.Face
+	haulerSprite int
 }
 
 // InitializeUI the system
@@ -49,6 +53,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	terrainRes := generic.NewResource[res.Terrain](world)
 	landUseRes := generic.NewResource[res.LandUse](world)
 	landUseERes := generic.NewResource[res.LandUseEntities](world)
+	updateRes := generic.NewResource[res.UpdateInterval](world)
 
 	s.rules = rulesRes.Get()
 	s.view = viewRes.Get()
@@ -56,8 +61,11 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.terrain = terrainRes.Get()
 	s.landUse = landUseRes.Get()
 	s.landUseE = landUseERes.Get()
+	s.update = updateRes.Get()
 
 	s.prodMapper = generic.NewMap1[comp.Production](world)
+	s.pathMapper = generic.NewMap1[comp.Path](world)
+	s.haulerMapper = generic.NewMap1[comp.Hauler](world)
 
 	s.cursorRed = s.sprites.GetIndex("cursor_red")
 	s.cursorGreen = s.sprites.GetIndex("cursor_green")
@@ -67,6 +75,8 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()
 	s.font = fonts.Default
+
+	s.haulerSprite = s.sprites.GetIndex("hauler")
 }
 
 // UpdateUI the system
@@ -100,6 +110,26 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, lu, &point, height, &off)
+			}
+
+			if lu == terr.Path {
+				path := s.pathMapper.Get(s.landUseE.Get(i, j))
+				for _, h := range path.Haulers {
+					haul := s.haulerMapper.Get(h)
+
+					p1 := haul.Path[len(haul.Path)-2]
+					p2 := haul.Path[len(haul.Path)-1]
+
+					point1 := s.view.TileToGlobal(p1.X, p1.Y)
+					point2 := s.view.TileToGlobal(p2.X, p2.Y)
+
+					dt := float64(haul.PathFraction) / float64(s.update.Interval)
+					xx := int(float64(point1.X)*dt + float64(point2.X)*(1-dt))
+					yy := int(float64(point1.Y)*dt + float64(point2.Y)*(1-dt))
+					pt := image.Pt(xx, yy)
+
+					s.drawSimpleSprite(img, s.haulerSprite, &pt, height, &off)
+				}
 			}
 
 			if cursor.X == i && cursor.Y == j {
@@ -178,7 +208,7 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 	z := s.view.Zoom
 	op.GeoM.Scale(z, z)
 	op.GeoM.Translate(
-		float64(point.X-s.view.TileWidth/2)*z-float64(camOffset.X),
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
 		float64(point.Y-h-info.YOffset)*z-float64(camOffset.Y),
 	)
 	img.DrawImage(sp, &op)
@@ -208,7 +238,31 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 	z := s.view.Zoom
 	op.GeoM.Scale(z, z)
 	op.GeoM.Translate(
-		float64(point.X-s.view.TileWidth/2)*z-float64(camOffset.X),
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
+		float64(point.Y-h-height-info.YOffset)*z-float64(camOffset.Y),
+	)
+	img.DrawImage(sp, &op)
+
+	return height + info.Height
+}
+
+func (s *Terrain) drawSimpleSprite(img *ebiten.Image,
+	idx int, point *image.Point, height int,
+	camOffset *image.Point) int {
+
+	sp, info := s.sprites.Get(idx)
+	h := sp.Bounds().Dy() - s.view.TileHeight
+
+	op := ebiten.DrawImageOptions{}
+	op.Blend = ebiten.BlendSourceOver
+	if s.view.Zoom < 1 {
+		op.Filter = ebiten.FilterLinear
+	}
+
+	z := s.view.Zoom
+	op.GeoM.Scale(z, z)
+	op.GeoM.Translate(
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
 		float64(point.Y-h-height-info.YOffset)*z-float64(camOffset.Y),
 	)
 	img.DrawImage(sp, &op)

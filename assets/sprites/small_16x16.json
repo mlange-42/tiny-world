@@ -1,0 +1,13 @@
+{
+ "SpriteWidth": 16,
+ "SpriteHeight": 16,
+ "Sprites": [
+  {
+   "Name": "hauler",
+   "Index": 0,
+   "Height": 0,
+   "YOffset": 10,
+   "MultiTile": false
+  }
+ ]
+}

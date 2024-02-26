@@ -73,7 +73,7 @@ func (s *Haul) Update(world *ecs.World) {
 		tile, haul := query.Get()
 
 		haul.PathFraction++
-		if len(haul.Path) <= 2 && haul.PathFraction >= uint8(update.Interval/2) {
+		if len(haul.Path) <= 2 && haul.PathFraction >= uint8(update.Interval/2-1) {
 			s.arrived = append(s.arrived, query.Entity())
 			continue
 		}
@@ -122,7 +122,7 @@ func (s *Haul) Update(world *ecs.World) {
 				Hauls:        entry.Resource,
 				Home:         entry.Home,
 				Path:         bestPath,
-				PathFraction: uint8(update.Interval / 2),
+				PathFraction: uint8(update.Interval/2) + 1,
 			},
 		)
 	}
@@ -146,7 +146,7 @@ func (s *Haul) Update(world *ecs.World) {
 				world.RemoveEntity(e)
 			}
 			haul.Path = path
-			haul.PathFraction = uint8(update.Interval / 2)
+			haul.PathFraction = uint8(update.Interval/2) + 1
 			*tile = target
 			continue
 		}

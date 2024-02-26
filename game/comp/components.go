@@ -15,6 +15,10 @@ type UpdateTick struct {
 	Tick int64
 }
 
+type Path struct {
+	Haulers []ecs.Entity
+}
+
 type Production struct {
 	Type            resource.Resource
 	Amount          int

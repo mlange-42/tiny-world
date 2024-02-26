@@ -96,6 +96,7 @@ func main() {
 	})
 
 	g.Model.AddSystem(&sys.Build{})
+	g.Model.AddSystem(&sys.AssignHaulers{})
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton: ebiten.MouseButton1,
@@ -111,7 +112,7 @@ func main() {
 	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
 	//g.Model.AddUISystem(&render.Path{})
-	g.Model.AddUISystem(&render.HaulerPaths{})
+	//g.Model.AddUISystem(&render.HaulerPaths{})
 	g.Model.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
 		MaxOffset: 250,
