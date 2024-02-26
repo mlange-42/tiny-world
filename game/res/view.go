@@ -46,13 +46,6 @@ func (v View) TileToGlobal(x, y int) image.Point {
 func (v View) GlobalToTile(x, y int) image.Point {
 	y += v.MouseOffset
 
-	// TODO: fix the integer version!
-	//twh := v.TileWidth / 2
-	//thh := v.TileHeight / 2
-
-	//i := (x/twh + y/thh) / 2
-	//j := (y/thh - x/twh) / 2
-
 	w, h := float64(v.TileWidth), float64(v.TileHeight)
 	xx, yy := float64(x), float64(y)
 	i := xx/w + yy/h

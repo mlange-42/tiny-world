@@ -1,6 +1,9 @@
 package sys
 
 import (
+	"cmp"
+	"slices"
+
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -50,13 +53,23 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 
 		x := float64(p1.X)*(1-frac) + float64(p2.X)*frac
 		y := float64(p1.Y)*(1-frac) + float64(p2.Y)*frac
+		yPos := y - x/2
 
 		xx, yy := int(x+0.5), int(y+0.5)
 
 		pathHere := landUseE.Get(xx, yy)
 		path := s.pathMapper.Get(pathHere)
 
-		path.Haulers = append(path.Haulers, haulerQuery.Entity())
+		path.Haulers = append(path.Haulers, comp.HaulerEntry{Entity: haulerQuery.Entity(), YPos: yPos})
+	}
+
+	pathQuery = s.pathFilter.Query(world)
+	for pathQuery.Next() {
+		path := pathQuery.Get()
+
+		slices.SortStableFunc(path.Haulers, func(a, b comp.HaulerEntry) int {
+			return cmp.Compare(a.YPos, b.YPos)
+		})
 	}
 }
 

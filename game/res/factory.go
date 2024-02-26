@@ -51,7 +51,7 @@ func (f *EntityFactory) createPath(pos image.Point) ecs.Entity {
 	e := f.pathBuilder.NewWith(
 		&comp.Tile{Point: pos},
 		&comp.UpdateTick{Tick: rand.Int63n(f.update.Get().Interval)},
-		&comp.Path{Haulers: []ecs.Entity{}},
+		&comp.Path{Haulers: []comp.HaulerEntry{}},
 	)
 	return e
 }

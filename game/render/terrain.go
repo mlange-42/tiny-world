@@ -115,7 +115,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if lu == terr.Path {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
 				for _, h := range path.Haulers {
-					haul := s.haulerMapper.Get(h)
+					haul := s.haulerMapper.Get(h.Entity)
 
 					p1 := haul.Path[len(haul.Path)-2]
 					p2 := haul.Path[len(haul.Path)-1]

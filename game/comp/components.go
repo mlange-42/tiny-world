@@ -16,7 +16,12 @@ type UpdateTick struct {
 }
 
 type Path struct {
-	Haulers []ecs.Entity
+	Haulers []HaulerEntry
+}
+
+type HaulerEntry struct {
+	Entity ecs.Entity
+	YPos   float64
 }
 
 type Production struct {

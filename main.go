@@ -140,6 +140,7 @@ func load(world *ecs.World, path string) {
 	_ = ecs.ComponentID[comp.Consumption](world)
 	_ = ecs.ComponentID[comp.Production](world)
 	_ = ecs.ComponentID[comp.Warehouse](world)
+	_ = ecs.ComponentID[comp.Path](world)
 	_ = ecs.ComponentID[comp.Hauler](world)
 	_ = ecs.ComponentID[comp.ProductionMarker](world)
 
