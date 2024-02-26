@@ -50,6 +50,11 @@ func (s *Haul) Update(world *ecs.World) {
 		tile, haul := query.Get()
 
 		haul.PathFraction++
+		if len(haul.Path) <= 2 && haul.PathFraction >= uint8(update.Interval/2) {
+			s.arrived = append(s.arrived, query.Entity())
+			continue
+		}
+
 		if haul.PathFraction < uint8(update.Interval) {
 			continue
 		}
@@ -59,7 +64,7 @@ func (s *Haul) Update(world *ecs.World) {
 		last := haul.Path[len(haul.Path)-1]
 		tile.X, tile.Y = last.X, last.Y
 
-		if len(haul.Path) <= 1 {
+		if len(haul.Path) <= 1 || (len(haul.Path) <= 2 && haul.PathFraction >= uint8(update.Interval/2)) {
 			s.arrived = append(s.arrived, query.Entity())
 		}
 	}
@@ -71,17 +76,20 @@ func (s *Haul) Update(world *ecs.World) {
 			world.RemoveEntity(e)
 			continue
 		}
+		target := haul.Path[0]
 
 		home, prod := s.homeMap.Get(haul.Home)
-		if landUse.Get(tile.X, tile.Y) == terr.Warehouse {
+		if landUse.Get(target.X, target.Y) == terr.Warehouse {
 			stock.Res[haul.Hauls]++
 
-			path, ok := s.aStar.FindPath(*tile, *home)
+			path, ok := s.aStar.FindPath(target, *home)
 			if !ok {
 				prod.Paused = false
 				world.RemoveEntity(e)
 			}
 			haul.Path = path
+			haul.PathFraction = uint8(update.Interval / 2)
+			*tile = target
 			continue
 		}
 
