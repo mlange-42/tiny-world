@@ -13,6 +13,7 @@ import (
 
 // Haul system.
 type Haul struct {
+	rules    generic.Resource[res.Rules]
 	update   generic.Resource[res.UpdateInterval]
 	stock    generic.Resource[res.Stock]
 	landUse  generic.Resource[res.LandUse]
@@ -38,6 +39,7 @@ type Haul struct {
 
 // Initialize the system
 func (s *Haul) Initialize(world *ecs.World) {
+	s.rules = generic.NewResource[res.Rules](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
@@ -63,6 +65,7 @@ func (s *Haul) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Haul) Update(world *ecs.World) {
+	rules := s.rules.Get()
 	update := s.update.Get()
 	landUse := s.landUse.Get()
 	stock := s.stock.Get()
@@ -70,7 +73,7 @@ func (s *Haul) Update(world *ecs.World) {
 	prodQuery := s.prodFilter.Query(world)
 	for prodQuery.Next() {
 		tile, prod := prodQuery.Get()
-		if prod.Stock == 0 || prod.IsHauling {
+		if prod.Stock < rules.HaulerCapacity || prod.IsHauling {
 			continue
 		}
 		s.toCreate = append(s.toCreate, markerEntry{Tile: *tile, Resource: prod.Type, Home: prodQuery.Entity()})
@@ -124,7 +127,7 @@ func (s *Haul) Update(world *ecs.World) {
 		luHere := landUse.Get(entry.Tile.X, entry.Tile.Y)
 
 		prod := s.productionMap.Get(entry.Home)
-		prod.Stock -= 1
+		prod.Stock -= rules.HaulerCapacity
 		prod.IsHauling = true
 		s.haulerBuilder.NewWith(
 			&entry.Tile,
@@ -152,7 +155,7 @@ func (s *Haul) Update(world *ecs.World) {
 
 		home, prod := s.homeMap.Get(haul.Home)
 		if landUse.Get(target.X, target.Y) == terr.Warehouse {
-			stock.Res[haul.Hauls]++
+			stock.Res[haul.Hauls] += rules.HaulerCapacity
 
 			path, ok := s.aStar.FindPath(target, *home)
 			if !ok {

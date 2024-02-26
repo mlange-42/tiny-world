@@ -15,4 +15,5 @@ type Rules struct {
 	StockPerWarehouse [resource.EndResources]int
 
 	StockPerBuilding int
+	HaulerCapacity   int
 }
