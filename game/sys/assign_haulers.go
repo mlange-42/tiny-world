@@ -48,8 +48,8 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 		haul := haulerQuery.Get()
 
 		frac := float64(haul.PathFraction) / float64(update.Interval)
-		p1 := haul.Path[len(haul.Path)-1]
-		p2 := haul.Path[len(haul.Path)-2]
+		p1 := haul.Path[haul.Index]
+		p2 := haul.Path[haul.Index-1]
 
 		x := float64(p1.X)*(1-frac) + float64(p2.X)*frac
 		y := float64(p1.Y)*(1-frac) + float64(p2.Y)*frac

@@ -118,8 +118,8 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				for _, h := range path.Haulers {
 					haul := s.haulerMapper.Get(h.Entity)
 
-					p1 := haul.Path[len(haul.Path)-1]
-					p2 := haul.Path[len(haul.Path)-2]
+					p1 := haul.Path[haul.Index]
+					p2 := haul.Path[haul.Index-1]
 					dx, dy := float64(p2.X-p1.X), float64(p2.Y-p1.Y)
 
 					dt := float64(haul.PathFraction) / float64(s.update.Interval)

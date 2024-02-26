@@ -49,5 +49,6 @@ type Hauler struct {
 	Hauls        resource.Resource
 	Home         ecs.Entity
 	Path         []Tile
+	Index        int
 	PathFraction uint8
 }

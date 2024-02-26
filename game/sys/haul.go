@@ -73,7 +73,7 @@ func (s *Haul) Update(world *ecs.World) {
 		tile, haul := query.Get()
 
 		haul.PathFraction++
-		if len(haul.Path) <= 2 && haul.PathFraction >= uint8(update.Interval/2-1) {
+		if haul.Index <= 1 && haul.PathFraction >= uint8(update.Interval/2-1) {
 			s.arrived = append(s.arrived, query.Entity())
 			continue
 		}
@@ -83,11 +83,11 @@ func (s *Haul) Update(world *ecs.World) {
 		}
 		haul.PathFraction = 0
 
-		haul.Path = haul.Path[:len(haul.Path)-1]
-		last := haul.Path[len(haul.Path)-1]
+		haul.Index--
+		last := haul.Path[haul.Index]
 		tile.X, tile.Y = last.X, last.Y
 
-		if len(haul.Path) <= 1 || (len(haul.Path) <= 2 && haul.PathFraction >= uint8(update.Interval/2)) {
+		if haul.Index <= 0 || (haul.Index <= 1 && haul.PathFraction >= uint8(update.Interval/2-1)) {
 			s.arrived = append(s.arrived, query.Entity())
 		}
 	}
@@ -123,6 +123,7 @@ func (s *Haul) Update(world *ecs.World) {
 				Home:         entry.Home,
 				Path:         bestPath,
 				PathFraction: uint8(update.Interval/2) + 1,
+				Index:        len(bestPath) - 1,
 			},
 		)
 	}
@@ -146,6 +147,7 @@ func (s *Haul) Update(world *ecs.World) {
 				world.RemoveEntity(e)
 			}
 			haul.Path = path
+			haul.Index = len(path) - 1
 			haul.PathFraction = uint8(update.Interval/2) + 1
 			*tile = target
 			continue
