@@ -1,7 +1,6 @@
 package sys
 
 import (
-	ares "github.com/mlange-42/arche-model/resource"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -12,13 +11,12 @@ import (
 
 // Haul system.
 type Haul struct {
-	time     generic.Resource[ares.Tick]
 	update   generic.Resource[res.UpdateInterval]
 	stock    generic.Resource[res.Stock]
 	landUse  generic.Resource[res.LandUse]
 	landUseE generic.Resource[res.LandUseEntities]
 
-	filter    generic.Filter3[comp.Tile, comp.Hauler, comp.UpdateTick]
+	filter    generic.Filter2[comp.Tile, comp.Hauler]
 	haulerMap generic.Map2[comp.Tile, comp.Hauler]
 	homeMap   generic.Map2[comp.Tile, comp.Production]
 
@@ -29,13 +27,12 @@ type Haul struct {
 
 // Initialize the system
 func (s *Haul) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[ares.Tick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.landUseE = generic.NewResource[res.LandUseEntities](world)
 
-	s.filter = *generic.NewFilter3[comp.Tile, comp.Hauler, comp.UpdateTick]()
+	s.filter = *generic.NewFilter2[comp.Tile, comp.Hauler]()
 	s.haulerMap = generic.NewMap2[comp.Tile, comp.Hauler](world)
 	s.homeMap = generic.NewMap2[comp.Tile, comp.Production](world)
 
@@ -44,19 +41,19 @@ func (s *Haul) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Haul) Update(world *ecs.World) {
-	tick := s.time.Get().Tick
 	update := s.update.Get()
 	landUse := s.landUse.Get()
 	stock := s.stock.Get()
-	tickMod := tick % update.Interval
 
 	query := s.filter.Query(world)
 	for query.Next() {
-		tile, haul, up := query.Get()
+		tile, haul := query.Get()
 
-		if up.Tick != tickMod {
+		haul.PathFraction++
+		if haul.PathFraction < uint8(update.Interval) {
 			continue
 		}
+		haul.PathFraction = 0
 
 		haul.Path = haul.Path[:len(haul.Path)-1]
 		last := haul.Path[len(haul.Path)-1]

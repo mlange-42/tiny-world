@@ -36,7 +36,8 @@ type ProductionMarker struct {
 }
 
 type Hauler struct {
-	Hauls resource.Resource
-	Home  ecs.Entity
-	Path  []Tile
+	Hauls        resource.Resource
+	Home         ecs.Entity
+	Path         []Tile
+	PathFraction uint8
 }

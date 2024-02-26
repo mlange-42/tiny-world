@@ -22,8 +22,8 @@ type DoProduction struct {
 	filter          generic.Filter3[comp.Tile, comp.UpdateTick, comp.Production]
 	warehouseFilter generic.Filter1[comp.Tile]
 	markerBuilder   generic.Map2[comp.Tile, comp.ProductionMarker]
-	haulerBuilder   generic.Map3[comp.Tile, comp.Hauler, comp.UpdateTick]
-	productionMap   generic.Map2[comp.Production, comp.UpdateTick]
+	haulerBuilder   generic.Map2[comp.Tile, comp.Hauler]
+	productionMap   generic.Map1[comp.Production]
 
 	aStar nav.AStar
 
@@ -41,8 +41,8 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 	s.filter = *generic.NewFilter3[comp.Tile, comp.UpdateTick, comp.Production]()
 	s.warehouseFilter = *generic.NewFilter1[comp.Tile]().With(generic.T[comp.Warehouse]())
 	s.markerBuilder = generic.NewMap2[comp.Tile, comp.ProductionMarker](world)
-	s.haulerBuilder = generic.NewMap3[comp.Tile, comp.Hauler, comp.UpdateTick](world)
-	s.productionMap = generic.NewMap2[comp.Production, comp.UpdateTick](world)
+	s.haulerBuilder = generic.NewMap2[comp.Tile, comp.Hauler](world)
+	s.productionMap = generic.NewMap1[comp.Production](world)
 
 	s.aStar = nav.NewAStar(s.landUse.Get())
 }
@@ -100,16 +100,16 @@ func (s *DoProduction) Update(world *ecs.World) {
 		if len(bestPath) == 0 {
 			continue
 		}
-		prod, up := s.productionMap.Get(entry.Home)
+		prod := s.productionMap.Get(entry.Home)
 		prod.Paused = true
 		s.haulerBuilder.NewWith(
 			&entry.Tile,
 			&comp.Hauler{
-				Hauls: entry.Resource,
-				Home:  entry.Home,
-				Path:  bestPath,
+				Hauls:        entry.Resource,
+				Home:         entry.Home,
+				Path:         bestPath,
+				PathFraction: uint8(update.Interval / 2),
 			},
-			&comp.UpdateTick{Tick: up.Tick},
 		)
 	}
 	s.warehouses = s.warehouses[:0]
