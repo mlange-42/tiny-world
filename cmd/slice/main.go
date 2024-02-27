@@ -35,7 +35,7 @@ var multiTileOrder = [16]int{
 }
 
 func main() {
-	util.Walk(basePath, tileSet, func(sheet util.SpriteSheet, dir util.Directory) {
+	if err := util.Walk(basePath, tileSet, func(sheet util.SpriteSheet, dir util.Directory) error {
 		for _, subDir := range dir.Directories {
 			if subDir.HasJson {
 				processDirectoryJson(sheet, dir, subDir)
@@ -43,7 +43,10 @@ func main() {
 				processDirectoryNoJson(sheet, dir, subDir)
 			}
 		}
-	})
+		return nil
+	}); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func processDirectoryJson(sheet util.SpriteSheet, dir, subDir util.Directory) {
@@ -104,7 +107,7 @@ func processFile(base, src string, js multitileJson) {
 		}
 	}
 
-	outJs := util.Sprite{
+	outJs := util.RawSprite{
 		Id:     js.Id,
 		File:   []string{js.File},
 		Height: js.Height,
@@ -126,7 +129,7 @@ func processFile(base, src string, js multitileJson) {
 		outJs.Multitile = append(outJs.Multitile, []string{name})
 	}
 
-	err = util.ToJson(path.Join(base, fmt.Sprintf("%s.json", js.File)), &outJs)
+	err = util.ToJson(path.Join(base, fmt.Sprintf("%s.json", js.File)), &[]util.RawSprite{outJs})
 	if err != nil {
 		log.Fatal(err)
 	}

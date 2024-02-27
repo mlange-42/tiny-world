@@ -30,7 +30,7 @@ type File struct {
 	IsJson bool
 }
 
-func Walk(base string, tileSet string, f func(sheet SpriteSheet, dir Directory)) error {
+func WalkSheets(base string, tileSet string, f func(sheet SpriteSheet) error) error {
 	basePath := path.Join(base, tileSet)
 	sheets, err := os.ReadDir(basePath)
 	if err != nil {
@@ -45,22 +45,35 @@ func Walk(base string, tileSet string, f func(sheet SpriteSheet, dir Directory))
 		if err != nil {
 			log.Printf("SKIP: %s\n", err.Error())
 		}
-
-		sheetPath := path.Join(base, tileSet, sheet.Directory)
-		dirs, err := os.ReadDir(sheetPath)
-		if err != nil {
+		if err := f(sheet); err != nil {
 			return err
 		}
-		for _, dir := range dirs {
-			if !dir.IsDir() {
-				continue
-			}
-			info := walkDir(sheetPath, dir.Name(), true)
-			f(sheet, info)
+	}
+	return nil
+}
+
+func WalkDirs(base string, tileSet string, sheet SpriteSheet, f func(sheet SpriteSheet, dir Directory) error) error {
+	sheetPath := path.Join(base, tileSet, sheet.Directory)
+	dirs, err := os.ReadDir(sheetPath)
+	if err != nil {
+		return err
+	}
+	for _, dir := range dirs {
+		if !dir.IsDir() {
+			continue
+		}
+		info := walkDir(sheetPath, dir.Name(), true)
+		if err := f(sheet, info); err != nil {
+			return err
 		}
 	}
-
 	return nil
+}
+
+func Walk(base string, tileSet string, f func(sheet SpriteSheet, dir Directory) error) error {
+	return WalkSheets(base, tileSet, func(sheet SpriteSheet) error {
+		return WalkDirs(base, tileSet, sheet, f)
+	})
 }
 
 func walkDir(base string, dir string, recursive bool) Directory {
