@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/draw"
+	"math"
 	"path"
 
 	"github.com/mlange-42/tiny-world/cmd/util"
@@ -10,7 +12,10 @@ import (
 
 const (
 	basePath = "artwork"
+	outPath  = "assets"
 	tileSet  = "sprites"
+
+	maxSheetWidth = 512
 )
 
 func main() {
@@ -37,7 +42,7 @@ func (p *proc) Process(basePath, tileSet string) {
 		p.Images = p.Images[:0]
 		p.Infos = p.Infos[:0]
 
-		err := util.WalkDirs(basePath, tileSet, sheet,
+		if err := util.WalkDirs(basePath, tileSet, sheet,
 			func(sheet util.SpriteSheet, dir util.Directory) error {
 				if dir.HasJson {
 					p.processDirectoryJson(sheet, dir)
@@ -46,11 +51,13 @@ func (p *proc) Process(basePath, tileSet string) {
 				}
 				return nil
 			},
-		)
-		if err != nil {
+		); err != nil {
 			return err
 		}
-		fmt.Println(p.Infos)
+
+		if err := p.writeSheet(outPath, tileSet, sheet, maxSheetWidth); err != nil {
+			return err
+		}
 
 		return nil
 	})
@@ -59,10 +66,37 @@ func (p *proc) Process(basePath, tileSet string) {
 	}
 }
 
+func (p *proc) writeSheet(outPath, tileSet string, sheet util.SpriteSheet, maxWidth int) error {
+	outPathBase := path.Join(outPath, tileSet, sheet.Directory)
+	err := util.ToJson(outPathBase+".json", &p.Infos)
+	if err != nil {
+		return err
+	}
+
+	perRow := maxWidth / sheet.Width
+	numRows := int(math.Ceil(float64(len(p.Images)) / float64(perRow)))
+
+	sheetWidth := perRow * sheet.Width
+	sheetHeight := numRows * sheet.Height
+
+	w, h := sheet.Width, sheet.Height
+
+	img := image.NewRGBA(image.Rect(0, 0, sheetWidth, sheetHeight))
+	for i, sprite := range p.Images {
+		row, col := i/perRow, i%perRow
+		draw.Draw(img,
+			image.Rect(col*w, row*h, col*w+w, row*h+h),
+			sprite, image.Point{}, draw.Over)
+	}
+
+	return util.WriteImage(outPathBase+".png", img)
+}
+
 func (p *proc) processDirectoryJson(sheet util.SpriteSheet, dir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	sprites := []util.RawSprite{}
 	files := []string{}
+	filesDone := map[string]bool{}
 
 	for _, file := range dir.Files {
 		filePath := path.Join(base, file.Name)
@@ -85,9 +119,21 @@ func (p *proc) processDirectoryJson(sheet util.SpriteSheet, dir util.Directory) 
 			p.Names[js.Id] = true
 			p.Indices[js.Id] = len(p.Images)
 
-			files = append(files, js.File...)
-			for _, f := range js.Multitile {
-				files = append(files, f...)
+			for _, f := range js.File {
+				if _, ok := filesDone[f]; ok {
+					continue
+				}
+				filesDone[f] = true
+				files = append(files, f)
+			}
+			for _, fs := range js.Multitile {
+				for _, f := range fs {
+					if _, ok := filesDone[f]; ok {
+						continue
+					}
+					filesDone[f] = true
+					files = append(files, f)
+				}
 			}
 
 			sprites = append(sprites, js)
