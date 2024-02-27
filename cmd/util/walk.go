@@ -12,7 +12,7 @@ import (
 
 const multiTileSuffix = "_multitile"
 
-type TileSheet struct {
+type SpriteSheet struct {
 	Directory string
 	Width     int
 	Height    int
@@ -22,7 +22,7 @@ type Directory struct {
 	Dir         string
 	HasJson     bool
 	Files       []File
-	Directories []string
+	Directories []Directory
 }
 
 type File struct {
@@ -30,13 +30,12 @@ type File struct {
 	IsJson bool
 }
 
-func Walk(base string, tileSet string, f func(sheet TileSheet, dir Directory)) error {
+func Walk(base string, tileSet string, f func(sheet SpriteSheet, dir Directory)) error {
 	basePath := path.Join(base, tileSet)
 	sheets, err := os.ReadDir(basePath)
 	if err != nil {
 		return err
 	}
-	fmt.Println(sheets)
 
 	for _, sheetDir := range sheets {
 		if !sheetDir.IsDir() {
@@ -56,38 +55,7 @@ func Walk(base string, tileSet string, f func(sheet TileSheet, dir Directory)) e
 			if !dir.IsDir() {
 				continue
 			}
-
-			dirPath := path.Join(sheetPath, dir.Name())
-			files, err := os.ReadDir(dirPath)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			info := Directory{Dir: dir.Name()}
-			for _, file := range files {
-				if file.IsDir() {
-					if strings.HasSuffix(file.Name(), multiTileSuffix) {
-						info.Directories = append(info.Directories, file.Name())
-					}
-					continue
-				}
-				ext := filepath.Ext(file.Name())
-				if ext == ".json" || ext == ".JSON" {
-					info.HasJson = true
-					break
-				}
-			}
-			for _, file := range files {
-				if file.IsDir() {
-					continue
-				}
-				ext := filepath.Ext(file.Name())
-				if (info.HasJson && (ext == ".json" || ext == ".JSON")) ||
-					(!info.HasJson && (ext == ".png" || ext == ".PNG")) {
-					info.Files = append(info.Files, File{file.Name(), info.HasJson})
-				}
-			}
-
+			info := walkDir(sheetPath, dir.Name(), true)
 			f(sheet, info)
 		}
 	}
@@ -95,23 +63,59 @@ func Walk(base string, tileSet string, f func(sheet TileSheet, dir Directory)) e
 	return nil
 }
 
-func newTileSheet(dir string) (TileSheet, error) {
+func walkDir(base string, dir string, recursive bool) Directory {
+	p := path.Join(base, dir)
+	files, err := os.ReadDir(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	info := Directory{Dir: dir}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		ext := filepath.Ext(file.Name())
+		if ext == ".json" || ext == ".JSON" {
+			info.HasJson = true
+			break
+		}
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			if recursive && strings.HasSuffix(file.Name(), multiTileSuffix) {
+				subInfo := walkDir(p, file.Name(), false)
+				info.Directories = append(info.Directories, subInfo)
+			}
+			continue
+		}
+		ext := filepath.Ext(file.Name())
+		if (info.HasJson && (ext == ".json" || ext == ".JSON")) ||
+			(!info.HasJson && (ext == ".png" || ext == ".PNG")) {
+			info.Files = append(info.Files, File{file.Name(), info.HasJson})
+		}
+	}
+
+	return info
+}
+
+func newTileSheet(dir string) (SpriteSheet, error) {
 	parts := strings.Split(dir, "_")
 	if len(parts) != 2 {
-		return TileSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 	size := strings.Split(parts[1], "x")
 	if len(size) != 2 {
-		return TileSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 	w, err := strconv.Atoi(size[0])
 	if err != nil {
-		return TileSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 	h, err := strconv.Atoi(size[1])
 	if err != nil {
-		return TileSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 
-	return TileSheet{Directory: dir, Width: w, Height: h}, nil
+	return SpriteSheet{Directory: dir, Width: w, Height: h}, nil
 }
