@@ -262,7 +262,7 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 	sp, info := s.sprites.Get(idx)
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
-	if info.MultiTile {
+	if info.IsMultitile() {
 		var neigh terr.Directions
 		if selfConnect {
 			neigh = grid.NeighborsMask(x, y, t)

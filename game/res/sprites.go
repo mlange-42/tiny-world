@@ -12,8 +12,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/terr"
-	"github.com/mlange-42/tiny-world/game/util"
 )
 
 const nameUnknown = "unknown"
@@ -21,43 +21,38 @@ const nameUnknown = "unknown"
 type Sprites struct {
 	atlas       []*ebiten.Image
 	sprites     []*ebiten.Image
-	infos       []Sprite
+	infos       []util.Sprite
 	indices     map[string]int
 	terrIndices [terr.EndTerrain]int
 	idxUnknown  int
 }
 
-type Sprite struct {
-	Height    int
-	YOffset   int
-	MultiTile bool
-}
-
 func NewSprites(fSys fs.FS, dir string) Sprites {
-	entries, err := fs.ReadDir(fSys, dir)
+	sheets, err := fs.ReadDir(fSys, dir)
 	if err != nil {
 		log.Fatal("error reading sprites", err)
 	}
 
 	atlas := []*ebiten.Image{}
 	sprites := []*ebiten.Image{}
-	infos := []Sprite{}
+	infos := []util.Sprite{}
 	indices := map[string]int{}
 
-	index := 0
-	for _, e := range entries {
-		if e.IsDir() {
+	infoIndex := 0
+	imageIndex := 0
+	for _, sheetFile := range sheets {
+		if sheetFile.IsDir() {
 			continue
 		}
-		ext := filepath.Ext(e.Name())
+		ext := filepath.Ext(sheetFile.Name())
 		if ext != ".json" && ext != ".JSON" {
 			continue
 		}
-		baseName := strings.Replace(e.Name(), ext, "", 1)
+		baseName := strings.Replace(sheetFile.Name(), ext, "", 1)
 		pngPath := path.Join(dir, fmt.Sprintf("%s.png", baseName))
 
 		sheet := util.SpriteSheet{}
-		content, err := fs.ReadFile(fSys, path.Join(dir, e.Name()))
+		content, err := fs.ReadFile(fSys, path.Join(dir, sheetFile.Name()))
 		if err != nil {
 			log.Fatal("error loading JSON file: ", err)
 		}
@@ -71,28 +66,35 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 		}
 		atlas = append(atlas, img)
 
+		fmt.Printf("%s -- %d sprites, %d images\n", baseName, len(sheet.Sprites), sheet.TotalSprites)
+		for _, inf := range sheet.Sprites {
+			if _, ok := indices[inf.Id]; ok {
+				log.Fatalf("duplicate sprite name: %s", inf.Id)
+			}
+			indices[inf.Id] = infoIndex
+
+			for i := range inf.Index {
+				inf.Index[i] += imageIndex
+			}
+			for i := range inf.Multitile {
+				for j := range inf.Multitile[i] {
+					inf.Multitile[i][j] += imageIndex
+				}
+			}
+			infos = append(infos, inf)
+			infoIndex++
+		}
+
 		w, h := sheet.SpriteWidth, sheet.SpriteHeight
 		cols, _ := img.Bounds().Dx()/w, img.Bounds().Dy()/h
 
-		fmt.Println(e.Name())
-		for i, inf := range sheet.Sprites {
-			if _, ok := indices[inf.Name]; ok {
-				log.Fatalf("duplicate sprite name: %s", inf.Name)
-			}
-			indices[inf.Name] = index
-
+		for i := 0; i < sheet.TotalSprites; i++ {
 			row := i / cols
 			col := i % cols
 			sprites = append(sprites, img.SubImage(image.Rect(col*w, row*h, col*w+w, row*h+h)).(*ebiten.Image))
-
-			infos = append(infos, Sprite{
-				Height:    inf.Height,
-				YOffset:   inf.YOffset,
-				MultiTile: inf.MultiTile,
-			})
-
-			index++
 		}
+
+		imageIndex += sheet.TotalSprites
 	}
 
 	terrIndices := [terr.EndTerrain]int{}
@@ -114,8 +116,9 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 	}
 }
 
-func (s *Sprites) Get(idx int) (*ebiten.Image, *Sprite) {
-	return s.sprites[idx], &s.infos[idx]
+func (s *Sprites) Get(idx int) (*ebiten.Image, *util.Sprite) {
+	inf := &s.infos[idx]
+	return s.sprites[inf.Index[0]], inf
 }
 
 func (s *Sprites) GetIndex(name string) int {
@@ -126,13 +129,15 @@ func (s *Sprites) GetIndex(name string) int {
 }
 
 func (s *Sprites) GetTerrainIndex(t terr.Terrain) int {
+	// TODO Random variations
 	return s.terrIndices[t]
 }
 
 func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions) int {
 	idx := s.terrIndices[t]
-	if s.infos[idx].MultiTile {
-		return idx + int(dirs)
+	if s.infos[idx].IsMultitile() {
+		// TODO Random variations
+		return s.infos[idx].Multitile[dirs][0]
 	}
 	return idx
 }

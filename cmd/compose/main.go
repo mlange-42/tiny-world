@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"math"
 	"path"
+	"strings"
 
 	"github.com/mlange-42/tiny-world/cmd/util"
 )
@@ -34,7 +35,7 @@ func (p *proc) Process(basePath, tileSet string) {
 	p.Names = map[string]bool{}
 	p.Indices = map[string]int{}
 
-	err := util.WalkSheets(basePath, tileSet, func(sheet util.SpriteSheet) error {
+	err := util.WalkSheets(basePath, tileSet, func(sheet util.RawSpriteSheet) error {
 
 		clear(p.Indices)
 		clear(p.Images)
@@ -43,7 +44,7 @@ func (p *proc) Process(basePath, tileSet string) {
 		p.Infos = p.Infos[:0]
 
 		if err := util.WalkDirs(basePath, tileSet, sheet,
-			func(sheet util.SpriteSheet, dir util.Directory) error {
+			func(sheet util.RawSpriteSheet, dir util.Directory) error {
 				if dir.HasJson {
 					p.processDirectoryJson(sheet, dir)
 				} else {
@@ -66,9 +67,17 @@ func (p *proc) Process(basePath, tileSet string) {
 	}
 }
 
-func (p *proc) writeSheet(outPath, tileSet string, sheet util.SpriteSheet, maxWidth int) error {
+func (p *proc) writeSheet(outPath, tileSet string, sheet util.RawSpriteSheet, maxWidth int) error {
 	outPathBase := path.Join(outPath, tileSet, sheet.Directory)
-	err := util.ToJson(outPathBase+".json", &p.Infos)
+
+	outSheet := util.SpriteSheet{
+		SpriteWidth:  sheet.Width,
+		SpriteHeight: sheet.Height,
+		Sprites:      p.Infos,
+		TotalSprites: len(p.Images),
+	}
+
+	err := util.ToJson(outPathBase+".json", &outSheet)
 	if err != nil {
 		return err
 	}
@@ -92,7 +101,7 @@ func (p *proc) writeSheet(outPath, tileSet string, sheet util.SpriteSheet, maxWi
 	return util.WriteImage(outPathBase+".png", img)
 }
 
-func (p *proc) processDirectoryJson(sheet util.SpriteSheet, dir util.Directory) {
+func (p *proc) processDirectoryJson(sheet util.RawSpriteSheet, dir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	sprites := []util.RawSprite{}
 	files := []string{}
@@ -174,7 +183,7 @@ func (p *proc) processDirectoryJson(sheet util.SpriteSheet, dir util.Directory) 
 	}
 }
 
-func (p *proc) processDirectoryNoJson(sheet util.SpriteSheet, dir util.Directory) {
+func (p *proc) processDirectoryNoJson(sheet util.RawSpriteSheet, dir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 
 	for _, file := range dir.Files {
@@ -191,7 +200,7 @@ func (p *proc) processDirectoryNoJson(sheet util.SpriteSheet, dir util.Directory
 		}
 		p.Images = append(p.Images, img)
 		p.Infos = append(p.Infos, util.Sprite{
-			Id:    file.Name,
+			Id:    strings.ReplaceAll(file.Name, ".png", ""),
 			Index: []int{index},
 		})
 	}

@@ -35,7 +35,7 @@ var multiTileOrder = [16]int{
 }
 
 func main() {
-	if err := util.Walk(basePath, tileSet, func(sheet util.SpriteSheet, dir util.Directory) error {
+	if err := util.Walk(basePath, tileSet, func(sheet util.RawSpriteSheet, dir util.Directory) error {
 		for _, subDir := range dir.Directories {
 			if subDir.HasJson {
 				processDirectoryJson(sheet, dir, subDir)
@@ -49,7 +49,7 @@ func main() {
 	}
 }
 
-func processDirectoryJson(sheet util.SpriteSheet, dir, subDir util.Directory) {
+func processDirectoryJson(sheet util.RawSpriteSheet, dir, subDir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	sub := path.Join(base, subDir.Dir)
 	for _, file := range subDir.Files {
@@ -69,7 +69,7 @@ func processDirectoryJson(sheet util.SpriteSheet, dir, subDir util.Directory) {
 	}
 }
 
-func processDirectoryNoJson(sheet util.SpriteSheet, dir, subDir util.Directory) {
+func processDirectoryNoJson(sheet util.RawSpriteSheet, dir, subDir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	for _, file := range subDir.Files {
 		js := multitileJson{

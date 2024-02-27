@@ -12,25 +12,7 @@ import (
 
 const multiTileSuffix = "_multitile"
 
-type SpriteSheet struct {
-	Directory string
-	Width     int
-	Height    int
-}
-
-type Directory struct {
-	Dir         string
-	HasJson     bool
-	Files       []File
-	Directories []Directory
-}
-
-type File struct {
-	Name   string
-	IsJson bool
-}
-
-func WalkSheets(base string, tileSet string, f func(sheet SpriteSheet) error) error {
+func WalkSheets(base string, tileSet string, f func(sheet RawSpriteSheet) error) error {
 	basePath := path.Join(base, tileSet)
 	sheets, err := os.ReadDir(basePath)
 	if err != nil {
@@ -52,7 +34,7 @@ func WalkSheets(base string, tileSet string, f func(sheet SpriteSheet) error) er
 	return nil
 }
 
-func WalkDirs(base string, tileSet string, sheet SpriteSheet, f func(sheet SpriteSheet, dir Directory) error) error {
+func WalkDirs(base string, tileSet string, sheet RawSpriteSheet, f func(sheet RawSpriteSheet, dir Directory) error) error {
 	sheetPath := path.Join(base, tileSet, sheet.Directory)
 	dirs, err := os.ReadDir(sheetPath)
 	if err != nil {
@@ -70,8 +52,8 @@ func WalkDirs(base string, tileSet string, sheet SpriteSheet, f func(sheet Sprit
 	return nil
 }
 
-func Walk(base string, tileSet string, f func(sheet SpriteSheet, dir Directory) error) error {
-	return WalkSheets(base, tileSet, func(sheet SpriteSheet) error {
+func Walk(base string, tileSet string, f func(sheet RawSpriteSheet, dir Directory) error) error {
+	return WalkSheets(base, tileSet, func(sheet RawSpriteSheet) error {
 		return WalkDirs(base, tileSet, sheet, f)
 	})
 }
@@ -112,23 +94,23 @@ func walkDir(base string, dir string, recursive bool) Directory {
 	return info
 }
 
-func newTileSheet(dir string) (SpriteSheet, error) {
+func newTileSheet(dir string) (RawSpriteSheet, error) {
 	parts := strings.Split(dir, "_")
 	if len(parts) != 2 {
-		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return RawSpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 	size := strings.Split(parts[1], "x")
 	if len(size) != 2 {
-		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return RawSpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 	w, err := strconv.Atoi(size[0])
 	if err != nil {
-		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return RawSpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 	h, err := strconv.Atoi(size[1])
 	if err != nil {
-		return SpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
+		return RawSpriteSheet{}, fmt.Errorf("directory does not match expected pattern: %s", dir)
 	}
 
-	return SpriteSheet{Directory: dir, Width: w, Height: h}, nil
+	return RawSpriteSheet{Directory: dir, Width: w, Height: h}, nil
 }
