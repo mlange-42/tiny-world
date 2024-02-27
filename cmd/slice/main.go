@@ -24,13 +24,6 @@ type multitileJson struct {
 	Height int    `json:"height"`
 }
 
-type outputJson struct {
-	Id        string   `json:"id"`
-	File      string   `json:"file"`
-	Height    int      `json:"height"`
-	Multitile []string `json:"multitile"`
-}
-
 var multiTileOrder = [16]int{
 	4,
 	5, 6,
@@ -111,9 +104,9 @@ func processFile(base, src string, js multitileJson) {
 		}
 	}
 
-	outJs := outputJson{
+	outJs := util.Sprite{
 		Id:     js.Id,
-		File:   js.File,
+		File:   []string{js.File},
 		Height: js.Height,
 	}
 
@@ -130,7 +123,7 @@ func processFile(base, src string, js multitileJson) {
 			log.Fatal(err)
 		}
 
-		outJs.Multitile = append(outJs.Multitile, name)
+		outJs.Multitile = append(outJs.Multitile, []string{name})
 	}
 
 	err = util.ToJson(path.Join(base, fmt.Sprintf("%s.json", js.File)), &outJs)
