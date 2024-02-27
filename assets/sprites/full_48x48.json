@@ -1,300 +1,182 @@
 {
- "SpriteWidth": 48,
- "SpriteHeight": 48,
- "Sprites": [
+ "sprite_width": 48,
+ "sprite_height": 48,
+ "sprites": [
   {
-   "Name": "buildable",
-   "Index": 0,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "buildable",
+   "index": [
+    0
+   ]
   },
   {
-   "Name": "desert",
-   "Index": 1,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": true
+   "id": "desert",
+   "index": [
+    1
+   ],
+   "height": 25,
+   "multitile": [
+    [
+     1
+    ],
+    [
+     2
+    ],
+    [
+     3
+    ],
+    [
+     4
+    ],
+    [
+     5
+    ],
+    [
+     6
+    ],
+    [
+     7
+    ],
+    [
+     8
+    ],
+    [
+     9
+    ],
+    [
+     10
+    ],
+    [
+     11
+    ],
+    [
+     12
+    ],
+    [
+     13
+    ],
+    [
+     14
+    ],
+    [
+     15
+    ],
+    [
+     16
+    ]
+   ]
   },
   {
-   "Name": "desert_1",
-   "Index": 2,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "farm",
+   "index": [
+    17
+   ]
   },
   {
-   "Name": "desert_2",
-   "Index": 3,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "fisherman",
+   "index": [
+    18
+   ]
   },
   {
-   "Name": "desert_3",
-   "Index": 4,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "grass",
+   "index": [
+    19
+   ],
+   "height": 25
   },
   {
-   "Name": "desert_4",
-   "Index": 5,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "lumberjack",
+   "index": [
+    20
+   ]
   },
   {
-   "Name": "desert_5",
-   "Index": 6,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "mason",
+   "index": [
+    21
+   ]
   },
   {
-   "Name": "desert_6",
-   "Index": 7,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "rock",
+   "index": [
+    22
+   ]
   },
   {
-   "Name": "desert_7",
-   "Index": 8,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "tree",
+   "index": [
+    23
+   ]
   },
   {
-   "Name": "desert_8",
-   "Index": 9,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "unknown",
+   "index": [
+    24
+   ]
   },
   {
-   "Name": "desert_9",
-   "Index": 10,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "warehouse",
+   "index": [
+    25
+   ]
   },
   {
-   "Name": "desert_10",
-   "Index": 11,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "desert_11",
-   "Index": 12,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "desert_12",
-   "Index": 13,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "desert_13",
-   "Index": 14,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "desert_14",
-   "Index": 15,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "desert_15",
-   "Index": 16,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "farm",
-   "Index": 17,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "fisherman",
-   "Index": 18,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "grass",
-   "Index": 19,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "lumberjack",
-   "Index": 20,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "mason",
-   "Index": 21,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "rock",
-   "Index": 22,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "tree",
-   "Index": 23,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "unknown",
-   "Index": 24,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "warehouse",
-   "Index": 25,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water",
-   "Index": 26,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": true
-  },
-  {
-   "Name": "water_1",
-   "Index": 27,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_2",
-   "Index": 28,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_3",
-   "Index": 29,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_4",
-   "Index": 30,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_5",
-   "Index": 31,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_6",
-   "Index": 32,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_7",
-   "Index": 33,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_8",
-   "Index": 34,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_9",
-   "Index": 35,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_10",
-   "Index": 36,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_11",
-   "Index": 37,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_12",
-   "Index": 38,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_13",
-   "Index": 39,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_14",
-   "Index": 40,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
-  },
-  {
-   "Name": "water_15",
-   "Index": 41,
-   "Height": 25,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "water",
+   "index": [
+    26
+   ],
+   "height": 25,
+   "multitile": [
+    [
+     26
+    ],
+    [
+     27
+    ],
+    [
+     28
+    ],
+    [
+     29
+    ],
+    [
+     30
+    ],
+    [
+     31
+    ],
+    [
+     32
+    ],
+    [
+     33
+    ],
+    [
+     34
+    ],
+    [
+     35
+    ],
+    [
+     36
+    ],
+    [
+     37
+    ],
+    [
+     38
+    ],
+    [
+     39
+    ],
+    [
+     40
+    ],
+    [
+     41
+    ]
+   ]
   }
- ]
+ ],
+ "total_sprites": 42
 }

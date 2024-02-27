@@ -1,0 +1,59 @@
+[
+ {
+  "id": "desert",
+  "file": [
+   "desert"
+  ],
+  "height": 25,
+  "multitile": [
+   [
+    "desert"
+   ],
+   [
+    "desert_1"
+   ],
+   [
+    "desert_2"
+   ],
+   [
+    "desert_3"
+   ],
+   [
+    "desert_4"
+   ],
+   [
+    "desert_5"
+   ],
+   [
+    "desert_6"
+   ],
+   [
+    "desert_7"
+   ],
+   [
+    "desert_8"
+   ],
+   [
+    "desert_9"
+   ],
+   [
+    "desert_10"
+   ],
+   [
+    "desert_11"
+   ],
+   [
+    "desert_12"
+   ],
+   [
+    "desert_13"
+   ],
+   [
+    "desert_14"
+   ],
+   [
+    "desert_15"
+   ]
+  ]
+ }
+]
