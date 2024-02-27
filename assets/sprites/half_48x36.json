@@ -1,13 +1,13 @@
 {
- "SpriteWidth": 48,
- "SpriteHeight": 36,
- "Sprites": [
+ "sprite_width": 48,
+ "sprite_height": 36,
+ "sprites": [
   {
-   "Name": "field",
-   "Index": 0,
-   "Height": 0,
-   "YOffset": 0,
-   "MultiTile": false
+   "id": "field",
+   "index": [
+    0
+   ]
   }
- ]
+ ],
+ "total_sprites": 1
 }
