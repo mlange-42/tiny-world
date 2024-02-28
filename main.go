@@ -29,7 +29,7 @@ func main() {
 		AllowRemoveNatural:  false,
 		AllowRemoveBuilt:    true,
 
-		WorldSize:      128,
+		WorldSize:      256,
 		RandomTerrains: 5,
 
 		InitialResources:  [3]int{25, 25, 25},
