@@ -30,7 +30,7 @@ func main() {
 		AllowRemoveBuilt:    true,
 
 		WorldSize:      256,
-		RandomTerrains: 5,
+		RandomTerrains: 6,
 
 		InitialResources:  [3]int{25, 25, 25},
 		StockPerWarehouse: [3]int{25, 25, 25},

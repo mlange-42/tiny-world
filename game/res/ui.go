@@ -138,7 +138,7 @@ func (ui *UI) createUI() *widget.Container {
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
 				HorizontalPosition: widget.AnchorLayoutPositionEnd,
-				VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				VerticalPosition:   widget.AnchorLayoutPositionStart,
 				StretchHorizontal:  false,
 				StretchVertical:    false,
 			}),
@@ -149,10 +149,10 @@ func (ui *UI) createUI() *widget.Container {
 	buildButtonsContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
-			widget.NewRowLayout(
-				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.RowLayoutOpts.Spacing(4),
+			widget.NewGridLayout(
+				widget.GridLayoutOpts.Columns(2),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+				widget.GridLayoutOpts.Spacing(4, 4),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
@@ -179,10 +179,10 @@ func (ui *UI) createUI() *widget.Container {
 	ui.randomButtonsContainer = widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
-			widget.NewRowLayout(
-				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.RowLayoutOpts.Spacing(4),
+			widget.NewGridLayout(
+				widget.GridLayoutOpts.Columns(2),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+				widget.GridLayoutOpts.Spacing(4, 4),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
