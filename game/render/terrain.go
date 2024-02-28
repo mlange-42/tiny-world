@@ -30,6 +30,7 @@ type Terrain struct {
 	view     *res.View
 	sprites  *res.Sprites
 	terrain  *res.Terrain
+	terrainE *res.TerrainEntities
 	landUse  *res.LandUse
 	landUseE *res.LandUseEntities
 	update   *res.UpdateInterval
@@ -47,21 +48,14 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.screen = generic.NewResource[res.EbitenImage](world)
 	s.selection = generic.NewResource[res.Selection](world)
 
-	rulesRes := generic.NewResource[res.Rules](world)
-	viewRes := generic.NewResource[res.View](world)
-	spritesRes := generic.NewResource[res.Sprites](world)
-	terrainRes := generic.NewResource[res.Terrain](world)
-	landUseRes := generic.NewResource[res.LandUse](world)
-	landUseERes := generic.NewResource[res.LandUseEntities](world)
-	updateRes := generic.NewResource[res.UpdateInterval](world)
-
-	s.rules = rulesRes.Get()
-	s.view = viewRes.Get()
-	s.sprites = spritesRes.Get()
-	s.terrain = terrainRes.Get()
-	s.landUse = landUseRes.Get()
-	s.landUseE = landUseERes.Get()
-	s.update = updateRes.Get()
+	s.rules = ecs.GetResource[res.Rules](world)
+	s.view = ecs.GetResource[res.View](world)
+	s.sprites = ecs.GetResource[res.Sprites](world)
+	s.terrain = ecs.GetResource[res.Terrain](world)
+	s.terrainE = ecs.GetResource[res.TerrainEntities](world)
+	s.landUse = ecs.GetResource[res.LandUse](world)
+	s.landUseE = ecs.GetResource[res.LandUseEntities](world)
+	s.update = ecs.GetResource[res.UpdateInterval](world)
 
 	s.prodMapper = generic.NewMap1[comp.Production](world)
 	s.pathMapper = generic.NewMap1[comp.Path](world)
@@ -103,7 +97,9 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			height := 0
 			t := s.terrain.Get(i, j)
 			if t != terr.Air && t != terr.Buildable {
-				height = s.drawSprite(img, &s.terrain.TerrainGrid, i, j, t, &point, height, &off, nil, false)
+				tE := s.terrainE.Get(i, j)
+				randTile := s.spriteMapper.Get(tE)
+				height = s.drawSprite(img, &s.terrain.TerrainGrid, i, j, t, &point, height, &off, randTile, false)
 			}
 
 			lu := s.landUse.Get(i, j)
