@@ -5,10 +5,15 @@ import (
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/resource"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 type Tile struct {
 	image.Point
+}
+
+type Terrain struct {
+	terr.Terrain
 }
 
 type UpdateTick struct {
@@ -58,5 +63,5 @@ type HaulerSprite struct {
 }
 
 type RandomSprite struct {
-	Rand int
+	Rand uint16
 }
