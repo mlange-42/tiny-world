@@ -45,6 +45,14 @@ func (p *proc) Process(basePath, tileSet string) {
 	p.Names = map[string]bool{}
 	p.Indices = map[string]int{}
 
+	tilesetJs := util.TileSet{}
+	if err := util.FromJson(path.Join(basePath, tileSet, "tileset.json"), &tilesetJs); err != nil {
+		panic(err)
+	}
+	if err := util.ToJson(path.Join(outPath, tileSet, "tileset.json"), &tilesetJs); err != nil {
+		panic(err)
+	}
+
 	err := util.WalkSheets(basePath, tileSet, func(sheet util.RawSpriteSheet) error {
 
 		clear(p.Indices)

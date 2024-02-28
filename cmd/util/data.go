@@ -1,5 +1,10 @@
 package util
 
+type TileSet struct {
+	TileWidth  int `json:"tile_width"`
+	TileHeight int `json:"tile_height"`
+}
+
 type RawSprite struct {
 	Id         string     `json:"id"`
 	File       []string   `json:"file"`

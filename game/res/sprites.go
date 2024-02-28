@@ -17,8 +17,11 @@ import (
 )
 
 const nameUnknown = "unknown"
+const tileSetFile = "tileset.json"
 
 type Sprites struct {
+	TileWidth   int
+	TileHeight  int
 	atlas       []*ebiten.Image
 	sprites     []*ebiten.Image
 	infos       []util.Sprite
@@ -28,6 +31,15 @@ type Sprites struct {
 }
 
 func NewSprites(fSys fs.FS, dir string) Sprites {
+	tilesetJs := util.TileSet{}
+	content, err := fs.ReadFile(fSys, path.Join(dir, tileSetFile))
+	if err != nil {
+		log.Fatal("error loading JSON file: ", err)
+	}
+	if err := json.Unmarshal(content, &tilesetJs); err != nil {
+		log.Fatal("error decoding JSON: ", err)
+	}
+
 	sheets, err := fs.ReadDir(fSys, dir)
 	if err != nil {
 		log.Fatal("error reading sprites", err)
@@ -41,7 +53,7 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 	infoIndex := 0
 	imageIndex := 0
 	for _, sheetFile := range sheets {
-		if sheetFile.IsDir() {
+		if sheetFile.IsDir() || sheetFile.Name() == tileSetFile {
 			continue
 		}
 		ext := filepath.Ext(sheetFile.Name())
@@ -111,6 +123,8 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 	}
 
 	return Sprites{
+		TileWidth:   tilesetJs.TileWidth,
+		TileHeight:  tilesetJs.TileHeight,
 		atlas:       atlas,
 		sprites:     sprites,
 		infos:       infos,

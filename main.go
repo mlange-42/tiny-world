@@ -66,7 +66,10 @@ func main() {
 	}
 	ecs.AddResource(&g.Model.World, &update)
 
-	view := res.NewView(48, 24)
+	sprites := res.NewSprites(assets, "assets/sprites/default")
+	ecs.AddResource(&g.Model.World, &sprites)
+
+	view := res.NewView(sprites.TileWidth, sprites.TileHeight)
 	ecs.AddResource(&g.Model.World, &view)
 
 	production := res.Production{}
@@ -77,9 +80,6 @@ func main() {
 	ecs.AddResource(&g.Model.World, &stock)
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
-
-	sprites := res.NewSprites(assets, "assets/sprites/default")
-	ecs.AddResource(&g.Model.World, &sprites)
 
 	fonts := res.NewFonts(assets)
 	ecs.AddResource(&g.Model.World, &fonts)
