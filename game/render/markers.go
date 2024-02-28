@@ -63,7 +63,8 @@ func (s *Markers) UpdateUI(world *ecs.World) {
 	halfWidth := view.TileWidth / 2
 
 	drawCursor := func(point *image.Point, cursor int) {
-		sp, info := sprites.Get(cursor)
+		info := sprites.GetInfo(cursor)
+		sp := sprites.Get(cursor)
 		h := sp.Bounds().Dy() - view.TileHeight
 
 		op.GeoM.Reset()

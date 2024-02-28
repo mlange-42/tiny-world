@@ -71,6 +71,10 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 			if _, ok := indices[inf.Id]; ok {
 				log.Fatalf("duplicate sprite name: %s", inf.Id)
 			}
+			if inf.AnimSpeed == 0 {
+				inf.AnimSpeed = 1
+			}
+
 			indices[inf.Id] = infoIndex
 
 			for i := range inf.Index {
@@ -116,14 +120,25 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 	}
 }
 
-func (s *Sprites) Get(idx int) (*ebiten.Image, *util.Sprite) {
-	inf := &s.infos[idx]
-	return s.sprites[inf.Index[0]], inf
+func (s *Sprites) GetInfo(idx int) *util.Sprite {
+	return &s.infos[idx]
 }
 
-func (s *Sprites) GetRand(idx int, rand int) (*ebiten.Image, *util.Sprite) {
+func (s *Sprites) Get(idx int) *ebiten.Image {
 	inf := &s.infos[idx]
-	return s.sprites[inf.Index[rand%len(inf.Index)]], inf
+	return s.sprites[inf.Index[0]]
+}
+
+func (s *Sprites) GetRand(idx int, frame int, rand int) *ebiten.Image {
+	inf := &s.infos[idx]
+
+	if inf.IsAnimated() {
+		vars := len(inf.Index) / inf.AnimFrames
+		sIdx := (rand%vars)*inf.AnimFrames + (frame/inf.AnimSpeed)%inf.AnimFrames
+		return s.sprites[inf.Index[sIdx]]
+	} else {
+		return s.sprites[inf.Index[rand%len(inf.Index)]]
+	}
 }
 
 func (s *Sprites) GetSprite(idx int) *ebiten.Image {
@@ -141,19 +156,18 @@ func (s *Sprites) GetTerrainIndex(t terr.Terrain) int {
 	return s.terrIndices[t]
 }
 
-func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions) int {
+func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions, frame int, rand int) int {
 	idx := s.terrIndices[t]
-	if s.infos[idx].IsMultitile() {
-		return s.infos[idx].Multitile[dirs][0]
-	}
-	return idx
-}
-
-func (s *Sprites) GetMultiTileIndexRand(t terr.Terrain, dirs terr.Directions, rand int) int {
-	idx := s.terrIndices[t]
-	if s.infos[idx].IsMultitile() {
-		sprites := s.infos[idx].Multitile[dirs]
-		return sprites[rand%len(sprites)]
+	inf := &s.infos[idx]
+	if inf.IsMultitile() {
+		sprites := inf.Multitile[dirs]
+		if inf.IsAnimated() {
+			vars := len(sprites) / inf.AnimFrames
+			sIdx := (rand%vars)*inf.AnimFrames + (frame/inf.AnimSpeed)%inf.AnimFrames
+			return sprites[sIdx]
+		} else {
+			return sprites[rand%len(sprites)]
+		}
 	}
 	return idx
 }

@@ -163,11 +163,13 @@ func (p *proc) processDirectoryJson(sheet util.RawSpriteSheet, dir util.Director
 
 	for _, sprite := range sprites {
 		sp := util.Sprite{
-			Id:        sprite.Id,
-			Height:    sprite.Height,
-			YOffset:   sprite.YOffset,
-			Index:     make([]int, len(sprite.File)),
-			Multitile: make([][]int, len(sprite.Multitile)),
+			Id:         sprite.Id,
+			Height:     sprite.Height,
+			YOffset:    sprite.YOffset,
+			AnimFrames: sprite.AnimFrames,
+			AnimSpeed:  sprite.AnimSpeed,
+			Index:      make([]int, len(sprite.File)),
+			Multitile:  make([][]int, len(sprite.Multitile)),
 		}
 
 		for i, id := range sprite.File {

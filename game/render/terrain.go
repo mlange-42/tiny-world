@@ -26,6 +26,7 @@ type Terrain struct {
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
 
+	time     *res.GameTick
 	rules    *res.Rules
 	view     *res.View
 	sprites  *res.Sprites
@@ -48,6 +49,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.screen = generic.NewResource[res.EbitenImage](world)
 	s.selection = generic.NewResource[res.Selection](world)
 
+	s.time = ecs.GetResource[res.GameTick](world)
 	s.rules = ecs.GetResource[res.Rules](world)
 	s.view = ecs.GetResource[res.View](world)
 	s.sprites = ecs.GetResource[res.Sprites](world)
@@ -242,7 +244,9 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 		op.Filter = ebiten.FilterLinear
 	}
 
-	sp, info := s.sprites.Get(cursor)
+	info := s.sprites.GetInfo(cursor)
+	sp := s.sprites.Get(cursor)
+
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
 	z := s.view.Zoom
@@ -260,12 +264,9 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 	selfConnect bool) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
-	sp, info := s.sprites.Get(idx)
-	if randSprite != nil {
-		sp, _ = s.sprites.GetRand(idx, int(randSprite.Rand))
-	}
-	h := sp.Bounds().Dy() - s.view.TileHeight
+	info := s.sprites.GetInfo(idx)
 
+	var sp *ebiten.Image
 	if info.IsMultitile() {
 		var neigh terr.Directions
 		if selfConnect {
@@ -273,15 +274,13 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 		} else {
 			neigh = grid.NeighborsMaskMulti(x, y, terr.Properties[t].ConnectsTo)
 		}
-		var mIdx int
-		if randSprite == nil {
-			mIdx = s.sprites.GetMultiTileIndex(t, neigh)
-		} else {
-			mIdx = s.sprites.GetMultiTileIndexRand(t, neigh, int(randSprite.Rand))
-		}
+		mIdx := s.sprites.GetMultiTileIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
 
 		sp = s.sprites.GetSprite(mIdx)
+	} else {
+		sp = s.sprites.GetRand(idx, int(s.time.Tick), int(randSprite.GetRand()))
 	}
+	h := sp.Bounds().Dy() - s.view.TileHeight
 
 	op := ebiten.DrawImageOptions{}
 	op.Blend = ebiten.BlendSourceOver
@@ -304,7 +303,8 @@ func (s *Terrain) drawSimpleSprite(img *ebiten.Image,
 	idx int, point *image.Point, height int,
 	camOffset *image.Point) int {
 
-	sp, info := s.sprites.Get(idx)
+	info := s.sprites.GetInfo(idx)
+	sp := s.sprites.Get(idx)
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
 	op := ebiten.DrawImageOptions{}
