@@ -121,6 +121,15 @@ func (s *Sprites) Get(idx int) (*ebiten.Image, *util.Sprite) {
 	return s.sprites[inf.Index[0]], inf
 }
 
+func (s *Sprites) GetRand(idx int, rand int) (*ebiten.Image, *util.Sprite) {
+	inf := &s.infos[idx]
+	return s.sprites[inf.Index[rand%len(inf.Index)]], inf
+}
+
+func (s *Sprites) GetSprite(idx int) *ebiten.Image {
+	return s.sprites[idx]
+}
+
 func (s *Sprites) GetIndex(name string) int {
 	if idx, ok := s.indices[name]; ok {
 		return idx
@@ -129,15 +138,22 @@ func (s *Sprites) GetIndex(name string) int {
 }
 
 func (s *Sprites) GetTerrainIndex(t terr.Terrain) int {
-	// TODO Random variations
 	return s.terrIndices[t]
 }
 
 func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions) int {
 	idx := s.terrIndices[t]
 	if s.infos[idx].IsMultitile() {
-		// TODO Random variations
 		return s.infos[idx].Multitile[dirs][0]
+	}
+	return idx
+}
+
+func (s *Sprites) GetMultiTileIndexRand(t terr.Terrain, dirs terr.Directions, rand int) int {
+	idx := s.terrIndices[t]
+	if s.infos[idx].IsMultitile() {
+		sprites := s.infos[idx].Multitile[dirs]
+		return sprites[rand%len(sprites)]
 	}
 	return idx
 }

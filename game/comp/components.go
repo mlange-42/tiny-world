@@ -56,3 +56,7 @@ type Hauler struct {
 type HaulerSprite struct {
 	SpriteIndex int
 }
+
+type RandomSprite struct {
+	Rand int
+}
