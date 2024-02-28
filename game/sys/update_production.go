@@ -5,6 +5,7 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
+	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
@@ -77,7 +78,7 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 		if prod.ProductionLandUse != terr.Air {
 			count += landUse.CountNeighbors8(tile.X, tile.Y, prod.ProductionLandUse)
 		}
-		pr.Amount = count
+		pr.Amount = math.MinInt(count, prod.MaxProduction)
 	}
 }
 

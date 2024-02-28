@@ -72,6 +72,7 @@ type TerrainProps struct {
 
 type Production struct {
 	Produces          resource.Resource
+	MaxProduction     int
 	ConsumesFood      int
 	RequiredTerrain   Terrain
 	RequiredLandUse   Terrain
@@ -87,18 +88,18 @@ type BuildCost struct {
 var Descriptions = [EndTerrain]string{
 	"Nothing",
 	"Nothing",
-	"A basic land tile.",
-	"A land tile with water. Can be used by fisherman.",
-	"A desert land tile.",
-	"A path. Required by all buildings.",
-	"Can be used by farms to produce food.",
-	"Can be used by lumberjacks to produce wood.",
-	"Can be used by masons to produce stones.",
-	"Produces 1 food/min per neighboring field.",
-	"Produces 1 food/min per neighboring water.",
-	"Produces 1 wood/min per neighboring tree.",
-	"Produces 1 stone/min per neighboring rock.",
-	"Stores resources.",
+	"A basic land tile",
+	"A land tile with water. Can be used by fisherman",
+	"A desert land tile",
+	"A path. Required by all buildings",
+	"Can be used by farms to produce food",
+	"Can be used by lumberjacks to produce wood",
+	"Can be used by masons to produce stones",
+	"Produces 1 food/min per neighboring field",
+	"Produces 1 food/min per neighboring water",
+	"Produces 1 wood/min per neighboring tree",
+	"Produces 1 stone/min per neighboring rock",
+	"Stores resources",
 }
 
 var Properties = [EndTerrain]TerrainProps{
@@ -168,40 +169,48 @@ var Properties = [EndTerrain]TerrainProps{
 		Production: Production{Produces: resource.EndResources},
 	},
 	{Name: "farm", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
+		BuildOn:  NewTerrains(Grass),
+		CanBuild: true,
+		CanBuy:   true,
+		Production: Production{
+			Produces: resource.Food, MaxProduction: 7,
+			RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
 		BuildCost: []BuildCost{
 			{resource.Wood, 5},
 			{resource.Stones, 2},
 		},
 	},
 	{Name: "fisherman", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.Food, RequiredLandUse: Path, ProductionTerrain: Water, ConsumesFood: 1},
+		BuildOn:  NewTerrains(Grass, Desert),
+		CanBuild: true,
+		CanBuy:   true,
+		Production: Production{
+			Produces: resource.Food, MaxProduction: 5,
+			RequiredLandUse: Path, ProductionTerrain: Water, ConsumesFood: 1},
 		BuildCost: []BuildCost{
 			{resource.Wood, 3},
 			{resource.Stones, 0},
 		},
 	},
 	{Name: "lumberjack", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.Wood, RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
+		BuildOn:  NewTerrains(Grass),
+		CanBuild: true,
+		CanBuy:   true,
+		Production: Production{
+			Produces: resource.Wood, MaxProduction: 7,
+			RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
 		BuildCost: []BuildCost{
 			{resource.Wood, 2},
 			{resource.Stones, 3},
 		},
 	},
 	{Name: "mason", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.Stones, RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
+		BuildOn:  NewTerrains(Grass, Desert),
+		CanBuild: true,
+		CanBuy:   true,
+		Production: Production{
+			Produces: resource.Stones, MaxProduction: 3,
+			RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
 		BuildCost: []BuildCost{
 			{resource.Wood, 10},
 		},

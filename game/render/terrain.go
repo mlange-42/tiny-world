@@ -218,7 +218,8 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		s.drawCursorSprite(img, point, camOffset, s.cursorBlue)
 	}
 
-	if terr.Properties[lu].Production.Produces == resource.EndResources {
+	propHere := &terr.Properties[lu]
+	if propHere.Production.Produces == resource.EndResources {
 		return
 	}
 
@@ -226,8 +227,8 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		return
 	}
 	prod := s.prodMapper.Get(luEntity)
-	text.Draw(img, fmt.Sprintf("%d (%d)", prod.Amount, prod.Stock), s.font,
-		int(float64(point.X-s.view.TileWidth/2)*s.view.Zoom-float64(camOffset.X)),
+	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, s.rules.StockPerBuilding), s.font,
+		int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
 		int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
 		color.RGBA{255, 255, 255, 255},
 	)
