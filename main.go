@@ -93,7 +93,7 @@ func run(saveGame, tileSet string) {
 	fonts := res.NewFonts(assets)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites, view.TileWidth)
+	ui := res.NewUI(&selection, fonts.Default, &sprites, sprites.TileWidth)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	factory := res.NewEntityFactory(&g.Model.World)
@@ -149,6 +149,9 @@ func run(saveGame, tileSet string) {
 	if loadGame {
 		load(&g.Model.World, saveGame)
 		selection.Reset()
+
+		view.TileWidth = sprites.TileWidth
+		view.TileHeight = sprites.TileHeight
 	}
 
 	// =========== Run ===========

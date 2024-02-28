@@ -22,6 +22,7 @@ type multitileJson struct {
 	Id     string `json:"id"`
 	File   string `json:"file"`
 	Base   string `json:"base"`
+	Below  string `json:"below"`
 	Height int    `json:"height"`
 }
 
@@ -120,6 +121,7 @@ func processFile(base, src string, js multitileJson) {
 		Id:     js.Id,
 		File:   []string{js.File},
 		Height: js.Height,
+		Below:  js.Below,
 	}
 
 	for i := range images {

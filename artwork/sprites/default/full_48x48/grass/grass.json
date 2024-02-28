@@ -1,4 +1,59 @@
-[{
-    "id": "grass",
-    "height": 25
-}]
+[
+ {
+  "id": "grass",
+  "file": [
+   "grass"
+  ],
+  "height": 25,
+  "multitile": [
+   [
+    "grass"
+   ],
+   [
+    "grass_1"
+   ],
+   [
+    "grass_2"
+   ],
+   [
+    "grass_3"
+   ],
+   [
+    "grass_4"
+   ],
+   [
+    "grass_5"
+   ],
+   [
+    "grass_6"
+   ],
+   [
+    "grass_7"
+   ],
+   [
+    "grass_8"
+   ],
+   [
+    "grass_9"
+   ],
+   [
+    "grass_10"
+   ],
+   [
+    "grass_11"
+   ],
+   [
+    "grass_12"
+   ],
+   [
+    "grass_13"
+   ],
+   [
+    "grass_14"
+   ],
+   [
+    "grass_15"
+   ]
+  ]
+ }
+]

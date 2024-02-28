@@ -1,6 +1,8 @@
 package res
 
-import "image"
+import (
+	"image"
+)
 
 type View struct {
 	TileWidth, TileHeight int

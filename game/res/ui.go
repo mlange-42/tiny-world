@@ -263,8 +263,30 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 
 func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		img := ebiten.NewImage(tileWidth, tileWidth)
+
 		idx := sprites.GetTerrainIndex(i)
-		img := sprites.Get(idx)
+		info := sprites.GetInfo(idx)
+
+		height := 0
+
+		if info.Below != terr.Air {
+			idx2 := sprites.GetTerrainIndex(info.Below)
+			info2 := sprites.GetInfo(idx2)
+
+			sp2 := sprites.Get(idx2)
+			op := ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, float64(tileWidth-sp2.Bounds().Dy()))
+			img.DrawImage(sp2, &op)
+
+			height = info2.Height
+		}
+
+		sp1 := sprites.Get(idx)
+		op := ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, float64(tileWidth-sp1.Bounds().Dy()-height))
+		img.DrawImage(sp1, &op)
+
 		slice := image.NewNineSliceSimple(img, 0, tileWidth)
 
 		pressed := ebiten.NewImageFromImage(img)

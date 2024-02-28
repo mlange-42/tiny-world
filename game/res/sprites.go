@@ -85,21 +85,23 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 			if _, ok := indices[inf.Id]; ok {
 				log.Fatalf("duplicate sprite name: %s", inf.Id)
 			}
-			if inf.AnimSpeed == 0 {
-				inf.AnimSpeed = 1
+			infGame := util.NewSprite(&inf, terr.TerrainID)
+
+			if infGame.AnimSpeed == 0 {
+				infGame.AnimSpeed = 1
 			}
 
-			indices[inf.Id] = infoIndex
+			indices[infGame.Id] = infoIndex
 
-			for i := range inf.Index {
-				inf.Index[i] += imageIndex
+			for i := range infGame.Index {
+				infGame.Index[i] += imageIndex
 			}
-			for i := range inf.Multitile {
-				for j := range inf.Multitile[i] {
-					inf.Multitile[i][j] += imageIndex
+			for i := range infGame.Multitile {
+				for j := range infGame.Multitile[i] {
+					infGame.Multitile[i][j] += imageIndex
 				}
 			}
-			infos = append(infos, inf)
+			infos = append(infos, infGame)
 			infoIndex++
 		}
 

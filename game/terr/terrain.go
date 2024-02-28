@@ -116,6 +116,7 @@ var Properties = [EndTerrain]TerrainProps{
 	{Name: "grass", IsTerrain: true,
 		BuildOn:     NewTerrains(Buildable),
 		BuildOnFree: NewTerrains(Buildable, Water, Desert),
+		ConnectsTo:  NewTerrains(Grass, Water, Desert),
 		CanBuild:    true,
 		CanBuy:      false,
 		Production:  Production{Produces: resource.EndResources},
@@ -227,6 +228,8 @@ var Properties = [EndTerrain]TerrainProps{
 	},
 }
 
+var idLookup map[string]Terrain
+
 var RandomTerrain = []Terrain{
 	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
 	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
@@ -234,4 +237,17 @@ var RandomTerrain = []Terrain{
 	Desert,
 	Tree, Tree, Tree, Tree,
 	Rock,
+}
+
+func init() {
+	idLookup = map[string]Terrain{}
+
+	for i := Terrain(0); i < EndTerrain; i++ {
+		idLookup[Properties[i].Name] = i
+	}
+}
+
+func TerrainID(name string) (Terrain, bool) {
+	t, ok := idLookup[name]
+	return t, ok
 }
