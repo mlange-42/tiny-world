@@ -26,7 +26,6 @@ func main() {
 		fmt.Printf("ERROR: %s\n", err.Error())
 		os.Exit(1)
 	}
-
 }
 
 func run(tileSet string) {

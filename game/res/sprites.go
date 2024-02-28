@@ -30,9 +30,11 @@ type Sprites struct {
 	idxUnknown  int
 }
 
-func NewSprites(fSys fs.FS, dir string) Sprites {
+func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
+	base := path.Join(dir, tileSet)
+
 	tilesetJs := util.TileSet{}
-	content, err := fs.ReadFile(fSys, path.Join(dir, tileSetFile))
+	content, err := fs.ReadFile(fSys, path.Join(base, tileSetFile))
 	if err != nil {
 		log.Fatal("error loading JSON file: ", err)
 	}
@@ -40,7 +42,7 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 		log.Fatal("error decoding JSON: ", err)
 	}
 
-	sheets, err := fs.ReadDir(fSys, dir)
+	sheets, err := fs.ReadDir(fSys, base)
 	if err != nil {
 		log.Fatal("error reading sprites", err)
 	}
@@ -61,10 +63,10 @@ func NewSprites(fSys fs.FS, dir string) Sprites {
 			continue
 		}
 		baseName := strings.Replace(sheetFile.Name(), ext, "", 1)
-		pngPath := path.Join(dir, fmt.Sprintf("%s.png", baseName))
+		pngPath := path.Join(base, fmt.Sprintf("%s.png", baseName))
 
 		sheet := util.SpriteSheet{}
-		content, err := fs.ReadFile(fSys, path.Join(dir, sheetFile.Name()))
+		content, err := fs.ReadFile(fSys, path.Join(base, sheetFile.Name()))
 		if err != nil {
 			log.Fatal("error loading JSON file: ", err)
 		}
