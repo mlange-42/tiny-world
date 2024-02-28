@@ -105,31 +105,29 @@
   {
    "id": "tree",
    "index": [
-    23
+    23,
+    24
    ]
   },
   {
    "id": "unknown",
    "index": [
-    24
+    25
    ]
   },
   {
    "id": "warehouse",
    "index": [
-    25
+    26
    ]
   },
   {
    "id": "water",
    "index": [
-    26
+    27
    ],
    "height": 25,
    "multitile": [
-    [
-     26
-    ],
     [
      27
     ],
@@ -174,9 +172,12 @@
     ],
     [
      41
+    ],
+    [
+     42
     ]
    ]
   }
  ],
- "total_sprites": 42
+ "total_sprites": 43
 }
