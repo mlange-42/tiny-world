@@ -89,7 +89,9 @@ func main() {
 
 	// =========== Systems ===========
 
-	if !loadGame {
+	if loadGame {
+		g.Model.AddSystem(&sys.InitTerrainLoaded{})
+	} else {
 		g.Model.AddSystem(&sys.InitTerrain{})
 	}
 

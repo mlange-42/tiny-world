@@ -265,7 +265,7 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 	idx := s.sprites.GetTerrainIndex(t)
 	sp, info := s.sprites.Get(idx)
 	if randSprite != nil {
-		sp, _ = s.sprites.GetRand(idx, randSprite.Rand)
+		sp, _ = s.sprites.GetRand(idx, int(randSprite.Rand))
 	}
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
@@ -280,7 +280,7 @@ func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
 		if randSprite == nil {
 			mIdx = s.sprites.GetMultiTileIndex(t, neigh)
 		} else {
-			mIdx = s.sprites.GetMultiTileIndexRand(t, neigh, randSprite.Rand)
+			mIdx = s.sprites.GetMultiTileIndexRand(t, neigh, int(randSprite.Rand))
 		}
 
 		sp = s.sprites.GetSprite(mIdx)

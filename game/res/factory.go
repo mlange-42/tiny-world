@@ -2,6 +2,7 @@ package res
 
 import (
 	"image"
+	"math"
 	"math/rand"
 
 	"github.com/mlange-42/arche/ecs"
@@ -46,7 +47,7 @@ func (f *EntityFactory) createLandUse(pos image.Point, t terr.Terrain) ecs.Entit
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(f.update.Get().Interval)},
-		&comp.RandomSprite{Rand: rand.Int()},
+		&comp.RandomSprite{Rand: uint16(rand.Int31n(math.MaxUint16))},
 	)
 	return e
 }
@@ -57,7 +58,7 @@ func (f *EntityFactory) createWarehouse(pos image.Point, t terr.Terrain) ecs.Ent
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(f.update.Get().Interval)},
 		&comp.Warehouse{},
-		&comp.RandomSprite{Rand: rand.Int()},
+		&comp.RandomSprite{Rand: uint16(rand.Int31n(math.MaxUint16))},
 	)
 	return e
 }
@@ -67,7 +68,7 @@ func (f *EntityFactory) createPath(pos image.Point, t terr.Terrain) ecs.Entity {
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.Path{Haulers: []comp.HaulerEntry{}},
-		&comp.RandomSprite{Rand: rand.Int()},
+		&comp.RandomSprite{Rand: uint16(rand.Int31n(math.MaxUint16))},
 	)
 	return e
 }
@@ -80,7 +81,7 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 		&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
 		&comp.Production{Type: prod.Produces, Amount: 0, Countdown: update.Countdown},
 		&comp.Consumption{Amount: prod.ConsumesFood, Countdown: update.Countdown},
-		&comp.RandomSprite{Rand: rand.Int()},
+		&comp.RandomSprite{Rand: uint16(rand.Int31n(math.MaxUint16))},
 	)
 	return e
 }

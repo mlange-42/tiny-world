@@ -63,5 +63,5 @@ type HaulerSprite struct {
 }
 
 type RandomSprite struct {
-	Rand int
+	Rand uint16
 }
