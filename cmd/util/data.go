@@ -1,23 +1,31 @@
 package util
 
 type RawSprite struct {
-	Id        string     `json:"id"`
-	File      []string   `json:"file"`
-	Height    int        `json:"height,omitempty"`
-	YOffset   int        `json:"y_offset,omitempty"`
-	Multitile [][]string `json:"multitile,omitempty"`
+	Id         string     `json:"id"`
+	File       []string   `json:"file"`
+	Height     int        `json:"height,omitempty"`
+	YOffset    int        `json:"y_offset,omitempty"`
+	AnimFrames int        `json:"anim_frames,omitempty"`
+	AnimSpeed  int        `json:"anim_speed,omitempty"`
+	Multitile  [][]string `json:"multitile,omitempty"`
 }
 
 type Sprite struct {
-	Id        string  `json:"id"`
-	Index     []int   `json:"index"`
-	Height    int     `json:"height,omitempty"`
-	YOffset   int     `json:"y_offset,omitempty"`
-	Multitile [][]int `json:"multitile,omitempty"`
+	Id         string  `json:"id"`
+	Index      []int   `json:"index"`
+	Height     int     `json:"height,omitempty"`
+	YOffset    int     `json:"y_offset,omitempty"`
+	AnimFrames int     `json:"anim_frames,omitempty"`
+	AnimSpeed  int     `json:"anim_speed,omitempty"`
+	Multitile  [][]int `json:"multitile,omitempty"`
 }
 
 func (s *Sprite) IsMultitile() bool {
 	return len(s.Multitile) > 0
+}
+
+func (s *Sprite) IsAnimated() bool {
+	return s.AnimFrames > 0
 }
 
 type RawSpriteSheet struct {

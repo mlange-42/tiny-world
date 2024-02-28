@@ -264,7 +264,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
 		idx := sprites.GetTerrainIndex(i)
-		img, _ := sprites.Get(idx)
+		img := sprites.Get(idx)
 		slice := image.NewNineSliceSimple(img, 0, tileWidth)
 
 		pressed := ebiten.NewImageFromImage(img)

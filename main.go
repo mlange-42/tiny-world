@@ -42,6 +42,9 @@ func main() {
 	gameSpeed := res.GameSpeed{}
 	ecs.AddResource(&g.Model.World, &gameSpeed)
 
+	gameTick := res.GameTick{}
+	ecs.AddResource(&g.Model.World, &gameTick)
+
 	terrain := res.NewTerrain(rules.WorldSize, rules.WorldSize)
 	ecs.AddResource(&g.Model.World, &terrain)
 
@@ -95,6 +98,7 @@ func main() {
 		g.Model.AddSystem(&sys.InitTerrain{})
 	}
 
+	g.Model.AddSystem(&sys.Tick{})
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.DoProduction{})
 	g.Model.AddSystem(&sys.DoConsumption{})

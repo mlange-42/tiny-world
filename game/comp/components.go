@@ -65,3 +65,10 @@ type HaulerSprite struct {
 type RandomSprite struct {
 	Rand uint16
 }
+
+func (r *RandomSprite) GetRand() uint16 {
+	if r == nil {
+		return 0
+	}
+	return r.Rand
+}

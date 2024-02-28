@@ -1,7 +1,6 @@
 package sys
 
 import (
-	ares "github.com/mlange-42/arche-model/resource"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -13,7 +12,7 @@ import (
 
 // UpdateProduction system.
 type UpdateProduction struct {
-	time    generic.Resource[ares.Tick]
+	time    generic.Resource[res.GameTick]
 	speed   generic.Resource[res.GameSpeed]
 	update  generic.Resource[res.UpdateInterval]
 	terrain generic.Resource[res.Terrain]
@@ -25,7 +24,7 @@ type UpdateProduction struct {
 
 // Initialize the system
 func (s *UpdateProduction) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[ares.Tick](world)
+	s.time = generic.NewResource[res.GameTick](world)
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
