@@ -4,22 +4,32 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
+	"log"
 	"math"
+	"os"
 	"path"
 	"strings"
 
 	"github.com/mlange-42/tiny-world/cmd/util"
+	"github.com/spf13/cobra"
 )
 
 const (
-	basePath = "artwork"
-	outPath  = "assets"
-	tileSet  = "sprites"
+	basePath = "artwork/sprites"
+	outPath  = "assets/sprites"
 
 	maxSheetWidth = 512
 )
 
 func main() {
+	if err := command().Execute(); err != nil {
+		fmt.Printf("ERROR: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+}
+
+func run(tileSet string) {
 	p := proc{}
 	p.Process(basePath, tileSet)
 }
@@ -46,9 +56,9 @@ func (p *proc) Process(basePath, tileSet string) {
 		if err := util.WalkDirs(basePath, tileSet, sheet,
 			func(sheet util.RawSpriteSheet, dir util.Directory) error {
 				if dir.HasJson {
-					p.processDirectoryJson(sheet, dir)
+					p.processDirectoryJson(tileSet, sheet, dir)
 				} else {
-					p.processDirectoryNoJson(sheet, dir)
+					p.processDirectoryNoJson(tileSet, sheet, dir)
 				}
 				return nil
 			},
@@ -101,7 +111,7 @@ func (p *proc) writeSheet(outPath, tileSet string, sheet util.RawSpriteSheet, ma
 	return util.WriteImage(outPathBase+".png", img)
 }
 
-func (p *proc) processDirectoryJson(sheet util.RawSpriteSheet, dir util.Directory) {
+func (p *proc) processDirectoryJson(tileSet string, sheet util.RawSpriteSheet, dir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	sprites := []util.RawSprite{}
 	files := []string{}
@@ -185,7 +195,7 @@ func (p *proc) processDirectoryJson(sheet util.RawSpriteSheet, dir util.Director
 	}
 }
 
-func (p *proc) processDirectoryNoJson(sheet util.RawSpriteSheet, dir util.Directory) {
+func (p *proc) processDirectoryNoJson(tileSet string, sheet util.RawSpriteSheet, dir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 
 	for _, file := range dir.Files {
@@ -206,4 +216,27 @@ func (p *proc) processDirectoryNoJson(sheet util.RawSpriteSheet, dir util.Direct
 			Index: []int{index},
 		})
 	}
+}
+
+func command() *cobra.Command {
+	var tileSet string
+	root := &cobra.Command{
+		Use:           "go run ./cmd/compose",
+		Short:         "Compose sprite sheets",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if tileSet == "" {
+				_ = cmd.Help()
+				log.Fatal("please provide a tileset!")
+			}
+			run(tileSet)
+		},
+	}
+	root.Flags().StringVarP(&tileSet, "tileset", "t", "", "Tileset to process.")
+
+	return root
 }

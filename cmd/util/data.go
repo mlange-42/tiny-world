@@ -25,7 +25,7 @@ func (s *Sprite) IsMultitile() bool {
 }
 
 func (s *Sprite) IsAnimated() bool {
-	return s.AnimFrames > 0
+	return s.AnimFrames > 1
 }
 
 type RawSpriteSheet struct {

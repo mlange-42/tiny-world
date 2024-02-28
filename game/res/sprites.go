@@ -168,6 +168,10 @@ func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions, frame 
 		} else {
 			return sprites[rand%len(sprites)]
 		}
+	} else if inf.IsAnimated() {
+		vars := len(inf.Index) / inf.AnimFrames
+		sIdx := (rand%vars)*inf.AnimFrames + (frame/inf.AnimSpeed)%inf.AnimFrames
+		return inf.Index[sIdx]
 	}
 	return idx
 }
