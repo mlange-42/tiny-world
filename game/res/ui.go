@@ -132,6 +132,26 @@ func (ui *UI) createUI() *widget.Container {
 			widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+				widget.RowLayoutOpts.Spacing(24),
+			),
+		),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionEnd,
+				VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				StretchHorizontal:  false,
+				StretchVertical:    false,
+			}),
+			widget.WidgetOpts.MinSize(40, 10),
+		),
+	)
+
+	buildButtonsContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.Layout(
+			widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
 				widget.RowLayoutOpts.Spacing(4),
 			),
 		),
@@ -151,9 +171,10 @@ func (ui *UI) createUI() *widget.Container {
 			continue
 		}
 		button, _ := ui.createButton(i)
-		innerContainer.AddChild(button)
 		ui.terrainButtons[i] = button
+		buildButtonsContainer.AddChild(button)
 	}
+	innerContainer.AddChild(buildButtonsContainer)
 
 	ui.randomButtonsContainer = widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
@@ -174,7 +195,6 @@ func (ui *UI) createUI() *widget.Container {
 			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
-
 	innerContainer.AddChild(ui.randomButtonsContainer)
 
 	return innerContainer
