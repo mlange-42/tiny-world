@@ -263,15 +263,16 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 
 func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+		props := &terr.Properties[i]
+
 		img := ebiten.NewImage(tileWidth, tileWidth)
 
 		idx := sprites.GetTerrainIndex(i)
-		info := sprites.GetInfo(idx)
 
 		height := 0
 
-		if info.Below != terr.Air {
-			idx2 := sprites.GetTerrainIndex(info.Below)
+		if props.Below != terr.Air {
+			idx2 := sprites.GetTerrainIndex(props.Below)
 			info2 := sprites.GetInfo(idx2)
 
 			sp2 := sprites.Get(idx2)
@@ -306,7 +307,6 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 			Disabled: sliceDisabled,
 		}
 
-		props := &terr.Properties[i]
 		costs := ""
 		if len(props.BuildCost) > 0 {
 			costs = "Cost: "

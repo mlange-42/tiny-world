@@ -36,7 +36,7 @@ func run(tileSet string) {
 type proc struct {
 	Names   map[string]bool
 	Images  []image.Image
-	Infos   []util.JsSprite
+	Infos   []util.Sprite
 	Indices map[string]int
 }
 
@@ -179,10 +179,9 @@ func (p *proc) processDirectoryJson(tileSet string, sheet util.RawSpriteSheet, d
 	}
 
 	for _, sprite := range sprites {
-		sp := util.JsSprite{
+		sp := util.Sprite{
 			Id:         sprite.Id,
 			Height:     sprite.Height,
-			Below:      sprite.Below,
 			YOffset:    sprite.YOffset,
 			AnimFrames: sprite.AnimFrames,
 			AnimSpeed:  sprite.AnimSpeed,
@@ -219,7 +218,7 @@ func (p *proc) processDirectoryNoJson(tileSet string, sheet util.RawSpriteSheet,
 			panic(err)
 		}
 		p.Images = append(p.Images, img)
-		p.Infos = append(p.Infos, util.JsSprite{
+		p.Infos = append(p.Infos, util.Sprite{
 			Id:    strings.ReplaceAll(file.Name, ".png", ""),
 			Index: []int{index},
 		})

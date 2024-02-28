@@ -121,7 +121,6 @@ func processFile(base, src string, js multitileJson) {
 		Id:     js.Id,
 		File:   []string{js.File},
 		Height: js.Height,
-		Below:  js.Below,
 	}
 
 	for i := range images {

@@ -101,17 +101,17 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if t != terr.Air && t != terr.Buildable {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
-				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, true)
+				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].Below)
 			}
 
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				if terr.Buildings.Contains(lu) {
-					_ = s.drawSprite(img, s.terrain, s.landUse, i, j, terr.Path, &point, height, &off, nil, true, false)
+					_ = s.drawSprite(img, s.terrain, s.landUse, i, j, terr.Path, &point, height, &off, nil, true, terr.Air)
 				}
 				luE := s.landUseE.Get(i, j)
 				randTile := s.spriteMapper.Get(luE)
-				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, true)
+				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].Below)
 			}
 
 			if lu == terr.Path {
@@ -205,7 +205,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		} else {
 			canBuildHere = canBuildHere && luEntity.IsZero()
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, true)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.Below)
 
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
@@ -261,16 +261,16 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	selfConnect bool, recursive bool) int {
+	selfConnect bool, below terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
 
-	if recursive && info.Below != terr.Air {
+	if below != terr.Air {
 		height = s.drawSprite(img, terrain, landUse,
-			x, y, info.Below, point, height,
+			x, y, below, point, height,
 			camOffset, randSprite,
-			selfConnect, false)
+			selfConnect, terr.Air)
 	}
 
 	var sp *ebiten.Image

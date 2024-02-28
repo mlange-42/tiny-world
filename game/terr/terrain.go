@@ -63,6 +63,7 @@ type TerrainProps struct {
 	IsTerrain   bool
 	BuildOn     Terrains
 	BuildOnFree Terrains
+	Below       Terrain
 	ConnectsTo  Terrains
 	CanBuild    bool
 	CanBuy      bool
@@ -125,6 +126,7 @@ var Properties = [EndTerrain]TerrainProps{
 		BuildOn:     NewTerrains(Buildable),
 		BuildOnFree: NewTerrains(Buildable, Grass, Desert),
 		ConnectsTo:  NewTerrains(Water),
+		Below:       Grass,
 		CanBuild:    true,
 		CanBuy:      false,
 		Production:  Production{Produces: resource.EndResources},
@@ -133,6 +135,7 @@ var Properties = [EndTerrain]TerrainProps{
 		BuildOn:     NewTerrains(Buildable),
 		BuildOnFree: NewTerrains(Buildable, Grass, Water),
 		ConnectsTo:  NewTerrains(Desert),
+		Below:       Grass,
 		CanBuild:    true,
 		CanBuy:      false,
 		Production:  Production{Produces: resource.EndResources},
