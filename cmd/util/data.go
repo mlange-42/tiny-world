@@ -1,5 +1,10 @@
 package util
 
+type TileSet struct {
+	TileWidth  int `json:"tile_width"`
+	TileHeight int `json:"tile_height"`
+}
+
 type RawSprite struct {
 	Id         string     `json:"id"`
 	File       []string   `json:"file"`
@@ -25,7 +30,7 @@ func (s *Sprite) IsMultitile() bool {
 }
 
 func (s *Sprite) IsAnimated() bool {
-	return s.AnimFrames > 0
+	return s.AnimFrames > 1
 }
 
 type RawSpriteSheet struct {

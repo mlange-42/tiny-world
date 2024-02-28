@@ -6,15 +6,16 @@ import (
 	"image/color"
 	"image/draw"
 	"log"
+	"os"
 	"path"
 
 	"github.com/mlange-42/tiny-world/cmd/util"
 	gMath "github.com/mlange-42/tiny-world/game/math"
+	"github.com/spf13/cobra"
 )
 
 const (
-	basePath = "artwork"
-	tileSet  = "sprites"
+	basePath = "artwork/sprites"
 )
 
 type multitileJson struct {
@@ -35,12 +36,20 @@ var multiTileOrder = [16]int{
 }
 
 func main() {
+	if err := command().Execute(); err != nil {
+		fmt.Printf("ERROR: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+}
+
+func run(tileSet string) {
 	if err := util.Walk(basePath, tileSet, func(sheet util.RawSpriteSheet, dir util.Directory) error {
 		for _, subDir := range dir.Directories {
 			if subDir.HasJson {
-				processDirectoryJson(sheet, dir, subDir)
+				processDirectoryJson(tileSet, sheet, dir, subDir)
 			} else {
-				processDirectoryNoJson(sheet, dir, subDir)
+				processDirectoryNoJson(tileSet, sheet, dir, subDir)
 			}
 		}
 		return nil
@@ -49,7 +58,7 @@ func main() {
 	}
 }
 
-func processDirectoryJson(sheet util.RawSpriteSheet, dir, subDir util.Directory) {
+func processDirectoryJson(tileSet string, sheet util.RawSpriteSheet, dir, subDir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	sub := path.Join(base, subDir.Dir)
 	for _, file := range subDir.Files {
@@ -69,7 +78,7 @@ func processDirectoryJson(sheet util.RawSpriteSheet, dir, subDir util.Directory)
 	}
 }
 
-func processDirectoryNoJson(sheet util.RawSpriteSheet, dir, subDir util.Directory) {
+func processDirectoryNoJson(tileSet string, sheet util.RawSpriteSheet, dir, subDir util.Directory) {
 	base := path.Join(basePath, tileSet, sheet.Directory, dir.Dir)
 	for _, file := range subDir.Files {
 		js := multitileJson{
@@ -188,4 +197,27 @@ func spiltMultiTile(sprite image.Image, mask *image.RGBA, width, height int) []*
 	}
 
 	return result
+}
+
+func command() *cobra.Command {
+	var tileSet string
+	root := &cobra.Command{
+		Use:           "go run ./cmd/slice",
+		Short:         "Slice multi-tiles",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if tileSet == "" {
+				_ = cmd.Help()
+				log.Fatal("please provide a tileset!")
+			}
+			run(tileSet)
+		},
+	}
+	root.Flags().StringVarP(&tileSet, "tileset", "t", "", "Tileset to process.")
+
+	return root
 }

@@ -35,8 +35,8 @@ The natural features in the lower part appear randomly and are replenished when 
 * Right click with selected buildable: remove it.
 * Ctrl+S: saves the game to `save/autosave.json`
 
-Load a saved game by running with the file as argument:
+Load a saved game by running with the `-s` option:
 
 ```shell
-go run . save/autosave.json
+go run . -s save/autosave.json
 ```

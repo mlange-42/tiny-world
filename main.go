@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -13,10 +14,18 @@ import (
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sys"
+	"github.com/spf13/cobra"
 )
 
 func main() {
-	loadGame := len(os.Args) == 2
+	if err := command().Execute(); err != nil {
+		fmt.Printf("ERROR: %s\n", err.Error())
+		os.Exit(1)
+	}
+}
+
+func run(saveGame, tileSet string) {
+	loadGame := saveGame != ""
 
 	ebiten.SetVsyncEnabled(true)
 	g := game.NewGame(model.New())
@@ -66,7 +75,10 @@ func main() {
 	}
 	ecs.AddResource(&g.Model.World, &update)
 
-	view := res.NewView(48, 24)
+	sprites := res.NewSprites(assets, "assets/sprites", tileSet)
+	ecs.AddResource(&g.Model.World, &sprites)
+
+	view := res.NewView(sprites.TileWidth, sprites.TileHeight)
 	ecs.AddResource(&g.Model.World, &view)
 
 	production := res.Production{}
@@ -77,9 +89,6 @@ func main() {
 	ecs.AddResource(&g.Model.World, &stock)
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
-
-	sprites := res.NewSprites(assets, "assets/sprites")
-	ecs.AddResource(&g.Model.World, &sprites)
 
 	fonts := res.NewFonts(assets)
 	ecs.AddResource(&g.Model.World, &fonts)
@@ -138,7 +147,7 @@ func main() {
 
 	// =========== Load game ===========
 	if loadGame {
-		load(&g.Model.World, os.Args[1])
+		load(&g.Model.World, saveGame)
 		selection.Reset()
 	}
 
@@ -171,4 +180,24 @@ func load(world *ecs.World, path string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func command() *cobra.Command {
+	var tileSet, saveFile string
+	root := &cobra.Command{
+		Use:           "tiny-world",
+		Short:         "A tiny, slow-paced world and colony building game.",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			run(saveFile, tileSet)
+		},
+	}
+	root.Flags().StringVarP(&tileSet, "tileset", "t", "default", "Tileset to use.")
+	root.Flags().StringVarP(&saveFile, "savefile", "s", "", "Savefile to load.")
+
+	return root
 }
