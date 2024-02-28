@@ -45,6 +45,9 @@ func main() {
 	terrain := res.NewTerrain(rules.WorldSize, rules.WorldSize)
 	ecs.AddResource(&g.Model.World, &terrain)
 
+	terrainEntities := res.TerrainEntities{Grid: res.NewGrid[ecs.Entity](rules.WorldSize, rules.WorldSize)}
+	ecs.AddResource(&g.Model.World, &terrainEntities)
+
 	landUse := res.NewLandUse(rules.WorldSize, rules.WorldSize)
 	ecs.AddResource(&g.Model.World, &landUse)
 
@@ -143,6 +146,7 @@ func main() {
 
 func load(world *ecs.World, path string) {
 	_ = ecs.ComponentID[comp.Tile](world)
+	_ = ecs.ComponentID[comp.Terrain](world)
 	_ = ecs.ComponentID[comp.UpdateTick](world)
 	_ = ecs.ComponentID[comp.Consumption](world)
 	_ = ecs.ComponentID[comp.Production](world)

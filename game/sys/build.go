@@ -14,6 +14,7 @@ type Build struct {
 	rules           generic.Resource[res.Rules]
 	view            generic.Resource[res.View]
 	terrain         generic.Resource[res.Terrain]
+	terrainEntities generic.Resource[res.TerrainEntities]
 	landUse         generic.Resource[res.LandUse]
 	landUseEntities generic.Resource[res.LandUseEntities]
 	stock           generic.Resource[res.Stock]
@@ -28,6 +29,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.rules = generic.NewResource[res.Rules](world)
 	s.view = generic.NewResource[res.View](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
+	s.terrainEntities = generic.NewResource[res.TerrainEntities](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.landUseEntities = generic.NewResource[res.LandUseEntities](world)
 	s.stock = generic.NewResource[res.Stock](world)
@@ -115,15 +117,12 @@ func (s *Build) Update(world *ecs.World) {
 				return
 			}
 		}
-		terrain.Set(cursor.X, cursor.Y, sel.BuildType)
+		fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
 	} else {
 		if !p.BuildOn.Contains(terrHere) {
 			return
 		}
-
-		e := fac.Create(cursor, sel.BuildType)
-		landUseE.Set(cursor.X, cursor.Y, e)
-		landUse.Set(cursor.X, cursor.Y, sel.BuildType)
+		fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
 	}
 
 	stock.Pay(p.BuildCost)
