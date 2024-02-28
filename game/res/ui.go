@@ -277,7 +277,11 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 		if props.Production.ConsumesFood > 0 {
 			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.ConsumesFood)
 		}
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s", strings.ToUpper(props.Name), costs, requires, terr.Descriptions[i])
+		maxProd := ""
+		if props.Production.MaxProduction > 0 {
+			maxProd = fmt.Sprintf(" (max %d)", props.Production.MaxProduction)
+		}
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s.", strings.ToUpper(props.Name), costs, requires, terr.Descriptions[i], maxProd)
 	}
 }
 
