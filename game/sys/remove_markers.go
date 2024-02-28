@@ -1,17 +1,17 @@
 package sys
 
 import (
-	ares "github.com/mlange-42/arche-model/resource"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
+	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // RemoveMarkers system.
 type RemoveMarkers struct {
 	MaxTime int64
 
-	time   generic.Resource[ares.Tick]
+	time   generic.Resource[res.GameTick]
 	filter generic.Filter1[comp.ProductionMarker]
 
 	toRemove []ecs.Entity
@@ -19,7 +19,7 @@ type RemoveMarkers struct {
 
 // Initialize the system
 func (s *RemoveMarkers) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[ares.Tick](world)
+	s.time = generic.NewResource[res.GameTick](world)
 
 	s.filter = *generic.NewFilter1[comp.ProductionMarker]()
 }

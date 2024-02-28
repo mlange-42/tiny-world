@@ -4,7 +4,6 @@ import (
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	ares "github.com/mlange-42/arche-model/resource"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -18,7 +17,7 @@ type Markers struct {
 	MaxOffset int
 	Duration  int
 
-	time    generic.Resource[ares.Tick]
+	time    generic.Resource[res.GameTick]
 	screen  generic.Resource[res.EbitenImage]
 	sprites generic.Resource[res.Sprites]
 	view    generic.Resource[res.View]
@@ -30,7 +29,7 @@ type Markers struct {
 
 // InitializeUI the system
 func (s *Markers) InitializeUI(world *ecs.World) {
-	s.time = generic.NewResource[ares.Tick](world)
+	s.time = generic.NewResource[res.GameTick](world)
 	s.screen = generic.NewResource[res.EbitenImage](world)
 	s.sprites = generic.NewResource[res.Sprites](world)
 	s.view = generic.NewResource[res.View](world)
