@@ -11,6 +11,7 @@ import (
 
 // Build system.
 type Build struct {
+	rules           generic.Resource[res.Rules]
 	view            generic.Resource[res.View]
 	terrain         generic.Resource[res.Terrain]
 	terrainEntities generic.Resource[res.TerrainEntities]
@@ -25,6 +26,7 @@ type Build struct {
 
 // Initialize the system
 func (s *Build) Initialize(world *ecs.World) {
+	s.rules = generic.NewResource[res.Rules](world)
 	s.view = generic.NewResource[res.View](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.terrainEntities = generic.NewResource[res.TerrainEntities](world)
@@ -39,6 +41,7 @@ func (s *Build) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Build) Update(world *ecs.World) {
+	rules := s.rules.Get()
 	sel := s.selection.Get()
 	ui := s.ui.Get()
 	fac := s.factory.Get()
@@ -83,7 +86,7 @@ func (s *Build) Update(world *ecs.World) {
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
 
 			stock.Pay(p.BuildCost)
-			ui.ReplaceButton(stock)
+			ui.ReplaceButton(stock, rules)
 		} else {
 			sel.Reset()
 		}
@@ -121,7 +124,7 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	stock.Pay(p.BuildCost)
-	ui.ReplaceButton(stock)
+	ui.ReplaceButton(stock, rules)
 }
 
 // Finalize the system

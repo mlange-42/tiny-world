@@ -100,19 +100,20 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 	return ui
 }
 
-func (ui *UI) createRandomButton() {
-	t := terr.RandomTerrain[rand.Intn(len(terr.RandomTerrain))]
+func (ui *UI) createRandomButton(rules *Rules) {
+	t := rules.RandomTerrains[rand.Intn(len(rules.RandomTerrains))]
 	button, id := ui.createButton(t)
 	ui.randomButtonsContainer.AddChild(button)
 	ui.randomButtons[id] = randomButton{t, button}
 }
 
-func (ui *UI) ReplaceButton(stock *Stock) bool {
+func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
 		ui.randomButtonsContainer.RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
-		ui.createRandomButton()
+
+		ui.createRandomButton(rules)
 		ui.updateRandomTerrains()
 
 		ui.selection.Reset()

@@ -2,14 +2,6 @@
     "zero_terrain": "air",
     "buildable": "buildable",
     "default": "grass",
-    "random_terrains": [
-        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
-        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
-        "water", "water", "water", "water", "water", "water",
-        "desert",
-        "tree", "tree", "tree", "tree",
-        "rock"
-    ],
     "terrains": [
         {
             "name": "air",
@@ -117,7 +109,8 @@
                 "required_terrain": "path",
                 "production_terrain": "field",
                 "consumes_resource": "food",
-                "consumes_amount": 1
+                "consumes_amount": 1,
+                "haul_capacity": 2
             },
             "description": "Produces 1 food/min per neighboring field"
         },
@@ -141,7 +134,8 @@
                 "required_terrain": "path",
                 "production_terrain": "water",
                 "consumes_resource": "food",
-                "consumes_amount": 1
+                "consumes_amount": 1,
+                "haul_capacity": 2
             },
             "description": "Produces 1 food/min per neighboring water"
         },
@@ -166,7 +160,8 @@
                 "required_terrain": "path",
                 "production_terrain": "tree",
                 "consumes_resource": "food",
-                "consumes_amount": 5
+                "consumes_amount": 5,
+                "haul_capacity": 2
             },
             "description": "Produces 1 wood/min per neighboring tree"
         },
@@ -190,7 +185,8 @@
                 "required_terrain": "path",
                 "production_terrain": "rock",
                 "consumes_resource": "food",
-                "consumes_amount": 5
+                "consumes_amount": 5,
+                "haul_capacity": 2
             },
             "description": "Produces 1 stone/min per neighboring rock"
         },

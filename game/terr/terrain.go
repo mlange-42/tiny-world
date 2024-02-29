@@ -45,8 +45,6 @@ var Properties []TerrainProps
 
 var idLookup map[string]Terrain
 
-var RandomTerrain []Terrain
-
 func Prepare(f fs.FS, file string) {
 	propsHelper := props{}
 	err := util.FromJsonFs(f, file, &propsHelper)
@@ -133,6 +131,7 @@ func Prepare(f fs.FS, file string) {
 				ConsumesAmount:    t.Production.ConsumesAmount,
 				RequiredTerrain:   requiredTerrain,
 				ProductionTerrain: productionTerrain,
+				HaulCapacity:      t.Production.HaulCapacity,
 			},
 		}
 
@@ -146,12 +145,6 @@ func Prepare(f fs.FS, file string) {
 		props = append(props, p)
 	}
 
-	randTerr := []Terrain{}
-
-	for _, str := range propsHelper.RandomTerrains {
-		randTerr = append(randTerr, toTerrain(idLookup, str))
-	}
-
 	if Warehouse == Air {
 		panic("no warehouse building defined")
 	}
@@ -160,7 +153,6 @@ func Prepare(f fs.FS, file string) {
 	Buildable = toTerrain(idLookup, propsHelper.Buildable)
 	Default = toTerrain(idLookup, propsHelper.Default)
 
-	RandomTerrain = randTerr
 	Properties = props
 }
 
@@ -212,6 +204,7 @@ type Production struct {
 	ConsumesAmount    int
 	RequiredTerrain   Terrain
 	ProductionTerrain Terrain
+	HaulCapacity      int
 }
 
 type productionJs struct {
@@ -221,6 +214,7 @@ type productionJs struct {
 	ConsumesAmount    int    `json:"consumes_amount"`
 	RequiredTerrain   string `json:"required_terrain"`
 	ProductionTerrain string `json:"production_terrain"`
+	HaulCapacity      int    `json:"haul_capacity"`
 }
 
 type ResourceAmount struct {
@@ -234,11 +228,10 @@ type resourceAmountJs struct {
 }
 
 type props struct {
-	ZeroTerrain    string           `json:"zero_terrain"`
-	Buildable      string           `json:"buildable"`
-	Default        string           `json:"default"`
-	RandomTerrains []string         `json:"random_terrains"`
-	Terrains       []terrainPropsJs `json:"terrains"`
+	ZeroTerrain string           `json:"zero_terrain"`
+	Buildable   string           `json:"buildable"`
+	Default     string           `json:"default"`
+	Terrains    []terrainPropsJs `json:"terrains"`
 }
 
 func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {

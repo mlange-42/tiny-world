@@ -1,0 +1,17 @@
+{
+    "world_size": 256,
+    "initial_resources": [
+        {"resource": "food", "amount": 25},
+        {"resource": "wood", "amount": 25},
+        {"resource": "stones", "amount": 25}
+    ],
+    "random_terrains_count": 6,
+    "random_terrains": [
+        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
+        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
+        "water", "water", "water", "water", "water", "water",
+        "desert",
+        "tree", "tree", "tree", "tree",
+        "rock"
+    ]
+}

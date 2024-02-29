@@ -37,13 +37,7 @@ func run(saveGame, tileSet string) {
 
 	// =========== Resources ===========
 
-	rules := res.Rules{
-		WorldSize:      256,
-		RandomTerrains: 6,
-
-		InitialResources: []int{25, 25, 25},
-		HaulerCapacity:   2,
-	}
+	rules := res.NewRules(data, "data/json/rules.json")
 	ecs.AddResource(&g.Model.World, &rules)
 
 	gameSpeed := res.GameSpeed{}
