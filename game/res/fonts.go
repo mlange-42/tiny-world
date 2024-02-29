@@ -9,7 +9,7 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
-const fontFile = "assets/fonts/JupiteroidRegular.ttf"
+const fontFile = "data/fonts/JupiteroidRegular.ttf"
 const fontSize = 20
 
 type Fonts struct {

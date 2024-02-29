@@ -16,7 +16,7 @@ import (
 
 const (
 	basePath = "artwork/sprites"
-	outPath  = "assets/sprites"
+	outPath  = "data/gfx"
 
 	maxSheetWidth = 512
 )
