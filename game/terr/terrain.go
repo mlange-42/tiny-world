@@ -262,8 +262,8 @@ type productionJs struct {
 	Resource          string `json:"resource"`
 	MaxProduction     int    `json:"max_production"`
 	FoodConsumption   int    `json:"food_consumption"`
-	RequiredTerrain   string
-	ProductionTerrain string
+	RequiredTerrain   string `json:"required_terrain"`
+	ProductionTerrain string `json:"production_terrain"`
 }
 
 type BuildCost struct {
