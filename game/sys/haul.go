@@ -84,7 +84,7 @@ func (s *Haul) Update(world *ecs.World) {
 		if prod.Stock < rules.HaulerCapacity || prod.IsHauling {
 			continue
 		}
-		s.toCreate = append(s.toCreate, markerEntry{Tile: *tile, Resource: prod.Type, Home: prodQuery.Entity()})
+		s.toCreate = append(s.toCreate, markerEntry{Tile: *tile, Resource: prod.Resource, Home: prodQuery.Entity()})
 	}
 
 	query := s.filter.Query(world)
@@ -174,6 +174,7 @@ func (s *Haul) Update(world *ecs.World) {
 			haul.Index = len(path) - 1
 			haul.PathFraction = uint8(update.Interval/2) + 1
 			*tile = target
+
 			continue
 		}
 

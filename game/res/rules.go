@@ -4,9 +4,7 @@ type Rules struct {
 	WorldSize      int
 	RandomTerrains int
 
-	InitialResources  []int
-	StockPerWarehouse []int
+	InitialResources []int
 
-	StockPerBuilding int
-	HaulerCapacity   int
+	HaulerCapacity int
 }

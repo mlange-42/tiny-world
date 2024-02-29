@@ -20,7 +20,7 @@ func NewStock(initial []int) Stock {
 	}
 }
 
-func (s *Stock) CanPay(cost []terr.BuildCost) bool {
+func (s *Stock) CanPay(cost []terr.ResourceAmount) bool {
 	for _, c := range cost {
 		if s.Res[c.Resource] < c.Amount {
 			return false
@@ -29,7 +29,7 @@ func (s *Stock) CanPay(cost []terr.BuildCost) bool {
 	return true
 }
 
-func (s *Stock) Pay(cost []terr.BuildCost) {
+func (s *Stock) Pay(cost []terr.ResourceAmount) {
 	for _, c := range cost {
 		s.Res[c.Resource] -= c.Amount
 	}

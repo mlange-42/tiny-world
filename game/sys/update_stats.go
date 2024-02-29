@@ -13,30 +13,27 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
-	rules       generic.Resource[res.Rules]
 	production  generic.Resource[res.Production]
 	stock       generic.Resource[res.Stock]
 	ui          generic.Resource[res.UI]
 	prodFilter  generic.Filter1[comp.Production]
 	consFilter  generic.Filter1[comp.Consumption]
-	stockFilter generic.Filter1[comp.Warehouse]
+	stockFilter generic.Filter1[comp.Terrain]
 }
 
 // Initialize the system
 func (s *UpdateStats) Initialize(world *ecs.World) {
-	s.rules = generic.NewResource[res.Rules](world)
 	s.production = generic.NewResource[res.Production](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.ui = generic.NewResource[res.UI](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
-	s.stockFilter = *generic.NewFilter1[comp.Warehouse]()
+	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
 }
 
 // Update the system
 func (s *UpdateStats) Update(world *ecs.World) {
-	rules := s.rules.Get()
 	ui := s.ui.Get()
 	production := s.production.Get()
 	stock := s.stock.Get()
@@ -45,7 +42,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	prodQuery := s.prodFilter.Query(world)
 	for prodQuery.Next() {
 		prod := prodQuery.Get()
-		production.Prod[prod.Type] += prod.Amount
+		production.Prod[prod.Resource] += prod.Amount
 	}
 	consQuery := s.consFilter.Query(world)
 	for consQuery.Next() {
@@ -53,12 +50,19 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		production.Cons[cons.Resource] += cons.Amount
 	}
 
+	for i := range resource.Properties {
+		stock.Cap[i] = 0
+	}
 	stockQuery := s.stockFilter.Query(world)
-	numWarehouses := stockQuery.Count()
-	stockQuery.Close()
+	for stockQuery.Next() {
+		tp := stockQuery.Get()
+		st := terr.Properties[tp.Terrain].Storage
+		for i := range resource.Properties {
+			stock.Cap[i] += st[i]
+		}
+	}
 
 	for i := range resource.Properties {
-		stock.Cap[i] = numWarehouses * rules.StockPerWarehouse[i]
 		if stock.Res[i] > stock.Cap[i] {
 			stock.Res[i] = stock.Cap[i]
 		}

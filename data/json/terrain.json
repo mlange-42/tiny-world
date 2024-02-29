@@ -103,9 +103,13 @@
             "can_build": true,
             "can_buy": true,
             "terrain_below": "path",
+            "self_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 5},
                 {"resource": "stones", "amount": 2}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5}
             ],
             "production": {
                 "resource": "food",
@@ -124,8 +128,12 @@
             "can_build": true,
             "can_buy": true,
             "terrain_below": "path",
+            "self_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 3}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5}
             ],
             "production": {
                 "resource": "food",
@@ -139,13 +147,18 @@
         },
         {
             "name": "lumberjack",
+            "is_building": true,
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
             "terrain_below": "path",
+            "self_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 3}
+            ],
+            "storage": [
+                {"resource": "wood", "amount": 5}
             ],
             "production": {
                 "resource": "wood",
@@ -164,8 +177,12 @@
             "can_build": true,
             "can_buy": true,
             "terrain_below": "path",
+            "self_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 10}
+            ],
+            "storage": [
+                {"resource": "stones", "amount": 5}
             ],
             "production": {
                 "resource": "stones",
@@ -185,7 +202,13 @@
             "can_build": true,
             "can_buy": true,
             "terrain_below": "path",
+            "self_connect_below": true,
             "build_cost": [
+                {"resource": "wood", "amount": 25},
+                {"resource": "stones", "amount": 25}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 25},
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}
             ],

@@ -55,7 +55,7 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 		}
 		pr.Amount = 0
 
-		if cons != nil && cons.Amount > 0 && stock.Res[cons.Resource] < 1 {
+		if cons != nil && cons.Amount > 0 && cons.Resource != pr.Resource && stock.Res[cons.Resource] < 1 {
 			continue
 		}
 

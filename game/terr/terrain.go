@@ -61,13 +61,13 @@ func Prepare(f fs.FS, file string) {
 
 	props := []TerrainProps{}
 	for i, t := range propsHelper.Terrains {
-		cost := []BuildCost{}
+		cost := []ResourceAmount{}
 		for _, cst := range t.BuildCost {
 			id, ok := resource.ResourceID(cst.Resource)
 			if !ok {
 				panic(fmt.Sprintf("unknown resource %s", cst.Resource))
 			}
-			cost = append(cost, BuildCost{
+			cost = append(cost, ResourceAmount{
 				Resource: id,
 				Amount:   cst.Amount,
 			})
@@ -102,19 +102,30 @@ func Prepare(f fs.FS, file string) {
 			productionTerrain = toTerrain(idLookup, t.Production.ProductionTerrain)
 		}
 
+		storage := make([]int, len(resource.Properties))
+		for _, entry := range t.Storage {
+			res, ok := resource.ResourceID(entry.Resource)
+			if !ok {
+				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
+			}
+			storage[res] = entry.Amount
+		}
+
 		p := TerrainProps{
-			Name:         t.Name,
-			IsTerrain:    t.IsTerrain,
-			IsPath:       t.IsPath,
-			IsBuilding:   t.IsBuilding,
-			IsWarehouse:  t.IsWarehouse,
-			BuildOn:      toTerrains(idLookup, t.BuildOn...),
-			TerrainBelow: terrBelow,
-			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
-			CanBuild:     t.CanBuild,
-			CanBuy:       t.CanBuy,
-			Description:  t.Description,
-			BuildCost:    cost,
+			Name:             t.Name,
+			IsTerrain:        t.IsTerrain,
+			IsPath:           t.IsPath,
+			IsBuilding:       t.IsBuilding,
+			IsWarehouse:      t.IsWarehouse,
+			BuildOn:          toTerrains(idLookup, t.BuildOn...),
+			TerrainBelow:     terrBelow,
+			SelfConnectBelow: t.SelfConnectBelow,
+			ConnectsTo:       toTerrains(idLookup, t.ConnectsTo...),
+			CanBuild:         t.CanBuild,
+			CanBuy:           t.CanBuy,
+			Description:      t.Description,
+			BuildCost:        cost,
+			Storage:          storage,
 			Production: Production{
 				Resource:          prodRes,
 				MaxProduction:     t.Production.MaxProduction,
@@ -131,6 +142,7 @@ func Prepare(f fs.FS, file string) {
 		if t.IsWarehouse {
 			Warehouse = Terrain(i)
 		}
+
 		props = append(props, p)
 	}
 
@@ -158,35 +170,39 @@ func TerrainID(name string) (Terrain, bool) {
 }
 
 type TerrainProps struct {
-	Name         string
-	IsTerrain    bool
-	IsPath       bool
-	IsBuilding   bool
-	IsWarehouse  bool
-	BuildOn      Terrains
-	TerrainBelow Terrain
-	ConnectsTo   Terrains
-	CanBuild     bool
-	CanBuy       bool
-	Production   Production
-	BuildCost    []BuildCost
-	Description  string
+	Name             string
+	IsTerrain        bool
+	IsPath           bool
+	IsBuilding       bool
+	IsWarehouse      bool
+	BuildOn          Terrains
+	TerrainBelow     Terrain
+	SelfConnectBelow bool
+	ConnectsTo       Terrains
+	CanBuild         bool
+	CanBuy           bool
+	Production       Production
+	BuildCost        []ResourceAmount
+	Storage          []int
+	Description      string
 }
 
 type terrainPropsJs struct {
-	Name         string        `json:"name"`
-	IsTerrain    bool          `json:"is_terrain"`
-	IsPath       bool          `json:"is_path"`
-	IsBuilding   bool          `json:"is_building"`
-	IsWarehouse  bool          `json:"is_warehouse"`
-	BuildOn      []string      `json:"build_on,omitempty"`
-	TerrainBelow string        `json:"terrain_below"`
-	ConnectsTo   []string      `json:"connects_to,omitempty"`
-	CanBuild     bool          `json:"can_build"`
-	CanBuy       bool          `json:"can_buy"`
-	Production   productionJs  `json:"production"`
-	BuildCost    []buildCostJs `json:"build_cost,omitempty"`
-	Description  string        `json:"description,omitempty"`
+	Name             string             `json:"name"`
+	IsTerrain        bool               `json:"is_terrain"`
+	IsPath           bool               `json:"is_path"`
+	IsBuilding       bool               `json:"is_building"`
+	IsWarehouse      bool               `json:"is_warehouse"`
+	BuildOn          []string           `json:"build_on,omitempty"`
+	TerrainBelow     string             `json:"terrain_below"`
+	SelfConnectBelow bool               `json:"self_connect_below"`
+	ConnectsTo       []string           `json:"connects_to,omitempty"`
+	CanBuild         bool               `json:"can_build"`
+	CanBuy           bool               `json:"can_buy"`
+	Production       productionJs       `json:"production"`
+	BuildCost        []resourceAmountJs `json:"build_cost,omitempty"`
+	Storage          []resourceAmountJs `json:"storage,omitempty"`
+	Description      string             `json:"description,omitempty"`
 }
 
 type Production struct {
@@ -207,12 +223,12 @@ type productionJs struct {
 	ProductionTerrain string `json:"production_terrain"`
 }
 
-type BuildCost struct {
+type ResourceAmount struct {
 	Resource resource.Resource
 	Amount   int
 }
 
-type buildCostJs struct {
+type resourceAmountJs struct {
 	Resource string `json:"resource"`
 	Amount   int    `json:"amount"`
 }

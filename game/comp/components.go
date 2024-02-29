@@ -30,7 +30,7 @@ type HaulerEntry struct {
 }
 
 type Production struct {
-	Type      resource.Resource
+	Resource  resource.Resource
 	Amount    int
 	Countdown int
 	Stock     int

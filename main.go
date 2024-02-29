@@ -41,10 +41,8 @@ func run(saveGame, tileSet string) {
 		WorldSize:      256,
 		RandomTerrains: 6,
 
-		InitialResources:  []int{25, 25, 25},
-		StockPerWarehouse: []int{25, 25, 25},
-		StockPerBuilding:  5,
-		HaulerCapacity:    2,
+		InitialResources: []int{25, 25, 25},
+		HaulerCapacity:   2,
 	}
 	ecs.AddResource(&g.Model.World, &rules)
 

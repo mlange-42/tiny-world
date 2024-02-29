@@ -35,7 +35,7 @@ type Terrain struct {
 	landUseE *res.LandUseEntities
 	update   *res.UpdateInterval
 
-	prodMapper   generic.Map1[comp.Production]
+	prodMapper   generic.Map2[comp.Terrain, comp.Production]
 	pathMapper   generic.Map1[comp.Path]
 	haulerMapper generic.Map2[comp.Hauler, comp.HaulerSprite]
 	spriteMapper generic.Map1[comp.RandomSprite]
@@ -58,7 +58,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.landUseE = ecs.GetResource[res.LandUseEntities](world)
 	s.update = ecs.GetResource[res.UpdateInterval](world)
 
-	s.prodMapper = generic.NewMap1[comp.Production](world)
+	s.prodMapper = generic.NewMap2[comp.Terrain, comp.Production](world)
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
@@ -224,8 +224,9 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	if luEntity.IsZero() {
 		return
 	}
-	prod := s.prodMapper.Get(luEntity)
-	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, s.rules.StockPerBuilding), s.font,
+	tp, prod := s.prodMapper.Get(luEntity)
+	bStock := terr.Properties[tp.Terrain].Storage[prod.Resource]
+	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, bStock), s.font,
 		int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
 		int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
 		color.RGBA{255, 255, 255, 255},
@@ -266,7 +267,7 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 		height = s.drawSprite(img, terrain, landUse,
 			x, y, below, point, height,
 			camOffset, randSprite,
-			selfConnect, terr.Air)
+			terr.Properties[t].SelfConnectBelow, terr.Air)
 	}
 
 	var sp *ebiten.Image
