@@ -84,6 +84,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	bounds := s.view.Bounds(canvas.Width, canvas.Height)
 
 	img.Clear()
+	img.Fill(s.sprites.Background)
 
 	mx, my := s.view.ScreenToGlobal(ebiten.CursorPosition())
 	cursor := s.view.GlobalToTile(mx, my)
