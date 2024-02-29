@@ -8,7 +8,6 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -87,14 +86,15 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 }
 
 func (f *EntityFactory) Create(pos image.Point, t terr.Terrain) ecs.Entity {
-	if t == terr.Warehouse {
+	props := &terr.Properties[t]
+	if props.IsWarehouse {
 		return f.createWarehouse(pos, t)
 	}
-	if t == terr.Path {
+	if props.IsPath {
 		return f.createPath(pos, t)
 	}
-	prod := terr.Properties[t].Production
-	if prod.Produces == resource.EndResources {
+	prod := props.Production
+	if prod.MaxProduction == 0 {
 		return f.createLandUse(pos, t)
 	}
 	return f.createProduction(pos, t, &prod)

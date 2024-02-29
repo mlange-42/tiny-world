@@ -11,7 +11,6 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"golang.org/x/image/font"
 )
@@ -114,7 +113,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].Below)
 			}
 
-			if lu == terr.Path {
+			if terr.Properties[lu].IsPath {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
 				offset := 0.1
 				for _, h := range path.Haulers {
@@ -196,8 +195,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	luEntity := s.landUseE.Get(x, y)
 	prop := terr.Properties[toBuild]
 	if prop.CanBuild {
-		canDestroy := lu == toBuild &&
-			(s.rules.AllowRemoveBuilt && prop.CanBuy) || (s.rules.AllowRemoveNatural && !prop.CanBuy)
+		canDestroy := lu == toBuild && prop.CanBuy
 
 		canBuildHere := prop.BuildOn.Contains(ter)
 		if prop.IsTerrain {
@@ -222,7 +220,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	}
 
 	propHere := &terr.Properties[lu]
-	if propHere.Production.Produces == resource.EndResources {
+	if propHere.Production.MaxProduction == 0 {
 		return
 	}
 

@@ -59,16 +59,17 @@ func (d Terrains) Contains(dir Terrain) bool {
 }
 
 type TerrainProps struct {
-	Name        string
-	IsTerrain   bool
-	BuildOn     Terrains
-	BuildOnFree Terrains
-	Below       Terrain
-	ConnectsTo  Terrains
-	CanBuild    bool
-	CanBuy      bool
-	Production  Production
-	BuildCost   []BuildCost
+	Name        string      `json:"name"`
+	IsTerrain   bool        `json:"is_terrain"`
+	IsPath      bool        `json:"is_path"`
+	IsWarehouse bool        `json:"is_warehouse"`
+	BuildOn     Terrains    `json:"build_on"`
+	Below       Terrain     `json:"terrain_below"`
+	ConnectsTo  Terrains    `json:"connects_to"`
+	CanBuild    bool        `json:"can_build"`
+	CanBuy      bool        `json:"can_buy"`
+	Production  Production  `json:"production"`
+	BuildCost   []BuildCost `json:"build_cost,omitempty"`
 }
 
 type Production struct {
@@ -105,72 +106,61 @@ var Descriptions = [EndTerrain]string{
 
 var Properties = [EndTerrain]TerrainProps{
 	{Name: "air", IsTerrain: true,
-		CanBuild:   false,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		CanBuild: false,
+		CanBuy:   false,
 	},
 	{Name: "buildable", IsTerrain: true,
-		CanBuild:   false,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		CanBuild: false,
+		CanBuy:   false,
 	},
 	{Name: "grass", IsTerrain: true,
-		BuildOn:     NewTerrains(Buildable),
-		BuildOnFree: NewTerrains(Buildable, Water, Desert),
-		ConnectsTo:  NewTerrains(Grass, Water, Desert),
-		CanBuild:    true,
-		CanBuy:      false,
-		Production:  Production{Produces: resource.EndResources},
+		BuildOn:    NewTerrains(Buildable),
+		ConnectsTo: NewTerrains(Grass, Water, Desert),
+		CanBuild:   true,
+		CanBuy:     false,
 	},
 	{Name: "water", IsTerrain: true,
-		BuildOn:     NewTerrains(Buildable),
-		BuildOnFree: NewTerrains(Buildable, Grass, Desert),
-		ConnectsTo:  NewTerrains(Water),
-		Below:       Grass,
-		CanBuild:    true,
-		CanBuy:      false,
-		Production:  Production{Produces: resource.EndResources},
+		BuildOn:    NewTerrains(Buildable),
+		ConnectsTo: NewTerrains(Water),
+		Below:      Grass,
+		CanBuild:   true,
+		CanBuy:     false,
 	},
 	{Name: "desert", IsTerrain: true,
-		BuildOn:     NewTerrains(Buildable),
-		BuildOnFree: NewTerrains(Buildable, Grass, Water),
-		ConnectsTo:  NewTerrains(Desert),
-		Below:       Grass,
-		CanBuild:    true,
-		CanBuy:      false,
-		Production:  Production{Produces: resource.EndResources},
+		BuildOn:    NewTerrains(Buildable),
+		ConnectsTo: NewTerrains(Desert),
+		Below:      Grass,
+		CanBuild:   true,
+		CanBuy:     false,
 	},
 	{Name: "path", IsTerrain: false,
+		IsPath:     true,
 		BuildOn:    NewTerrains(Grass, Desert, Water),
 		ConnectsTo: NewTerrains(Path, Farm, Fisherman, Lumberjack, Mason, Warehouse),
 		CanBuild:   true,
 		CanBuy:     true,
-		Production: Production{Produces: resource.EndResources},
 		BuildCost: []BuildCost{
 			{resource.Wood, 1},
 		},
 	},
 	{Name: "field", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.EndResources},
+		BuildOn:  NewTerrains(Grass),
+		CanBuild: true,
+		CanBuy:   true,
 		BuildCost: []BuildCost{
 			{resource.Wood, 1},
 			{resource.Stones, 1},
 		},
 	},
 	{Name: "tree", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		BuildOn:  NewTerrains(Grass),
+		CanBuild: true,
+		CanBuy:   false,
 	},
 	{Name: "rock", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
+		BuildOn:  NewTerrains(Grass, Desert),
+		CanBuild: true,
+		CanBuy:   false,
 	},
 	{Name: "farm", IsTerrain: false,
 		BuildOn:  NewTerrains(Grass),
@@ -220,10 +210,11 @@ var Properties = [EndTerrain]TerrainProps{
 		},
 	},
 	{Name: "warehouse", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.EndResources},
+		IsWarehouse: true,
+		BuildOn:     NewTerrains(Grass, Desert),
+		CanBuild:    true,
+		CanBuy:      true,
+		Production:  Production{Produces: resource.EndResources},
 		BuildCost: []BuildCost{
 			{resource.Wood, 25},
 			{resource.Stones, 25},

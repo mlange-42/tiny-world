@@ -33,11 +33,6 @@ func run(saveGame, tileSet string) {
 	// =========== Resources ===========
 
 	rules := res.Rules{
-		AllowStroke:         false,
-		AllowReplaceTerrain: false,
-		AllowRemoveNatural:  false,
-		AllowRemoveBuilt:    true,
-
 		WorldSize:      256,
 		RandomTerrains: 6,
 

@@ -11,7 +11,6 @@ import (
 
 // Build system.
 type Build struct {
-	rules           generic.Resource[res.Rules]
 	view            generic.Resource[res.View]
 	terrain         generic.Resource[res.Terrain]
 	terrainEntities generic.Resource[res.TerrainEntities]
@@ -26,7 +25,6 @@ type Build struct {
 
 // Initialize the system
 func (s *Build) Initialize(world *ecs.World) {
-	s.rules = generic.NewResource[res.Rules](world)
 	s.view = generic.NewResource[res.View](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.terrainEntities = generic.NewResource[res.TerrainEntities](world)
@@ -41,7 +39,6 @@ func (s *Build) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Build) Update(world *ecs.World) {
-	rules := s.rules.Get()
 	sel := s.selection.Get()
 	ui := s.ui.Get()
 	fac := s.factory.Get()
@@ -56,9 +53,6 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	mouseFn := inpututil.IsMouseButtonJustPressed
-	if rules.AllowStroke {
-		mouseFn = ebiten.IsMouseButtonPressed
-	}
 
 	p := &terr.Properties[sel.BuildType]
 	if !p.CanBuild ||
@@ -81,10 +75,8 @@ func (s *Build) Update(world *ecs.World) {
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		canBuy := p.CanBuy
-		if luHere == sel.BuildType &&
-			((rules.AllowRemoveBuilt && canBuy) || (rules.AllowRemoveNatural && !canBuy) &&
-				stock.CanPay(p.BuildCost)) {
+		if luHere == sel.BuildType && p.CanBuy &&
+			stock.CanPay(p.BuildCost) {
 
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
@@ -105,14 +97,8 @@ func (s *Build) Update(world *ecs.World) {
 	terrain := s.terrain.Get()
 	terrHere := terrain.Get(cursor.X, cursor.Y)
 	if p.IsTerrain {
-		if rules.AllowReplaceTerrain {
-			if !p.BuildOnFree.Contains(terrHere) {
-				return
-			}
-		} else {
-			if !p.BuildOn.Contains(terrHere) {
-				return
-			}
+		if !p.BuildOn.Contains(terrHere) {
+			return
 		}
 		fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
 	} else {
