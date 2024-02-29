@@ -2,5 +2,5 @@ package main
 
 import "embed"
 
-//go:embed assets
-var assets embed.FS
+//go:embed data
+var data embed.FS

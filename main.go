@@ -75,7 +75,7 @@ func run(saveGame, tileSet string) {
 	}
 	ecs.AddResource(&g.Model.World, &update)
 
-	sprites := res.NewSprites(assets, "assets/sprites", tileSet)
+	sprites := res.NewSprites(data, "data/gfx", tileSet)
 	ecs.AddResource(&g.Model.World, &sprites)
 
 	view := res.NewView(sprites.TileWidth, sprites.TileHeight)
@@ -90,7 +90,7 @@ func run(saveGame, tileSet string) {
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
-	fonts := res.NewFonts(assets)
+	fonts := res.NewFonts(data)
 	ecs.AddResource(&g.Model.World, &fonts)
 
 	ui := res.NewUI(&selection, fonts.Default, &sprites, sprites.TileWidth)
