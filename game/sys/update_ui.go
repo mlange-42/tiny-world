@@ -19,7 +19,7 @@ func (s *UpdateUI) Initialize(world *ecs.World) {
 
 	rules := s.rules.Get()
 	ui := s.ui.Get()
-	ui.CreateRandomButtons(rules.RandomTerrains)
+	ui.CreateRandomButtons(rules.RandomTerrainsCount)
 }
 
 // Update the system

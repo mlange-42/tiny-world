@@ -43,7 +43,7 @@ func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, bool) {
 		}
 		luOld := a.landUse.Get(current.Tile.X, current.Tile.Y)
 		if current.Tile != start {
-			if luOld != terr.Path {
+			if !terr.Properties[luOld].IsPath {
 				gScore[current.Tile] = 0
 				continue
 			}
@@ -56,7 +56,7 @@ func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, bool) {
 				continue
 			}
 			lu := a.landUse.Get(xx, yy)
-			if !(lu == terr.Path || (luOld == terr.Path && terr.Buildings.Contains(lu))) {
+			if !(terr.Properties[lu].IsPath || (terr.Properties[luOld].IsPath && terr.Buildings.Contains(lu))) {
 				continue
 			}
 

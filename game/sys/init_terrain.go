@@ -21,7 +21,7 @@ func (s *InitTerrain) Initialize(world *ecs.World) {
 
 	fac := factory.Get()
 
-	fac.Set(world, x, y, terr.Grass)
+	fac.Set(world, x, y, terr.Default)
 	fac.Set(world, x, y, terr.Warehouse)
 }
 

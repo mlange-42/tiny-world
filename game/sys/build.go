@@ -56,9 +56,6 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	mouseFn := inpututil.IsMouseButtonJustPressed
-	if rules.AllowStroke {
-		mouseFn = ebiten.IsMouseButtonPressed
-	}
 
 	p := &terr.Properties[sel.BuildType]
 	if !p.CanBuild ||
@@ -81,17 +78,15 @@ func (s *Build) Update(world *ecs.World) {
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		canBuy := p.CanBuy
-		if luHere == sel.BuildType &&
-			((rules.AllowRemoveBuilt && canBuy) || (rules.AllowRemoveNatural && !canBuy) &&
-				stock.CanPay(p.BuildCost)) {
+		if luHere == sel.BuildType && p.CanBuy &&
+			stock.CanPay(p.BuildCost) {
 
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
 
 			stock.Pay(p.BuildCost)
-			ui.ReplaceButton(stock)
+			ui.ReplaceButton(stock, rules)
 		} else {
 			sel.Reset()
 		}
@@ -105,14 +100,8 @@ func (s *Build) Update(world *ecs.World) {
 	terrain := s.terrain.Get()
 	terrHere := terrain.Get(cursor.X, cursor.Y)
 	if p.IsTerrain {
-		if rules.AllowReplaceTerrain {
-			if !p.BuildOnFree.Contains(terrHere) {
-				return
-			}
-		} else {
-			if !p.BuildOn.Contains(terrHere) {
-				return
-			}
+		if !p.BuildOn.Contains(terrHere) {
+			return
 		}
 		fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
 	} else {
@@ -135,7 +124,7 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	stock.Pay(p.BuildCost)
-	ui.ReplaceButton(stock)
+	ui.ReplaceButton(stock, rules)
 }
 
 // Finalize the system

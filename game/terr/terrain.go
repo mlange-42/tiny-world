@@ -1,40 +1,23 @@
 package terr
 
 import (
+	"fmt"
+	"io/fs"
+
+	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/resource"
 )
 
 type Terrain uint8
 
-const (
-	// Terrain
-	Air Terrain = iota
-	Buildable
-	Grass
-	Water
-	Desert
-	// Land use
-	Path
-	Field
-	Tree
-	Rock
-	Farm
-	Fisherman
-	Lumberjack
-	Mason
-	Warehouse
-	EndTerrain
-)
+var Air Terrain
+var Buildable Terrain
+var Default Terrain
+var Warehouse Terrain
 
 type Terrains uint32
 
-var Buildings Terrains = NewTerrains(
-	Farm,
-	Fisherman,
-	Lumberjack,
-	Mason,
-	Warehouse,
-)
+var Buildings Terrains
 
 func NewTerrains(dirs ...Terrain) Terrains {
 	d := Terrains(0)
@@ -58,199 +41,215 @@ func (d Terrains) Contains(dir Terrain) bool {
 	return (bits & d) == bits
 }
 
-type TerrainProps struct {
-	Name        string
-	IsTerrain   bool
-	BuildOn     Terrains
-	BuildOnFree Terrains
-	Below       Terrain
-	ConnectsTo  Terrains
-	CanBuild    bool
-	CanBuy      bool
-	Production  Production
-	BuildCost   []BuildCost
-}
-
-type Production struct {
-	Produces          resource.Resource
-	MaxProduction     int
-	ConsumesFood      int
-	RequiredTerrain   Terrain
-	RequiredLandUse   Terrain
-	ProductionTerrain Terrain
-	ProductionLandUse Terrain
-}
-
-type BuildCost struct {
-	Type   resource.Resource
-	Amount int
-}
-
-var Descriptions = [EndTerrain]string{
-	"Nothing",
-	"Nothing",
-	"A basic land tile",
-	"A land tile with water. Can be used by fisherman",
-	"A desert land tile",
-	"A path. Required by all buildings",
-	"Can be used by farms to produce food",
-	"Can be used by lumberjacks to produce wood",
-	"Can be used by masons to produce stones",
-	"Produces 1 food/min per neighboring field",
-	"Produces 1 food/min per neighboring water",
-	"Produces 1 wood/min per neighboring tree",
-	"Produces 1 stone/min per neighboring rock",
-	"Stores resources",
-}
-
-var Properties = [EndTerrain]TerrainProps{
-	{Name: "air", IsTerrain: true,
-		CanBuild:   false,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
-	},
-	{Name: "buildable", IsTerrain: true,
-		CanBuild:   false,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
-	},
-	{Name: "grass", IsTerrain: true,
-		BuildOn:     NewTerrains(Buildable),
-		BuildOnFree: NewTerrains(Buildable, Water, Desert),
-		ConnectsTo:  NewTerrains(Grass, Water, Desert),
-		CanBuild:    true,
-		CanBuy:      false,
-		Production:  Production{Produces: resource.EndResources},
-	},
-	{Name: "water", IsTerrain: true,
-		BuildOn:     NewTerrains(Buildable),
-		BuildOnFree: NewTerrains(Buildable, Grass, Desert),
-		ConnectsTo:  NewTerrains(Water),
-		Below:       Grass,
-		CanBuild:    true,
-		CanBuy:      false,
-		Production:  Production{Produces: resource.EndResources},
-	},
-	{Name: "desert", IsTerrain: true,
-		BuildOn:     NewTerrains(Buildable),
-		BuildOnFree: NewTerrains(Buildable, Grass, Water),
-		ConnectsTo:  NewTerrains(Desert),
-		Below:       Grass,
-		CanBuild:    true,
-		CanBuy:      false,
-		Production:  Production{Produces: resource.EndResources},
-	},
-	{Name: "path", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert, Water),
-		ConnectsTo: NewTerrains(Path, Farm, Fisherman, Lumberjack, Mason, Warehouse),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.EndResources},
-		BuildCost: []BuildCost{
-			{resource.Wood, 1},
-		},
-	},
-	{Name: "field", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.EndResources},
-		BuildCost: []BuildCost{
-			{resource.Wood, 1},
-			{resource.Stones, 1},
-		},
-	},
-	{Name: "tree", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
-	},
-	{Name: "rock", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     false,
-		Production: Production{Produces: resource.EndResources},
-	},
-	{Name: "farm", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass),
-		CanBuild: true,
-		CanBuy:   true,
-		Production: Production{
-			Produces: resource.Food, MaxProduction: 7,
-			RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
-		BuildCost: []BuildCost{
-			{resource.Wood, 5},
-			{resource.Stones, 2},
-		},
-	},
-	{Name: "fisherman", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass, Desert),
-		CanBuild: true,
-		CanBuy:   true,
-		Production: Production{
-			Produces: resource.Food, MaxProduction: 5,
-			RequiredLandUse: Path, ProductionTerrain: Water, ConsumesFood: 1},
-		BuildCost: []BuildCost{
-			{resource.Wood, 3},
-			{resource.Stones, 0},
-		},
-	},
-	{Name: "lumberjack", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass),
-		CanBuild: true,
-		CanBuy:   true,
-		Production: Production{
-			Produces: resource.Wood, MaxProduction: 7,
-			RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
-		BuildCost: []BuildCost{
-			{resource.Wood, 2},
-			{resource.Stones, 3},
-		},
-	},
-	{Name: "mason", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass, Desert),
-		CanBuild: true,
-		CanBuy:   true,
-		Production: Production{
-			Produces: resource.Stones, MaxProduction: 3,
-			RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
-		BuildCost: []BuildCost{
-			{resource.Wood, 10},
-		},
-	},
-	{Name: "warehouse", IsTerrain: false,
-		BuildOn:    NewTerrains(Grass, Desert),
-		CanBuild:   true,
-		CanBuy:     true,
-		Production: Production{Produces: resource.EndResources},
-		BuildCost: []BuildCost{
-			{resource.Wood, 25},
-			{resource.Stones, 25},
-		},
-	},
-}
+var Properties []TerrainProps
 
 var idLookup map[string]Terrain
 
-var RandomTerrain = []Terrain{
-	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
-	Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass, Grass,
-	Water, Water, Water, Water, Water, Water,
-	Desert,
-	Tree, Tree, Tree, Tree,
-	Rock,
-}
-
-func init() {
-	idLookup = map[string]Terrain{}
-
-	for i := Terrain(0); i < EndTerrain; i++ {
-		idLookup[Properties[i].Name] = i
+func Prepare(f fs.FS, file string) {
+	propsHelper := props{}
+	err := util.FromJsonFs(f, file, &propsHelper)
+	if err != nil {
+		panic(err)
 	}
+
+	idLookup = map[string]Terrain{}
+	for i, t := range propsHelper.Terrains {
+		idLookup[t.Name] = Terrain(i)
+	}
+
+	props := []TerrainProps{}
+	for i, t := range propsHelper.Terrains {
+		cost := []ResourceAmount{}
+		for _, cst := range t.BuildCost {
+			id, ok := resource.ResourceID(cst.Resource)
+			if !ok {
+				panic(fmt.Sprintf("unknown resource %s", cst.Resource))
+			}
+			cost = append(cost, ResourceAmount{
+				Resource: id,
+				Amount:   cst.Amount,
+			})
+		}
+		var prodRes resource.Resource
+		var consResource resource.Resource
+		if t.Production.MaxProduction > 0 {
+			var ok bool
+			prodRes, ok = resource.ResourceID(t.Production.Resource)
+			if !ok {
+				panic(fmt.Sprintf("unknown resource %s", t.Production.Resource))
+			}
+		}
+		if t.Production.ConsumesAmount > 0 {
+			var ok bool
+			consResource, ok = resource.ResourceID(t.Production.ConsumesResource)
+			if !ok {
+				panic(fmt.Sprintf("unknown resource %s", t.Production.Resource))
+			}
+		}
+
+		var terrBelow Terrain
+		if t.TerrainBelow != "" {
+			terrBelow = toTerrain(idLookup, t.TerrainBelow)
+		}
+		var requiredTerrain Terrain
+		if t.Production.RequiredTerrain != "" {
+			requiredTerrain = toTerrain(idLookup, t.Production.RequiredTerrain)
+		}
+		var productionTerrain Terrain
+		if t.Production.ProductionTerrain != "" {
+			productionTerrain = toTerrain(idLookup, t.Production.ProductionTerrain)
+		}
+
+		storage := make([]int, len(resource.Properties))
+		for _, entry := range t.Storage {
+			res, ok := resource.ResourceID(entry.Resource)
+			if !ok {
+				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
+			}
+			storage[res] = entry.Amount
+		}
+
+		p := TerrainProps{
+			Name:             t.Name,
+			IsTerrain:        t.IsTerrain,
+			IsPath:           t.IsPath,
+			IsBuilding:       t.IsBuilding,
+			IsWarehouse:      t.IsWarehouse,
+			BuildOn:          toTerrains(idLookup, t.BuildOn...),
+			TerrainBelow:     terrBelow,
+			SelfConnectBelow: t.SelfConnectBelow,
+			ConnectsTo:       toTerrains(idLookup, t.ConnectsTo...),
+			CanBuild:         t.CanBuild,
+			CanBuy:           t.CanBuy,
+			Description:      t.Description,
+			BuildCost:        cost,
+			Storage:          storage,
+			Production: Production{
+				Resource:          prodRes,
+				MaxProduction:     t.Production.MaxProduction,
+				ConsumesResource:  consResource,
+				ConsumesAmount:    t.Production.ConsumesAmount,
+				RequiredTerrain:   requiredTerrain,
+				ProductionTerrain: productionTerrain,
+				HaulCapacity:      t.Production.HaulCapacity,
+			},
+		}
+
+		if t.IsBuilding {
+			Buildings.Set(Terrain(i))
+		}
+		if t.IsWarehouse {
+			Warehouse = Terrain(i)
+		}
+
+		props = append(props, p)
+	}
+
+	if Warehouse == Air {
+		panic("no warehouse building defined")
+	}
+
+	Air = toTerrain(idLookup, propsHelper.ZeroTerrain)
+	Buildable = toTerrain(idLookup, propsHelper.Buildable)
+	Default = toTerrain(idLookup, propsHelper.Default)
+
+	Properties = props
 }
 
 func TerrainID(name string) (Terrain, bool) {
 	t, ok := idLookup[name]
 	return t, ok
+}
+
+type TerrainProps struct {
+	Name             string
+	IsTerrain        bool
+	IsPath           bool
+	IsBuilding       bool
+	IsWarehouse      bool
+	BuildOn          Terrains
+	TerrainBelow     Terrain
+	SelfConnectBelow bool
+	ConnectsTo       Terrains
+	CanBuild         bool
+	CanBuy           bool
+	Production       Production
+	BuildCost        []ResourceAmount
+	Storage          []int
+	Description      string
+}
+
+type terrainPropsJs struct {
+	Name             string             `json:"name"`
+	IsTerrain        bool               `json:"is_terrain"`
+	IsPath           bool               `json:"is_path"`
+	IsBuilding       bool               `json:"is_building"`
+	IsWarehouse      bool               `json:"is_warehouse"`
+	BuildOn          []string           `json:"build_on,omitempty"`
+	TerrainBelow     string             `json:"terrain_below"`
+	SelfConnectBelow bool               `json:"self_connect_below"`
+	ConnectsTo       []string           `json:"connects_to,omitempty"`
+	CanBuild         bool               `json:"can_build"`
+	CanBuy           bool               `json:"can_buy"`
+	Production       productionJs       `json:"production"`
+	BuildCost        []resourceAmountJs `json:"build_cost,omitempty"`
+	Storage          []resourceAmountJs `json:"storage,omitempty"`
+	Description      string             `json:"description,omitempty"`
+}
+
+type Production struct {
+	Resource          resource.Resource
+	MaxProduction     int
+	ConsumesResource  resource.Resource
+	ConsumesAmount    int
+	RequiredTerrain   Terrain
+	ProductionTerrain Terrain
+	HaulCapacity      int
+}
+
+type productionJs struct {
+	Resource          string `json:"resource"`
+	MaxProduction     int    `json:"max_production"`
+	ConsumesResource  string `json:"consumes_resource"`
+	ConsumesAmount    int    `json:"consumes_amount"`
+	RequiredTerrain   string `json:"required_terrain"`
+	ProductionTerrain string `json:"production_terrain"`
+	HaulCapacity      int    `json:"haul_capacity"`
+}
+
+type ResourceAmount struct {
+	Resource resource.Resource
+	Amount   int
+}
+
+type resourceAmountJs struct {
+	Resource string `json:"resource"`
+	Amount   int    `json:"amount"`
+}
+
+type props struct {
+	ZeroTerrain string           `json:"zero_terrain"`
+	Buildable   string           `json:"buildable"`
+	Default     string           `json:"default"`
+	Terrains    []terrainPropsJs `json:"terrains"`
+}
+
+func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {
+	var ret Terrains
+	for _, t := range terr {
+		id, ok := lookup[t]
+		if !ok {
+			panic(fmt.Sprintf("unknown terrain %s", t))
+		}
+		ret.Set(id)
+	}
+	return ret
+}
+
+func toTerrain(lookup map[string]Terrain, t string) Terrain {
+	id, ok := lookup[t]
+	if !ok {
+		panic(fmt.Sprintf("unknown terrain %s", t))
+	}
+	return id
 }

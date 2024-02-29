@@ -5,7 +5,6 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
-	"github.com/mlange-42/tiny-world/game/resource"
 )
 
 // DoConsumption system.
@@ -49,7 +48,7 @@ func (s *DoConsumption) Update(world *ecs.World) {
 		cons.Countdown -= cons.Amount
 		if cons.Countdown < 0 {
 			cons.Countdown += update.Countdown
-			stock.Res[resource.Food]--
+			stock.Res[cons.Resource]--
 		}
 	}
 }

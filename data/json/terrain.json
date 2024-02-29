@@ -1,0 +1,214 @@
+{
+    "zero_terrain": "air",
+    "buildable": "buildable",
+    "default": "grass",
+    "terrains": [
+        {
+            "name": "air",
+            "is_terrain": true,
+            "can_build": false,
+            "can_buy": false,
+            "description": ""
+        },
+        {
+            "name": "buildable",
+            "is_terrain": true,
+            "can_build": false,
+            "can_buy": false,
+            "description": ""
+        },
+        {
+            "name": "grass",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["grass", "water", "desert"],
+            "can_build": true,
+            "can_buy": false,
+            "description": "A basic land tile"
+        },
+        {
+            "name": "water",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["water"],
+            "terrain_below": "grass",
+            "can_build": true,
+            "can_buy": false,
+            "description": "A land tile with water. Can be used by fisherman"
+        },
+        {
+            "name": "desert",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["desert"],
+            "terrain_below": "grass",
+            "can_build": true,
+            "can_buy": false,
+            "description": "A desert land tile"
+        },
+
+
+        {
+            "name": "path",
+            "is_path": true,
+            "build_on": ["grass", "water", "desert"],
+            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
+            "can_build": true,
+            "can_buy": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 1}
+            ],
+            "description": "A path. Required by all buildings"
+        },
+
+        {
+            "name": "field",
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 1},
+                {"resource": "stones", "amount": 1}
+            ],
+            "description": "Can be used by farms to produce food"
+        },
+
+        {
+            "name": "tree",
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": false,
+            "description": "Can be used by lumberjacks to produce wood"
+        },
+        {
+            "name": "rock",
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": false,
+            "description": "Can be used by masons to produce stones"
+        },
+
+        {
+            "name": "farm",
+            "is_building": true,
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "self_connect_below": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 5},
+                {"resource": "stones", "amount": 2}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 7,
+                "required_terrain": "path",
+                "production_terrain": "field",
+                "consumes_resource": "food",
+                "consumes_amount": 1,
+                "haul_capacity": 2
+            },
+            "description": "Produces 1 food/min per neighboring field"
+        },
+        {
+            "name": "fisherman",
+            "is_building": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "self_connect_below": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 3}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 5,
+                "required_terrain": "path",
+                "production_terrain": "water",
+                "consumes_resource": "food",
+                "consumes_amount": 1,
+                "haul_capacity": 2
+            },
+            "description": "Produces 1 food/min per neighboring water"
+        },
+        {
+            "name": "lumberjack",
+            "is_building": true,
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "self_connect_below": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 2},
+                {"resource": "stones", "amount": 3}
+            ],
+            "storage": [
+                {"resource": "wood", "amount": 5}
+            ],
+            "production": {
+                "resource": "wood",
+                "max_production": 7,
+                "required_terrain": "path",
+                "production_terrain": "tree",
+                "consumes_resource": "food",
+                "consumes_amount": 5,
+                "haul_capacity": 2
+            },
+            "description": "Produces 1 wood/min per neighboring tree"
+        },
+        {
+            "name": "mason",
+            "is_building": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "self_connect_below": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 10}
+            ],
+            "storage": [
+                {"resource": "stones", "amount": 5}
+            ],
+            "production": {
+                "resource": "stones",
+                "max_production": 3,
+                "required_terrain": "path",
+                "production_terrain": "rock",
+                "consumes_resource": "food",
+                "consumes_amount": 5,
+                "haul_capacity": 2
+            },
+            "description": "Produces 1 stone/min per neighboring rock"
+        },
+        {
+            "name": "warehouse",
+            "is_building": true,
+            "is_warehouse": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "self_connect_below": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 25},
+                {"resource": "stones", "amount": 25}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 25},
+                {"resource": "wood", "amount": 25},
+                {"resource": "stones", "amount": 25}
+            ],
+            "description": "Stores resources"
+        }
+    ]
+}

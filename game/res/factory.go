@@ -8,7 +8,6 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -79,22 +78,23 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
-		&comp.Production{Type: prod.Produces, Amount: 0, Countdown: update.Countdown},
-		&comp.Consumption{Amount: prod.ConsumesFood, Countdown: update.Countdown},
+		&comp.Production{Resource: prod.Resource, Amount: 0, Countdown: update.Countdown},
+		&comp.Consumption{Resource: prod.ConsumesResource, Amount: prod.ConsumesAmount, Countdown: update.Countdown},
 		&comp.RandomSprite{Rand: uint16(rand.Int31n(math.MaxUint16))},
 	)
 	return e
 }
 
 func (f *EntityFactory) Create(pos image.Point, t terr.Terrain) ecs.Entity {
-	if t == terr.Warehouse {
+	props := &terr.Properties[t]
+	if props.IsWarehouse {
 		return f.createWarehouse(pos, t)
 	}
-	if t == terr.Path {
+	if props.IsPath {
 		return f.createPath(pos, t)
 	}
-	prod := terr.Properties[t].Production
-	if prod.Produces == resource.EndResources {
+	prod := props.Production
+	if prod.MaxProduction == 0 {
 		return f.createLandUse(pos, t)
 	}
 	return f.createProduction(pos, t, &prod)

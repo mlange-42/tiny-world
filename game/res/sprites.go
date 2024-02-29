@@ -1,7 +1,6 @@
 package res
 
 import (
-	"encoding/json"
 	"fmt"
 	"image"
 	"io/fs"
@@ -26,7 +25,7 @@ type Sprites struct {
 	sprites     []*ebiten.Image
 	infos       []util.Sprite
 	indices     map[string]int
-	terrIndices [terr.EndTerrain]int
+	terrIndices []int
 	idxUnknown  int
 }
 
@@ -34,11 +33,7 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 	base := path.Join(dir, tileSet)
 
 	tilesetJs := util.TileSet{}
-	content, err := fs.ReadFile(fSys, path.Join(base, tileSetFile))
-	if err != nil {
-		log.Fatal("error loading JSON file: ", err)
-	}
-	if err := json.Unmarshal(content, &tilesetJs); err != nil {
+	if err := util.FromJsonFs(fSys, path.Join(base, tileSetFile), &tilesetJs); err != nil {
 		log.Fatal("error decoding JSON: ", err)
 	}
 
@@ -66,11 +61,7 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 		pngPath := path.Join(base, fmt.Sprintf("%s.png", baseName))
 
 		sheet := util.SpriteSheet{}
-		content, err := fs.ReadFile(fSys, path.Join(base, sheetFile.Name()))
-		if err != nil {
-			log.Fatal("error loading JSON file: ", err)
-		}
-		if err := json.Unmarshal(content, &sheet); err != nil {
+		if err := util.FromJsonFs(fSys, path.Join(base, sheetFile.Name()), &sheet); err != nil {
 			log.Fatal("error decoding JSON: ", err)
 		}
 
@@ -116,8 +107,8 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 		imageIndex += sheet.TotalSprites
 	}
 
-	terrIndices := [terr.EndTerrain]int{}
-	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+	terrIndices := make([]int, len(terr.Properties))
+	for i := range terr.Properties {
 		if idx, ok := indices[terr.Properties[i].Name]; ok {
 			terrIndices[i] = idx
 		} else {

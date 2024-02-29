@@ -28,11 +28,11 @@ type UI struct {
 	RandomTerrains []terr.Terrain
 
 	ui             *ebitenui.UI
-	resourceLabels [resource.EndResources]*widget.Text
-	terrainButtons [terr.EndTerrain]*widget.Button
+	resourceLabels []*widget.Text
+	terrainButtons []*widget.Button
 
-	buttonImages           [terr.EndTerrain]widget.ButtonImage
-	buttonTooltip          [terr.EndTerrain]string
+	buttonImages           []widget.ButtonImage
+	buttonTooltip          []string
 	randomButtonsContainer *widget.Container
 	randomButtons          map[int]randomButton
 	mouseBlockers          []*widget.Container
@@ -100,19 +100,20 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 	return ui
 }
 
-func (ui *UI) createRandomButton() {
-	t := terr.RandomTerrain[rand.Intn(len(terr.RandomTerrain))]
+func (ui *UI) createRandomButton(rules *Rules) {
+	t := rules.RandomTerrains[rand.Intn(len(rules.RandomTerrains))]
 	button, id := ui.createButton(t)
 	ui.randomButtonsContainer.AddChild(button)
 	ui.randomButtons[id] = randomButton{t, button}
 }
 
-func (ui *UI) ReplaceButton(stock *Stock) bool {
+func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
 		ui.randomButtonsContainer.RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
-		ui.createRandomButton()
+
+		ui.createRandomButton(rules)
 		ui.updateRandomTerrains()
 
 		ui.selection.Reset()
@@ -180,11 +181,12 @@ func (ui *UI) createUI() *widget.Container {
 		),
 	)
 
-	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+	ui.terrainButtons = make([]*widget.Button, len(terr.Properties))
+	for i := range terr.Properties {
 		if !terr.Properties[i].CanBuy {
 			continue
 		}
-		button, _ := ui.createButton(i)
+		button, _ := ui.createButton(terr.Terrain(i))
 		ui.terrainButtons[i] = button
 		buildButtonsContainer.AddChild(button)
 	}
@@ -220,9 +222,9 @@ func (ui *UI) createUI() *widget.Container {
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
-			button, id := ui.createButton(terr.Grass)
+			button, id := ui.createButton(terr.Default)
 			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{terr.Grass, button}
+			ui.randomButtons[id] = randomButton{terr.Default, button}
 		}
 		ui.updateRandomTerrains()
 	} else {
@@ -271,7 +273,8 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		),
 	)
 
-	for i := resource.Resource(0); i < resource.EndResources; i++ {
+	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
+	for i := range resource.Properties {
 		label := widget.NewText(
 			widget.TextOpts.Text("  "+resource.Properties[i].Short, font, color.White),
 			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
@@ -292,17 +295,20 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 }
 
 func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
-	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+	ui.buttonImages = make([]widget.ButtonImage, len(terr.Properties))
+	ui.buttonTooltip = make([]string, len(terr.Properties))
+
+	for i := range terr.Properties {
 		props := &terr.Properties[i]
 
 		img := ebiten.NewImage(tileWidth, tileWidth)
 
-		idx := sprites.GetTerrainIndex(i)
+		idx := sprites.GetTerrainIndex(terr.Terrain(i))
 
 		height := 0
 
-		if props.Below != terr.Air {
-			idx2 := sprites.GetTerrainIndex(props.Below)
+		if props.TerrainBelow != terr.Air {
+			idx2 := sprites.GetTerrainIndex(props.TerrainBelow)
 			info2 := sprites.GetInfo(idx2)
 
 			sp2 := sprites.Get(idx2)
@@ -341,19 +347,19 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 		if len(props.BuildCost) > 0 {
 			costs = "Cost: "
 			for _, cost := range props.BuildCost {
-				costs += fmt.Sprintf("%d %s, ", cost.Amount, resource.Properties[cost.Type].Short)
+				costs += fmt.Sprintf("%d %s, ", cost.Amount, resource.Properties[cost.Resource].Short)
 			}
 			costs += "\n"
 		}
 		requires := ""
-		if props.Production.ConsumesFood > 0 {
-			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.ConsumesFood)
+		if props.Production.ConsumesAmount > 0 {
+			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.ConsumesAmount)
 		}
 		maxProd := ""
 		if props.Production.MaxProduction > 0 {
 			maxProd = fmt.Sprintf(" (max %d)", props.Production.MaxProduction)
 		}
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s.", strings.ToUpper(props.Name), costs, requires, terr.Descriptions[i], maxProd)
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s.", strings.ToUpper(props.Name), costs, requires, props.Description, maxProd)
 	}
 }
 

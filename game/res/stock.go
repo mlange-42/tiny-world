@@ -6,21 +6,31 @@ import (
 )
 
 type Stock struct {
-	Cap [resource.EndResources]int
-	Res [resource.EndResources]int
+	Cap []int
+	Res []int
 }
 
-func (s *Stock) CanPay(cost []terr.BuildCost) bool {
+func NewStock(initial []int) Stock {
+	if len(initial) != len(resource.Properties) {
+		panic("initial resources don't match number of actual resources")
+	}
+	return Stock{
+		Cap: make([]int, len(resource.Properties)),
+		Res: initial,
+	}
+}
+
+func (s *Stock) CanPay(cost []terr.ResourceAmount) bool {
 	for _, c := range cost {
-		if s.Res[c.Type] < c.Amount {
+		if s.Res[c.Resource] < c.Amount {
 			return false
 		}
 	}
 	return true
 }
 
-func (s *Stock) Pay(cost []terr.BuildCost) {
+func (s *Stock) Pay(cost []terr.ResourceAmount) {
 	for _, c := range cost {
-		s.Res[c.Type] -= c.Amount
+		s.Res[c.Resource] -= c.Amount
 	}
 }

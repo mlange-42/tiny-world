@@ -24,7 +24,7 @@ type Markers struct {
 
 	filter generic.Filter2[comp.Tile, comp.ProductionMarker]
 
-	resources [resource.EndResources]int
+	resources []int
 }
 
 // InitializeUI the system
@@ -37,7 +37,8 @@ func (s *Markers) InitializeUI(world *ecs.World) {
 	s.filter = *generic.NewFilter2[comp.Tile, comp.ProductionMarker]()
 
 	sprites := s.sprites.Get()
-	for i := resource.Resource(0); i < resource.EndResources; i++ {
+	s.resources = make([]int, len(resource.Properties))
+	for i := range resource.Properties {
 		s.resources[i] = sprites.GetIndex(resource.Properties[i].Name)
 	}
 }

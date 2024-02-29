@@ -11,7 +11,6 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"golang.org/x/image/font"
 )
@@ -36,7 +35,7 @@ type Terrain struct {
 	landUseE *res.LandUseEntities
 	update   *res.UpdateInterval
 
-	prodMapper   generic.Map1[comp.Production]
+	prodMapper   generic.Map2[comp.Terrain, comp.Production]
 	pathMapper   generic.Map1[comp.Path]
 	haulerMapper generic.Map2[comp.Hauler, comp.HaulerSprite]
 	spriteMapper generic.Map1[comp.RandomSprite]
@@ -59,7 +58,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.landUseE = ecs.GetResource[res.LandUseEntities](world)
 	s.update = ecs.GetResource[res.UpdateInterval](world)
 
-	s.prodMapper = generic.NewMap1[comp.Production](world)
+	s.prodMapper = generic.NewMap2[comp.Terrain, comp.Production](world)
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
@@ -101,20 +100,17 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if t != terr.Air && t != terr.Buildable {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
-				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].Below)
+				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].TerrainBelow)
 			}
 
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
-				if terr.Buildings.Contains(lu) {
-					_ = s.drawSprite(img, s.terrain, s.landUse, i, j, terr.Path, &point, height, &off, nil, true, terr.Air)
-				}
 				luE := s.landUseE.Get(i, j)
 				randTile := s.spriteMapper.Get(luE)
-				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].Below)
+				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].TerrainBelow)
 			}
 
-			if lu == terr.Path {
+			if terr.Properties[lu].IsPath {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
 				offset := 0.1
 				for _, h := range path.Haulers {
@@ -196,8 +192,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	luEntity := s.landUseE.Get(x, y)
 	prop := terr.Properties[toBuild]
 	if prop.CanBuild {
-		canDestroy := lu == toBuild &&
-			(s.rules.AllowRemoveBuilt && prop.CanBuy) || (s.rules.AllowRemoveNatural && !prop.CanBuy)
+		canDestroy := lu == toBuild && prop.CanBuy
 
 		canBuildHere := prop.BuildOn.Contains(ter)
 		if prop.IsTerrain {
@@ -206,7 +201,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 			luNatural := !terr.Properties[lu].CanBuy
 			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && prop.CanBuy))
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.Below)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.TerrainBelow)
 
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
@@ -222,15 +217,16 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	}
 
 	propHere := &terr.Properties[lu]
-	if propHere.Production.Produces == resource.EndResources {
+	if propHere.Production.MaxProduction == 0 {
 		return
 	}
 
 	if luEntity.IsZero() {
 		return
 	}
-	prod := s.prodMapper.Get(luEntity)
-	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, s.rules.StockPerBuilding), s.font,
+	tp, prod := s.prodMapper.Get(luEntity)
+	bStock := terr.Properties[tp.Terrain].Storage[prod.Resource]
+	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, bStock), s.font,
 		int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
 		int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
 		color.RGBA{255, 255, 255, 255},
@@ -271,7 +267,7 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 		height = s.drawSprite(img, terrain, landUse,
 			x, y, below, point, height,
 			camOffset, randSprite,
-			selfConnect, terr.Air)
+			terr.Properties[t].SelfConnectBelow, terr.Air)
 	}
 
 	var sp *ebiten.Image
