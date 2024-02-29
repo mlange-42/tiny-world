@@ -50,32 +50,28 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	consQuery := s.consFilter.Query(world)
 	for consQuery.Next() {
 		cons := consQuery.Get()
-		production.Cons[resource.Food] += cons.Amount
+		production.Cons[cons.Resource] += cons.Amount
 	}
 
 	stockQuery := s.stockFilter.Query(world)
 	numWarehouses := stockQuery.Count()
 	stockQuery.Close()
 
-	for i := resource.Resource(0); i < resource.EndResources; i++ {
+	for i := range resource.Properties {
 		stock.Cap[i] = numWarehouses * rules.StockPerWarehouse[i]
 		if stock.Res[i] > stock.Cap[i] {
 			stock.Res[i] = stock.Cap[i]
 		}
 
-		if i == resource.Food {
-			ui.SetResourceLabel(i, fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]))
-		} else {
-			ui.SetResourceLabel(i, fmt.Sprintf("+%d (%d/%d)", production.Prod[i], stock.Res[i], stock.Cap[i]))
-		}
+		ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]))
 	}
 
-	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+	for i := range terr.Properties {
 		props := &terr.Properties[i]
 		if !props.CanBuy {
 			continue
 		}
-		ui.SetButtonEnabled(i, stock.CanPay(props.BuildCost))
+		ui.SetButtonEnabled(terr.Terrain(i), stock.CanPay(props.BuildCost))
 	}
 }
 

@@ -30,15 +30,15 @@ type HaulerEntry struct {
 }
 
 type Production struct {
-	Type            resource.Resource
-	Amount          int
-	FoodConsumption int
-	Countdown       int
-	Stock           int
-	IsHauling       bool
+	Type      resource.Resource
+	Amount    int
+	Countdown int
+	Stock     int
+	IsHauling bool
 }
 
 type Consumption struct {
+	Resource  resource.Resource
 	Amount    int
 	Countdown int
 }

@@ -35,7 +35,7 @@ type Haul struct {
 	toCreate   []markerEntry
 	arrived    []ecs.Entity
 
-	haulerSprites [terr.EndTerrain]int
+	haulerSprites []int
 }
 
 // Initialize the system
@@ -60,7 +60,9 @@ func (s *Haul) Initialize(world *ecs.World) {
 
 	spritesRes := generic.NewResource[res.Sprites](world)
 	sprites := spritesRes.Get()
-	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+
+	s.haulerSprites = make([]int, len(terr.Properties))
+	for i := range terr.Properties {
 		s.haulerSprites[i] = sprites.GetIndex("hauler_" + terr.Properties[i].Name)
 	}
 }
@@ -160,7 +162,7 @@ func (s *Haul) Update(world *ecs.World) {
 		target := haul.Path[0]
 
 		home, prod := s.homeMap.Get(haul.Home)
-		if landUse.Get(target.X, target.Y) == terr.Warehouse {
+		if terr.Properties[landUse.Get(target.X, target.Y)].IsWarehouse {
 			stock.Res[haul.Hauls] += rules.HaulerCapacity
 
 			path, ok := s.aStar.FindPath(target, *home)

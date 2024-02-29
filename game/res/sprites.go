@@ -25,7 +25,7 @@ type Sprites struct {
 	sprites     []*ebiten.Image
 	infos       []util.Sprite
 	indices     map[string]int
-	terrIndices [terr.EndTerrain]int
+	terrIndices []int
 	idxUnknown  int
 }
 
@@ -107,8 +107,8 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 		imageIndex += sheet.TotalSprites
 	}
 
-	terrIndices := [terr.EndTerrain]int{}
-	for i := terr.Terrain(0); i < terr.EndTerrain; i++ {
+	terrIndices := make([]int, len(terr.Properties))
+	for i := range terr.Properties {
 		if idx, ok := indices[terr.Properties[i].Name]; ok {
 			terrIndices[i] = idx
 		} else {

@@ -6,7 +6,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
-	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -19,7 +18,7 @@ type UpdateProduction struct {
 	landUse generic.Resource[res.LandUse]
 	stock   generic.Resource[res.Stock]
 
-	filter generic.Filter3[comp.Tile, comp.UpdateTick, comp.Production]
+	filter generic.Filter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
 }
 
 // Initialize the system
@@ -31,7 +30,7 @@ func (s *UpdateProduction) Initialize(world *ecs.World) {
 	s.landUse = generic.NewResource[res.LandUse](world)
 	s.stock = generic.NewResource[res.Stock](world)
 
-	s.filter = *generic.NewFilter3[comp.Tile, comp.UpdateTick, comp.Production]()
+	s.filter = *generic.NewFilter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]().Optional(generic.T[comp.Consumption]())
 }
 
 // Update the system
@@ -45,19 +44,18 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 	tick := s.time.Get().Tick
 	interval := s.update.Get().Interval
 	tickMod := tick % interval
-
-	hasFood := s.stock.Get().Res[resource.Food] > 0
+	stock := s.stock.Get()
 
 	query := s.filter.Query(world)
 	for query.Next() {
-		tile, up, pr := query.Get()
+		tile, up, pr, cons := query.Get()
 
 		if up.Tick != tickMod {
 			continue
 		}
 		pr.Amount = 0
 
-		if pr.Type != resource.Food && !hasFood {
+		if cons != nil && cons.Amount > 0 && stock.Res[cons.Resource] < 1 {
 			continue
 		}
 

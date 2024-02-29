@@ -79,7 +79,7 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
 		&comp.Production{Type: prod.Resource, Amount: 0, Countdown: update.Countdown},
-		&comp.Consumption{Amount: prod.FoodConsumption, Countdown: update.Countdown},
+		&comp.Consumption{Resource: prod.ConsumesResource, Amount: prod.ConsumesAmount, Countdown: update.Countdown},
 		&comp.RandomSprite{Rand: uint16(rand.Int31n(math.MaxUint16))},
 	)
 	return e

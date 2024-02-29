@@ -1,21 +1,37 @@
 package resource
 
-type Resource uint
+import (
+	"io/fs"
 
-const (
-	Food Resource = iota
-	Wood
-	Stones
-	EndResources
+	"github.com/mlange-42/tiny-world/cmd/util"
 )
 
+type Resource uint
+
 type ResourceProps struct {
-	Name  string
-	Short string
+	Name  string `json:"name"`
+	Short string `json:"short"`
 }
 
-var Properties = [EndResources]ResourceProps{
-	{Name: "food", Short: "F"},
-	{Name: "wood", Short: "W"},
-	{Name: "stones", Short: "S"},
+var Properties []ResourceProps
+
+func ResourceID(name string) (Resource, bool) {
+	t, ok := idLookup[name]
+	return t, ok
+}
+
+var idLookup map[string]Resource
+
+func Prepare(f fs.FS, file string) {
+	props := []ResourceProps{}
+	err := util.FromJsonFs(f, file, &props)
+	if err != nil {
+		panic(err)
+	}
+
+	idLookup = map[string]Resource{}
+	for i, t := range props {
+		idLookup[t.Name] = Resource(i)
+	}
+	Properties = props
 }

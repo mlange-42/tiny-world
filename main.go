@@ -13,6 +13,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/sys"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/spf13/cobra"
@@ -31,6 +32,7 @@ func run(saveGame, tileSet string) {
 	ebiten.SetVsyncEnabled(true)
 	g := game.NewGame(model.New())
 
+	resource.Prepare(data, "data/json/resources.json")
 	terr.Prepare(data, "data/json/terrain.json")
 
 	// =========== Resources ===========
@@ -39,8 +41,8 @@ func run(saveGame, tileSet string) {
 		WorldSize:      256,
 		RandomTerrains: 6,
 
-		InitialResources:  [3]int{25, 25, 25},
-		StockPerWarehouse: [3]int{25, 25, 25},
+		InitialResources:  []int{25, 25, 25},
+		StockPerWarehouse: []int{25, 25, 25},
 		StockPerBuilding:  5,
 		HaulerCapacity:    2,
 	}
@@ -79,11 +81,10 @@ func run(saveGame, tileSet string) {
 	view := res.NewView(sprites.TileWidth, sprites.TileHeight)
 	ecs.AddResource(&g.Model.World, &view)
 
-	production := res.Production{}
-
+	production := res.NewProduction()
 	ecs.AddResource(&g.Model.World, &production)
 
-	stock := res.Stock{Res: rules.InitialResources}
+	stock := res.NewStock(rules.InitialResources)
 	ecs.AddResource(&g.Model.World, &stock)
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
