@@ -301,8 +301,8 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 
 		height := 0
 
-		if props.Below != terr.Air {
-			idx2 := sprites.GetTerrainIndex(props.Below)
+		if props.TerrainBelow != terr.Air {
+			idx2 := sprites.GetTerrainIndex(props.TerrainBelow)
 			info2 := sprites.GetInfo(idx2)
 
 			sp2 := sprites.Get(idx2)
@@ -346,8 +346,8 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 			costs += "\n"
 		}
 		requires := ""
-		if props.Production.ConsumesFood > 0 {
-			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.ConsumesFood)
+		if props.Production.FoodConsumption > 0 {
+			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.FoodConsumption)
 		}
 		maxProd := ""
 		if props.Production.MaxProduction > 0 {

@@ -64,18 +64,15 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 		lu := landUse.Get(tile.X, tile.Y)
 
 		prod := terr.Properties[lu].Production
-		if prod.RequiredTerrain != terr.Air && terrain.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 {
-			continue
-		}
-		if prod.RequiredLandUse != terr.Air && landUse.CountNeighbors4(tile.X, tile.Y, prod.RequiredLandUse) == 0 {
+		if prod.RequiredTerrain != terr.Air &&
+			terrain.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 &&
+			landUse.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 {
 			continue
 		}
 		count := 0
 		if prod.ProductionTerrain != terr.Air {
-			count += terrain.CountNeighbors8(tile.X, tile.Y, prod.ProductionTerrain)
-		}
-		if prod.ProductionLandUse != terr.Air {
-			count += landUse.CountNeighbors8(tile.X, tile.Y, prod.ProductionLandUse)
+			count += terrain.CountNeighbors8(tile.X, tile.Y, prod.ProductionTerrain) +
+				landUse.CountNeighbors8(tile.X, tile.Y, prod.ProductionTerrain)
 		}
 		pr.Amount = math.MinInt(count, prod.MaxProduction)
 	}

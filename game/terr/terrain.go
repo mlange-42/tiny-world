@@ -58,35 +58,6 @@ func (d Terrains) Contains(dir Terrain) bool {
 	return (bits & d) == bits
 }
 
-type TerrainProps struct {
-	Name        string      `json:"name"`
-	IsTerrain   bool        `json:"is_terrain"`
-	IsPath      bool        `json:"is_path"`
-	IsWarehouse bool        `json:"is_warehouse"`
-	BuildOn     Terrains    `json:"build_on"`
-	Below       Terrain     `json:"terrain_below"`
-	ConnectsTo  Terrains    `json:"connects_to"`
-	CanBuild    bool        `json:"can_build"`
-	CanBuy      bool        `json:"can_buy"`
-	Production  Production  `json:"production"`
-	BuildCost   []BuildCost `json:"build_cost,omitempty"`
-}
-
-type Production struct {
-	Produces          resource.Resource
-	MaxProduction     int
-	ConsumesFood      int
-	RequiredTerrain   Terrain
-	RequiredLandUse   Terrain
-	ProductionTerrain Terrain
-	ProductionLandUse Terrain
-}
-
-type BuildCost struct {
-	Type   resource.Resource
-	Amount int
-}
-
 var Descriptions = [EndTerrain]string{
 	"Nothing",
 	"Nothing",
@@ -120,18 +91,18 @@ var Properties = [EndTerrain]TerrainProps{
 		CanBuy:     false,
 	},
 	{Name: "water", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable),
-		ConnectsTo: NewTerrains(Water),
-		Below:      Grass,
-		CanBuild:   true,
-		CanBuy:     false,
+		BuildOn:      NewTerrains(Buildable),
+		ConnectsTo:   NewTerrains(Water),
+		TerrainBelow: Grass,
+		CanBuild:     true,
+		CanBuy:       false,
 	},
 	{Name: "desert", IsTerrain: true,
-		BuildOn:    NewTerrains(Buildable),
-		ConnectsTo: NewTerrains(Desert),
-		Below:      Grass,
-		CanBuild:   true,
-		CanBuy:     false,
+		BuildOn:      NewTerrains(Buildable),
+		ConnectsTo:   NewTerrains(Desert),
+		TerrainBelow: Grass,
+		CanBuild:     true,
+		CanBuy:       false,
 	},
 	{Name: "path", IsTerrain: false,
 		IsPath:     true,
@@ -163,58 +134,63 @@ var Properties = [EndTerrain]TerrainProps{
 		CanBuy:   false,
 	},
 	{Name: "farm", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass),
-		CanBuild: true,
-		CanBuy:   true,
+		BuildOn:      NewTerrains(Grass),
+		CanBuild:     true,
+		CanBuy:       true,
+		TerrainBelow: Path,
 		Production: Production{
-			Produces: resource.Food, MaxProduction: 7,
-			RequiredLandUse: Path, ProductionLandUse: Field, ConsumesFood: 1},
+			Resource: resource.Food, MaxProduction: 7,
+			RequiredTerrain: Path, ProductionTerrain: Field, FoodConsumption: 1},
 		BuildCost: []BuildCost{
 			{resource.Wood, 5},
 			{resource.Stones, 2},
 		},
 	},
 	{Name: "fisherman", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass, Desert),
-		CanBuild: true,
-		CanBuy:   true,
+		BuildOn:      NewTerrains(Grass, Desert),
+		CanBuild:     true,
+		CanBuy:       true,
+		TerrainBelow: Path,
 		Production: Production{
-			Produces: resource.Food, MaxProduction: 5,
-			RequiredLandUse: Path, ProductionTerrain: Water, ConsumesFood: 1},
+			Resource: resource.Food, MaxProduction: 5,
+			RequiredTerrain: Path, ProductionTerrain: Water, FoodConsumption: 1},
 		BuildCost: []BuildCost{
 			{resource.Wood, 3},
 			{resource.Stones, 0},
 		},
 	},
 	{Name: "lumberjack", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass),
-		CanBuild: true,
-		CanBuy:   true,
+		BuildOn:      NewTerrains(Grass),
+		CanBuild:     true,
+		CanBuy:       true,
+		TerrainBelow: Path,
 		Production: Production{
-			Produces: resource.Wood, MaxProduction: 7,
-			RequiredLandUse: Path, ProductionLandUse: Tree, ConsumesFood: 5},
+			Resource: resource.Wood, MaxProduction: 7,
+			RequiredTerrain: Path, ProductionTerrain: Tree, FoodConsumption: 5},
 		BuildCost: []BuildCost{
 			{resource.Wood, 2},
 			{resource.Stones, 3},
 		},
 	},
 	{Name: "mason", IsTerrain: false,
-		BuildOn:  NewTerrains(Grass, Desert),
-		CanBuild: true,
-		CanBuy:   true,
+		BuildOn:      NewTerrains(Grass, Desert),
+		CanBuild:     true,
+		CanBuy:       true,
+		TerrainBelow: Path,
 		Production: Production{
-			Produces: resource.Stones, MaxProduction: 3,
-			RequiredLandUse: Path, ProductionLandUse: Rock, ConsumesFood: 5},
+			Resource: resource.Stones, MaxProduction: 3,
+			RequiredTerrain: Path, ProductionTerrain: Rock, FoodConsumption: 5},
 		BuildCost: []BuildCost{
 			{resource.Wood, 10},
 		},
 	},
 	{Name: "warehouse", IsTerrain: false,
-		IsWarehouse: true,
-		BuildOn:     NewTerrains(Grass, Desert),
-		CanBuild:    true,
-		CanBuy:      true,
-		Production:  Production{Produces: resource.EndResources},
+		IsWarehouse:  true,
+		BuildOn:      NewTerrains(Grass, Desert),
+		CanBuild:     true,
+		CanBuy:       true,
+		TerrainBelow: Path,
+		Production:   Production{Resource: resource.EndResources},
 		BuildCost: []BuildCost{
 			{resource.Wood, 25},
 			{resource.Stones, 25},
@@ -244,4 +220,58 @@ func init() {
 func TerrainID(name string) (Terrain, bool) {
 	t, ok := idLookup[name]
 	return t, ok
+}
+
+type TerrainProps struct {
+	Name         string
+	IsTerrain    bool
+	IsPath       bool
+	IsWarehouse  bool
+	BuildOn      Terrains
+	TerrainBelow Terrain
+	ConnectsTo   Terrains
+	CanBuild     bool
+	CanBuy       bool
+	Production   Production
+	BuildCost    []BuildCost
+}
+
+type terrainPropsJs struct {
+	Name         string        `json:"name"`
+	IsTerrain    bool          `json:"is_terrain"`
+	IsPath       bool          `json:"is_path"`
+	IsWarehouse  bool          `json:"is_warehouse"`
+	BuildOn      []string      `json:"build_on,omitempty"`
+	TerrainBelow string        `json:"terrain_below"`
+	ConnectsTo   []string      `json:"connects_to,omitempty"`
+	CanBuild     bool          `json:"can_build"`
+	CanBuy       bool          `json:"can_buy"`
+	Production   productionJs  `json:"production"`
+	BuildCost    []buildCostJs `json:"build_cost,omitempty"`
+}
+
+type Production struct {
+	Resource          resource.Resource
+	MaxProduction     int
+	FoodConsumption   int
+	RequiredTerrain   Terrain
+	ProductionTerrain Terrain
+}
+
+type productionJs struct {
+	Resource          string `json:"resource"`
+	MaxProduction     int    `json:"max_production"`
+	FoodConsumption   int    `json:"food_consumption"`
+	RequiredTerrain   string
+	ProductionTerrain string
+}
+
+type BuildCost struct {
+	Type   resource.Resource
+	Amount int
+}
+
+type buildCostJs struct {
+	Type   string
+	Amount int
 }

@@ -100,17 +100,14 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if t != terr.Air && t != terr.Buildable {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
-				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].Below)
+				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].TerrainBelow)
 			}
 
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
-				if terr.Buildings.Contains(lu) {
-					_ = s.drawSprite(img, s.terrain, s.landUse, i, j, terr.Path, &point, height, &off, nil, true, terr.Air)
-				}
 				luE := s.landUseE.Get(i, j)
 				randTile := s.spriteMapper.Get(luE)
-				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].Below)
+				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].TerrainBelow)
 			}
 
 			if terr.Properties[lu].IsPath {
@@ -204,7 +201,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 			luNatural := !terr.Properties[lu].CanBuy
 			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && prop.CanBuy))
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.Below)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.TerrainBelow)
 
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
