@@ -97,9 +97,6 @@ func (s *Build) Update(world *ecs.World) {
 		}
 		return
 	}
-	if landUse.Get(cursor.X, cursor.Y) != terr.Air {
-		return
-	}
 
 	if !stock.CanPay(p.BuildCost) {
 		return
@@ -121,6 +118,17 @@ func (s *Build) Update(world *ecs.World) {
 	} else {
 		if !p.BuildOn.Contains(terrHere) {
 			return
+		}
+
+		luHere := landUse.Get(cursor.X, cursor.Y)
+		if terr.Properties[luHere].CanBuy {
+			return
+		}
+
+		if luHere != terr.Air {
+			landUse.Set(cursor.X, cursor.Y, terr.Air)
+			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
+			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 		}
 		fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
 	}

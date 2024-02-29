@@ -203,7 +203,8 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		if prop.IsTerrain {
 			height = 0
 		} else {
-			canBuildHere = canBuildHere && luEntity.IsZero()
+			luNatural := !terr.Properties[lu].CanBuy
+			canBuildHere = canBuildHere && luNatural
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.Below)
 
