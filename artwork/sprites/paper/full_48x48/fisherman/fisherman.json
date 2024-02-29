@@ -1,0 +1,24 @@
+[
+    {
+        "id": "fisherman",
+        "file": ["fisherman_None"],
+        "multitile": [
+            ["fisherman_None"],
+            ["fisherman_N"],
+            ["fisherman_E"],
+            ["fisherman_NE"],
+            ["fisherman_S"],
+            ["fisherman_NS"],
+            ["fisherman_SE"],
+            ["fisherman_NES"],
+            ["fisherman_E"],
+            ["fisherman_N"],
+            ["fisherman_E"],
+            ["fisherman_NE"],
+            ["fisherman_S"],
+            ["fisherman_NS"],
+            ["fisherman_SE"],
+            ["fisherman_NES"]
+        ]
+    }
+]
