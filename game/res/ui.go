@@ -35,6 +35,7 @@ type UI struct {
 	buttonTooltip          [terr.EndTerrain]string
 	randomButtonsContainer *widget.Container
 	randomButtons          map[int]randomButton
+	mouseBlockers          []*widget.Container
 
 	selection *Selection
 	font      font.Face
@@ -59,7 +60,7 @@ func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
 
 func (ui *UI) MouseInside(x, y int) bool {
 	pt := stdimage.Pt(x, y)
-	for _, w := range ui.ui.Container.Children() {
+	for _, w := range ui.mouseBlockers {
 		if pt.In(w.GetWidget().Rect) {
 			return true
 		}
@@ -79,13 +80,17 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 	ui.prepareButtons(sprites, tileWidth)
 
 	rootContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(2),
+			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
+		)),
 	)
 
-	uiContainer := ui.createUI()
 	hudContainer := ui.createHUD(font)
-	rootContainer.AddChild(uiContainer)
 	rootContainer.AddChild(hudContainer)
+
+	uiContainer := ui.createUI()
+	rootContainer.AddChild(uiContainer)
 
 	eui := ebitenui.UI{
 		Container: rootContainer,
@@ -126,6 +131,15 @@ func (ui *UI) ReplaceButton(stock *Stock) bool {
 }
 
 func (ui *UI) createUI() *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionEnd,
+			}),
+		),
+	)
+
 	innerContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
@@ -197,7 +211,10 @@ func (ui *UI) createUI() *widget.Container {
 	)
 	innerContainer.AddChild(ui.randomButtonsContainer)
 
-	return innerContainer
+	anchor.AddChild(innerContainer)
+	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer)
+
+	return anchor
 }
 
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
@@ -225,6 +242,16 @@ func (ui *UI) updateRandomTerrains() {
 }
 
 func (ui *UI) createHUD(font font.Face) *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
 	innerContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
@@ -240,7 +267,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 				StretchHorizontal:  false,
 				StretchVertical:    false,
 			}),
-			widget.WidgetOpts.MinSize(200, 30),
+			widget.WidgetOpts.MinSize(30, 30),
 		),
 	)
 
@@ -258,7 +285,10 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		ui.resourceLabels[i] = counter
 	}
 
-	return innerContainer
+	anchor.AddChild(innerContainer)
+	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer)
+
+	return anchor
 }
 
 func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
