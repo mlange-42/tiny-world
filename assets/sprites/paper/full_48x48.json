@@ -3,21 +3,30 @@
  "sprite_height": 48,
  "sprites": [
   {
-   "id": "grass",
+   "id": "buildable",
    "index": [
     0
+   ]
+  },
+  {
+   "id": "farm",
+   "index": [
+    1
+   ]
+  },
+  {
+   "id": "fisherman",
+   "index": [
+    2
+   ]
+  },
+  {
+   "id": "grass",
+   "index": [
+    3
    ],
    "height": 25,
    "multitile": [
-    [
-     0
-    ],
-    [
-     1
-    ],
-    [
-     2
-    ],
     [
      3
     ],
@@ -56,16 +65,57 @@
     ],
     [
      15
+    ],
+    [
+     16
+    ],
+    [
+     17
+    ],
+    [
+     18
     ]
+   ]
+  },
+  {
+   "id": "lumberjack",
+   "index": [
+    19
+   ]
+  },
+  {
+   "id": "mason",
+   "index": [
+    20
+   ]
+  },
+  {
+   "id": "rock",
+   "index": [
+    21,
+    22
+   ]
+  },
+  {
+   "id": "tree",
+   "index": [
+    23,
+    24
    ]
   },
   {
    "id": "unknown",
    "index": [
-    16
+    25
    ],
    "height": 25
+  },
+  {
+   "id": "warehouse",
+   "index": [
+    26
+   ]
   }
  ],
- "total_sprites": 17
+ "total_sprites": 27
 }

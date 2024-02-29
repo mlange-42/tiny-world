@@ -1,0 +1,42 @@
+{
+ "sprite_width": 16,
+ "sprite_height": 16,
+ "sprites": [
+  {
+   "id": "hauler",
+   "index": [
+    0
+   ],
+   "y_offset": 10
+  },
+  {
+   "id": "hauler_farm",
+   "index": [
+    1
+   ],
+   "y_offset": 10
+  },
+  {
+   "id": "hauler_fisherman",
+   "index": [
+    2
+   ],
+   "y_offset": 10
+  },
+  {
+   "id": "hauler_lumberjack",
+   "index": [
+    3
+   ],
+   "y_offset": 10
+  },
+  {
+   "id": "hauler_mason",
+   "index": [
+    4
+   ],
+   "y_offset": 10
+  }
+ ],
+ "total_sprites": 5
+}

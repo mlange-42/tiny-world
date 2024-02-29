@@ -1,0 +1,13 @@
+{
+ "sprite_width": 48,
+ "sprite_height": 36,
+ "sprites": [
+  {
+   "id": "field",
+   "index": [
+    0
+   ]
+  }
+ ],
+ "total_sprites": 1
+}
