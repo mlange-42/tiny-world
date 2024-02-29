@@ -85,6 +85,7 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 			if _, ok := indices[inf.Id]; ok {
 				log.Fatalf("duplicate sprite name: %s", inf.Id)
 			}
+
 			if inf.AnimSpeed == 0 {
 				inf.AnimSpeed = 1
 			}

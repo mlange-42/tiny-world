@@ -101,17 +101,17 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if t != terr.Air && t != terr.Buildable {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
-				height = s.drawSprite(img, &s.terrain.TerrainGrid, i, j, t, &point, height, &off, randTile, false)
+				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].Below)
 			}
 
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				if terr.Buildings.Contains(lu) {
-					_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, terr.Path, &point, height, &off, nil, true)
+					_ = s.drawSprite(img, s.terrain, s.landUse, i, j, terr.Path, &point, height, &off, nil, true, terr.Air)
 				}
 				luE := s.landUseE.Get(i, j)
 				randTile := s.spriteMapper.Get(luE)
-				_ = s.drawSprite(img, &s.landUse.TerrainGrid, i, j, lu, &point, height, &off, randTile, false)
+				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].Below)
 			}
 
 			if lu == terr.Path {
@@ -202,11 +202,11 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		canBuildHere := prop.BuildOn.Contains(ter)
 		if prop.IsTerrain {
 			height = 0
-			s.drawSprite(img, &s.terrain.TerrainGrid, x, y, toBuild, point, height, camOffset, nil, true)
 		} else {
 			canBuildHere = canBuildHere && luEntity.IsZero()
-			s.drawSprite(img, &s.landUse.TerrainGrid, x, y, toBuild, point, height, camOffset, nil, true)
 		}
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.Below)
+
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
 		} else {
@@ -258,21 +258,29 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 	img.DrawImage(sp, &op)
 }
 
-func (s *Terrain) drawSprite(img *ebiten.Image, grid *res.TerrainGrid,
+func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	selfConnect bool) int {
+	selfConnect bool, below terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
+
+	if below != terr.Air {
+		height = s.drawSprite(img, terrain, landUse,
+			x, y, below, point, height,
+			camOffset, randSprite,
+			selfConnect, terr.Air)
+	}
 
 	var sp *ebiten.Image
 	if info.IsMultitile() {
 		var neigh terr.Directions
 		if selfConnect {
-			neigh = grid.NeighborsMask(x, y, t)
+			neigh = terrain.NeighborsMask(x, y, t) | landUse.NeighborsMask(x, y, t)
 		} else {
-			neigh = grid.NeighborsMaskMulti(x, y, terr.Properties[t].ConnectsTo)
+			conn := terr.Properties[t].ConnectsTo
+			neigh = terrain.NeighborsMaskMulti(x, y, conn) | landUse.NeighborsMaskMulti(x, y, conn)
 		}
 		mIdx := s.sprites.GetMultiTileIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
 

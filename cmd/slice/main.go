@@ -22,6 +22,7 @@ type multitileJson struct {
 	Id     string `json:"id"`
 	File   string `json:"file"`
 	Base   string `json:"base"`
+	Below  string `json:"below"`
 	Height int    `json:"height"`
 }
 

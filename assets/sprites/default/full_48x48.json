@@ -9,18 +9,24 @@
    ]
   },
   {
-   "id": "desert",
+   "id": "farm",
    "index": [
     1
+   ]
+  },
+  {
+   "id": "fisherman",
+   "index": [
+    2
+   ]
+  },
+  {
+   "id": "grass",
+   "index": [
+    3
    ],
    "height": 25,
    "multitile": [
-    [
-     1
-    ],
-    [
-     2
-    ],
     [
      3
     ],
@@ -62,122 +68,53 @@
     ],
     [
      16
+    ],
+    [
+     17
+    ],
+    [
+     18
     ]
    ]
   },
   {
-   "id": "farm",
-   "index": [
-    17
-   ]
-  },
-  {
-   "id": "fisherman",
-   "index": [
-    18
-   ]
-  },
-  {
-   "id": "grass",
-   "index": [
-    19
-   ],
-   "height": 25
-  },
-  {
    "id": "lumberjack",
    "index": [
-    20
+    19
    ]
   },
   {
    "id": "mason",
    "index": [
-    21
+    20
    ]
   },
   {
    "id": "rock",
    "index": [
-    22
+    21
    ]
   },
   {
    "id": "tree",
    "index": [
-    23,
-    24
+    22,
+    23
    ]
   },
   {
    "id": "unknown",
    "index": [
-    25
-   ]
+    24
+   ],
+   "height": 25
   },
   {
    "id": "warehouse",
    "index": [
-    26
-   ]
-  },
-  {
-   "id": "water",
-   "index": [
-    27
-   ],
-   "height": 25,
-   "multitile": [
-    [
-     27
-    ],
-    [
-     28
-    ],
-    [
-     29
-    ],
-    [
-     30
-    ],
-    [
-     31
-    ],
-    [
-     32
-    ],
-    [
-     33
-    ],
-    [
-     34
-    ],
-    [
-     35
-    ],
-    [
-     36
-    ],
-    [
-     37
-    ],
-    [
-     38
-    ],
-    [
-     39
-    ],
-    [
-     40
-    ],
-    [
-     41
-    ],
-    [
-     42
-    ]
+    25
    ]
   }
  ],
- "total_sprites": 43
+ "total_sprites": 26
 }
