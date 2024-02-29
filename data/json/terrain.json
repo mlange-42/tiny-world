@@ -1,0 +1,149 @@
+{
+    "zero_terrain": "air",
+    "terrains": [
+        {
+            "name": "grass",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["grass", "water", "desert"],
+            "can_build": true,
+            "can_buy": false
+        },
+        {
+            "name": "water",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["water"],
+            "can_build": true,
+            "can_buy": false
+        },
+        {
+            "name": "desert",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["desert"],
+            "can_build": true,
+            "can_buy": false
+        },
+
+
+        {
+            "name": "path",
+            "is_path": true,
+            "build_on": ["grass", "water", "desert"],
+            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
+            "can_build": true,
+            "can_buy": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 1}
+            ]
+        },
+
+        {
+            "name": "field",
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 1},
+                {"resource": "stones", "amount": 1}
+            ]
+        },
+
+        {
+            "name": "tree",
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": false
+        },
+        {
+            "name": "rock",
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": false
+        },
+
+        {
+            "name": "farm",
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "build_cost": [
+                {"resource": "wood", "amount": 5},
+                {"resource": "stones", "amount": 2}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 7,
+                "required_terrain": "path",
+                "production_terrain": "field",
+                "food_consumption": 1
+            }
+        },
+        {
+            "name": "fisherman",
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "build_cost": [
+                {"resource": "wood", "amount": 3}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 5,
+                "required_terrain": "path",
+                "production_terrain": "water",
+                "food_consumption": 1
+            }
+        },
+        {
+            "name": "lumberjack",
+            "build_on": ["grass"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "build_cost": [
+                {"resource": "wood", "amount": 2},
+                {"resource": "stones", "amount": 3}
+            ],
+            "production": {
+                "resource": "wood",
+                "max_production": 7,
+                "required_terrain": "path",
+                "production_terrain": "tree",
+                "food_consumption": 5
+            }
+        },
+        {
+            "name": "mason",
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "build_cost": [
+                {"resource": "wood", "amount": 10}
+            ],
+            "production": {
+                "resource": "stones",
+                "max_production": 3,
+                "required_terrain": "path",
+                "production_terrain": "rock",
+                "food_consumption": 5
+            }
+        },
+        {
+            "name": "warehouse",
+            "is_warehouse": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "terrain_below": "path",
+            "build_cost": [
+                {"resource": "wood", "amount": 25},
+                {"resource": "stones", "amount": 25}
+            ]
+        }
+    ]
+}

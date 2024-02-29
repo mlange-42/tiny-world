@@ -14,6 +14,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sys"
+	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +30,8 @@ func run(saveGame, tileSet string) {
 
 	ebiten.SetVsyncEnabled(true)
 	g := game.NewGame(model.New())
+
+	terr.Prepare(data, "data/json/terrain.json")
 
 	// =========== Resources ===========
 

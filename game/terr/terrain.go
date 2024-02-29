@@ -1,6 +1,9 @@
 package terr
 
 import (
+	"io/fs"
+
+	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/resource"
 )
 
@@ -217,6 +220,14 @@ func init() {
 	}
 }
 
+func Prepare(f fs.FS, file string) {
+	props := props{}
+	err := util.FromJsonFs(f, file, &props)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TerrainID(name string) (Terrain, bool) {
 	t, ok := idLookup[name]
 	return t, ok
@@ -272,6 +283,11 @@ type BuildCost struct {
 }
 
 type buildCostJs struct {
-	Type   string
-	Amount int
+	Resource string `json:"resource"`
+	Amount   int    `json:"amount"`
+}
+
+type props struct {
+	ZeroTerrain string           `json:"zero_terrain"`
+	Terrains    []terrainPropsJs `json:"terrains"`
 }
