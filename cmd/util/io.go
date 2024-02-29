@@ -9,12 +9,13 @@ import (
 )
 
 func FromJson(file string, obj any) error {
-	content, err := os.ReadFile(file)
+	ff, err := os.Open(file)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(content, obj)
-	return err
+	decoder := json.NewDecoder(ff)
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(obj)
 }
 
 func ToJson(file string, obj any) error {
@@ -26,12 +27,13 @@ func ToJson(file string, obj any) error {
 }
 
 func FromJsonFs(f fs.FS, file string, obj any) error {
-	content, err := fs.ReadFile(f, file)
+	ff, err := f.Open(file)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(content, obj)
-	return err
+	decoder := json.NewDecoder(ff)
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(obj)
 }
 
 func ReadImage(p string) (image.Image, error) {
