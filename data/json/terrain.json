@@ -94,6 +94,7 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
+            "connects_to": ["path"],
             "terrain_below": "path",
             "self_connect_below": true,
             "build_cost": [
@@ -120,6 +121,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "connects_to": ["path"],
             "terrain_below": "path",
             "self_connect_below": true,
             "build_cost": [
@@ -145,6 +147,7 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
+            "connects_to": ["path"],
             "terrain_below": "path",
             "self_connect_below": true,
             "build_cost": [
@@ -171,6 +174,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "connects_to": ["path"],
             "terrain_below": "path",
             "self_connect_below": true,
             "build_cost": [
@@ -197,6 +201,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "connects_to": ["path"],
             "terrain_below": "path",
             "self_connect_below": true,
             "build_cost": [

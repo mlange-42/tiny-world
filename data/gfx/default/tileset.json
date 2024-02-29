@@ -1,4 +1,10 @@
 {
  "tile_width": 48,
- "tile_height": 24
+ "tile_height": 24,
+ "background": {
+  "R": 0,
+  "G": 0,
+  "B": 0,
+  "A": 0
+ }
 }
