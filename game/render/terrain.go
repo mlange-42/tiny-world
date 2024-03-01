@@ -89,8 +89,11 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	mx, my := s.view.ScreenToGlobal(ebiten.CursorPosition())
 	cursor := s.view.GlobalToTile(mx, my)
 
-	for i := 0; i < s.terrain.Width(); i++ {
-		for j := 0; j < s.terrain.Height(); j++ {
+	mapBounds := s.view.MapBounds(img.Bounds().Dx(), img.Bounds().Dy())
+	mapBounds = mapBounds.Intersect(image.Rect(0, 0, s.terrain.Width(), s.terrain.Height()))
+
+	for i := mapBounds.Min.X; i < mapBounds.Max.X; i++ {
+		for j := mapBounds.Min.Y; j < mapBounds.Max.Y; j++ {
 			point := s.view.TileToGlobal(i, j)
 			if !point.In(bounds) {
 				continue

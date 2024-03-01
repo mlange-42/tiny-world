@@ -1,5 +1,5 @@
 {
-    "world_size": 256,
+    "world_size": 1024,
     "initial_resources": [
         {"resource": "food", "amount": 25},
         {"resource": "wood", "amount": 25},
