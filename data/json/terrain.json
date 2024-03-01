@@ -107,9 +107,9 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 5},
                 {"resource": "stones", "amount": 2}
@@ -134,9 +134,9 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 3}
             ],
@@ -160,9 +160,9 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 3}
@@ -187,9 +187,9 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 10}
             ],
@@ -214,9 +214,9 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}
