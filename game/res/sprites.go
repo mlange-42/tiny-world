@@ -23,6 +23,7 @@ type Sprites struct {
 	TileWidth   int
 	TileHeight  int
 	Background  color.RGBA
+	TextColor   color.RGBA
 	atlas       []*ebiten.Image
 	sprites     []*ebiten.Image
 	infos       []util.Sprite
@@ -121,7 +122,8 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 	return Sprites{
 		TileWidth:   tilesetJs.TileWidth,
 		TileHeight:  tilesetJs.TileHeight,
-		Background:  tilesetJs.Background,
+		Background:  tilesetJs.BackgroundColor,
+		TextColor:   tilesetJs.TextColor,
 		atlas:       atlas,
 		sprites:     sprites,
 		infos:       infos,

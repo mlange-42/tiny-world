@@ -1,10 +1,16 @@
 {
  "tile_width": 48,
  "tile_height": 24,
- "background": {
-  "R": 25,
-  "G": 22,
-  "B": 15,
+ "background_color": {
+  "R": 20,
+  "G": 18,
+  "B": 16,
+  "A": 255
+ },
+ "text_color": {
+  "R": 80,
+  "G": 75,
+  "B": 60,
   "A": 255
  }
 }
