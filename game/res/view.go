@@ -36,21 +36,21 @@ func (v *View) Bounds(w, h int) image.Rectangle {
 
 	return image.Rect(
 		v.X-v.TileWidth, v.Y-2*v.TileHeight,
-		v.X+vw, v.Y+vh+2*v.TileHeight,
+		v.X+vw+v.TileWidth, v.Y+vh+2*v.TileHeight,
 	)
 }
 
-func (v View) TileToGlobal(x, y int) image.Point {
+func (v *View) TileToGlobal(x, y int) image.Point {
 	return image.Pt((x-y)*v.TileWidth/2,
 		(x+y)*v.TileHeight/2)
 }
 
-func (v View) SubtileToGlobal(x, y float64) image.Point {
+func (v *View) SubtileToGlobal(x, y float64) image.Point {
 	return image.Pt(int((x-y)*float64(v.TileWidth)/2),
 		int((x+y)*float64(v.TileHeight/2)))
 }
 
-func (v View) GlobalToTile(x, y int) image.Point {
+func (v *View) GlobalToTile(x, y int) image.Point {
 	y += v.MouseOffset
 
 	w, h := float64(v.TileWidth), float64(v.TileHeight)
@@ -61,7 +61,20 @@ func (v View) GlobalToTile(x, y int) image.Point {
 	return image.Pt(int(i), int(j))
 }
 
-func (v View) ScreenToGlobal(x, y int) (int, int) {
+func (v *View) ScreenToGlobal(x, y int) (int, int) {
 	return v.X + int(float64(x)/v.Zoom),
 		v.Y + int(float64(y)/v.Zoom)
+}
+
+func (v *View) MapBounds(screenWidth, screenHeight int) image.Rectangle {
+	p := v.GlobalToTile(v.ScreenToGlobal(0, 0))
+	xMin := p.X
+	p = v.GlobalToTile(v.ScreenToGlobal(screenWidth+v.TileWidth, screenHeight))
+	xMax := p.X
+	p = v.GlobalToTile(v.ScreenToGlobal(screenWidth+v.TileWidth, 0))
+	yMin := p.Y
+	p = v.GlobalToTile(v.ScreenToGlobal(0, screenHeight))
+	yMax := p.Y
+
+	return image.Rect(xMin, yMin, xMax, yMax)
 }
