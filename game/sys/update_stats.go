@@ -75,7 +75,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
-		if !props.CanBuy {
+		if !props.TerrainBits.Contains(terr.CanBuy) {
 			continue
 		}
 		ui.SetButtonEnabled(terr.Terrain(i), stock.CanPay(props.BuildCost))

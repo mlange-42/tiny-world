@@ -8,6 +8,38 @@ import (
 	"github.com/mlange-42/tiny-world/game/resource"
 )
 
+type TerrainBit uint8
+
+const (
+	IsTerrain TerrainBit = iota
+	IsPath
+	IsBridge
+	IsBuilding
+	IsWarehouse
+	CanBuild
+	CanBuy
+)
+
+type TerrainBits uint8
+
+func NewTerrainBits(bits ...TerrainBit) TerrainBits {
+	d := TerrainBits(0)
+	for _, dir := range bits {
+		d |= (1 << dir)
+	}
+	return d
+}
+
+func (d *TerrainBits) Set(dir TerrainBit) {
+	*d |= (1 << dir)
+}
+
+// Contains checks whether all the argument's bits are contained in this Subscription.
+func (d TerrainBits) Contains(dir TerrainBit) bool {
+	bits := TerrainBits(1 << dir)
+	return (bits & d) == bits
+}
+
 type Terrain uint8
 
 var Air Terrain
@@ -110,18 +142,35 @@ func Prepare(f fs.FS, file string) {
 			storage[res] = entry.Amount
 		}
 
+		bits := TerrainBits(0)
+		if t.IsTerrain {
+			bits.Set(IsTerrain)
+		}
+		if t.IsPath || t.IsBridge {
+			bits.Set(IsPath)
+		}
+		if t.IsBridge {
+			bits.Set(IsBridge)
+		}
+		if t.IsBuilding {
+			bits.Set(IsBuilding)
+		}
+		if t.IsWarehouse {
+			bits.Set(IsWarehouse)
+		}
+		if t.CanBuild {
+			bits.Set(CanBuild)
+		}
+		if t.CanBuy {
+			bits.Set(CanBuy)
+		}
+
 		p := TerrainProps{
 			Name:         t.Name,
-			IsTerrain:    t.IsTerrain,
-			IsPath:       t.IsPath || t.IsBridge,
-			IsBridge:     t.IsBridge,
-			IsBuilding:   t.IsBuilding,
-			IsWarehouse:  t.IsWarehouse,
+			TerrainBits:  bits,
 			BuildOn:      toTerrains(idLookup, t.BuildOn...),
 			TerrainBelow: terrBelow,
 			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
-			CanBuild:     t.CanBuild,
-			CanBuy:       t.CanBuy,
 			Description:  t.Description,
 			BuildCost:    cost,
 			Storage:      storage,
@@ -136,13 +185,13 @@ func Prepare(f fs.FS, file string) {
 			},
 		}
 
-		if p.IsBuilding {
+		if p.TerrainBits.Contains(IsBuilding) {
 			Buildings.Set(Terrain(i))
 		}
-		if p.IsPath {
+		if p.TerrainBits.Contains(IsPath) {
 			Paths.Set(Terrain(i))
 		}
-		if p.IsWarehouse {
+		if p.TerrainBits.Contains(IsWarehouse) {
 			Warehouse = Terrain(i)
 		}
 
@@ -167,20 +216,14 @@ func TerrainID(name string) (Terrain, bool) {
 
 type TerrainProps struct {
 	Name         string
-	IsTerrain    bool
-	IsPath       bool
-	IsBridge     bool
-	IsBuilding   bool
-	IsWarehouse  bool
 	BuildOn      Terrains
-	TerrainBelow Terrain
 	ConnectsTo   Terrains
-	CanBuild     bool
-	CanBuy       bool
-	Production   Production
+	TerrainBelow Terrain
+	TerrainBits  TerrainBits
+	Description  string
 	BuildCost    []ResourceAmount
 	Storage      []int
-	Description  string
+	Production   Production
 }
 
 type terrainPropsJs struct {

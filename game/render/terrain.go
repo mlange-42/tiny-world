@@ -113,7 +113,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, terr.Properties[lu].TerrainBelow)
 			}
 
-			if terr.Properties[lu].IsPath {
+			if terr.Properties[lu].TerrainBits.Contains(terr.IsPath) {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
 				offset := 0.1
 				for _, h := range path.Haulers {
@@ -194,15 +194,16 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	lu := s.landUse.Get(x, y)
 	luEntity := s.landUseE.Get(x, y)
 	prop := terr.Properties[toBuild]
-	if prop.CanBuild {
-		canDestroy := lu == toBuild && prop.CanBuy
+	if prop.TerrainBits.Contains(terr.CanBuild) {
+		canBuy := prop.TerrainBits.Contains(terr.CanBuy)
+		canDestroy := lu == toBuild && canBuy
 
 		canBuildHere := prop.BuildOn.Contains(ter)
-		if prop.IsTerrain {
+		if prop.TerrainBits.Contains(terr.IsTerrain) {
 			height = 0
 		} else {
-			luNatural := !terr.Properties[lu].CanBuy
-			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && prop.CanBuy))
+			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
+			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && canBuy))
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, &comp.RandomSprite{Rand: randSprite}, prop.TerrainBelow)
 

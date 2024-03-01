@@ -23,7 +23,7 @@ func (s *InitTerrainLoaded) Initialize(world *ecs.World) {
 	query := filter.Query(world)
 	for query.Next() {
 		tile, ter := query.Get()
-		if terr.Properties[ter.Terrain].IsTerrain {
+		if terr.Properties[ter.Terrain].TerrainBits.Contains(terr.IsTerrain) {
 			terrain.Set(tile.X, tile.Y, ter.Terrain)
 			terrainE.Set(tile.X, tile.Y, query.Entity())
 		} else {

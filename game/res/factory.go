@@ -86,10 +86,10 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 
 func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
 	props := &terr.Properties[t]
-	if props.IsWarehouse {
+	if props.TerrainBits.Contains(terr.IsWarehouse) {
 		return f.createWarehouse(pos, t, randSprite)
 	}
-	if props.IsPath {
+	if props.TerrainBits.Contains(terr.IsPath) {
 		return f.createPath(pos, t, randSprite)
 	}
 	prod := props.Production
@@ -100,7 +100,7 @@ func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint1
 }
 
 func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) {
-	if !terr.Properties[value].IsTerrain {
+	if !terr.Properties[value].TerrainBits.Contains(terr.IsTerrain) {
 		f.landUse.Get().Set(x, y, value)
 		e := f.Create(image.Pt(x, y), value, randSprite)
 		f.landUseEntities.Get().Set(x, y, e)
