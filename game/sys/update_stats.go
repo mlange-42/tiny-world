@@ -66,8 +66,11 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		if stock.Res[i] > stock.Cap[i] {
 			stock.Res[i] = stock.Cap[i]
 		}
-
-		ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]))
+		if production.Cons[i] > 0 {
+			ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]))
+		} else {
+			ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d (%d/%d)", production.Prod[i], stock.Res[i], stock.Cap[i]))
+		}
 	}
 
 	for i := range terr.Properties {

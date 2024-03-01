@@ -3,7 +3,6 @@ package render
 import (
 	"fmt"
 	"image"
-	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
@@ -233,7 +232,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, bStock), s.font,
 		int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
 		int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
-		color.RGBA{255, 255, 255, 255},
+		s.sprites.TextColor,
 	)
 }
 func (s *Terrain) drawCursorSprite(img *ebiten.Image,

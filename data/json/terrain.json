@@ -49,6 +49,13 @@
 
 
         {
+            "name": "building_base",
+            "build_on": [],
+            "connects_to": ["path", "bridge"],
+            "can_build": false,
+            "can_buy": false
+        },
+        {
             "name": "path",
             "is_path": true,
             "build_on": ["grass", "desert"],
@@ -108,8 +115,7 @@
             "can_build": true,
             "can_buy": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "path",
-            "path_connect_below": true,
+            "terrain_below": "building_base",
             "build_cost": [
                 {"resource": "wood", "amount": 5},
                 {"resource": "stones", "amount": 2}
@@ -135,8 +141,7 @@
             "can_build": true,
             "can_buy": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "path",
-            "path_connect_below": true,
+            "terrain_below": "building_base",
             "build_cost": [
                 {"resource": "wood", "amount": 3}
             ],
@@ -161,8 +166,7 @@
             "can_build": true,
             "can_buy": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "path",
-            "path_connect_below": true,
+            "terrain_below": "building_base",
             "build_cost": [
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 3}
@@ -188,8 +192,7 @@
             "can_build": true,
             "can_buy": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "path",
-            "path_connect_below": true,
+            "terrain_below": "building_base",
             "build_cost": [
                 {"resource": "wood", "amount": 10}
             ],
@@ -215,8 +218,7 @@
             "can_build": true,
             "can_buy": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "path",
-            "path_connect_below": true,
+            "terrain_below": "building_base",
             "build_cost": [
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}
