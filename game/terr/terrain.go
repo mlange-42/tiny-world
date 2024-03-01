@@ -112,7 +112,8 @@ func Prepare(f fs.FS, file string) {
 		p := TerrainProps{
 			Name:             t.Name,
 			IsTerrain:        t.IsTerrain,
-			IsPath:           t.IsPath,
+			IsPath:           t.IsPath || t.IsBridge,
+			IsBridge:         t.IsBridge,
 			IsBuilding:       t.IsBuilding,
 			IsWarehouse:      t.IsWarehouse,
 			BuildOn:          toTerrains(idLookup, t.BuildOn...),
@@ -165,6 +166,7 @@ type TerrainProps struct {
 	Name             string
 	IsTerrain        bool
 	IsPath           bool
+	IsBridge         bool
 	IsBuilding       bool
 	IsWarehouse      bool
 	BuildOn          Terrains
@@ -183,6 +185,7 @@ type terrainPropsJs struct {
 	Name             string             `json:"name"`
 	IsTerrain        bool               `json:"is_terrain"`
 	IsPath           bool               `json:"is_path"`
+	IsBridge         bool               `json:"is_bridge"`
 	IsBuilding       bool               `json:"is_building"`
 	IsWarehouse      bool               `json:"is_warehouse"`
 	BuildOn          []string           `json:"build_on,omitempty"`

@@ -57,6 +57,11 @@ func (a *AStar) FindPath(start, target comp.Tile) ([]comp.Tile, bool) {
 			}
 			lu := a.landUse.Get(xx, yy)
 			if !(terr.Properties[lu].IsPath || (terr.Properties[luOld].IsPath && terr.Buildings.Contains(lu))) {
+				// Don's walk between buildings
+				continue
+			}
+			if terr.Properties[lu].IsBridge && terr.Properties[luOld].IsBridge {
+				// Don's walk between bridges
 				continue
 			}
 

@@ -131,6 +131,22 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 	return false
 }
 
+func (ui *UI) ReplaceAllButtons(rules *Rules) {
+	ui.selection.Reset()
+	ids := []int{}
+	for id := range ui.randomButtons {
+		ids = append(ids, id)
+	}
+	for _, id := range ids {
+		bt := ui.randomButtons[id]
+		ui.randomButtonsContainer.RemoveChild(bt.Button)
+		delete(ui.randomButtons, id)
+
+		ui.createRandomButton(rules)
+		ui.updateRandomTerrains()
+	}
+}
+
 func (ui *UI) createUI() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
