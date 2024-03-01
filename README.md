@@ -5,7 +5,7 @@ A tiny, slow-paced world and colony building game.
 Made with [Arche](https://github.com/mlange-42/arche) and [Ebitengine](https://github.com/hajimehoshi/ebiten).
 Very early work in progress!
 
-![Tiny World screenshot](https://github.com/mlange-42/tiny-world/assets/44003176/d836bf77-eaae-489e-853a-08dbec9045e4)
+![Tiny World screenshot](https://github.com/mlange-42/tiny-world/assets/44003176/222bc13d-1ea1-43d0-9698-8f9d94feeade)
 
 ## Usage
 
@@ -24,10 +24,10 @@ cd tiny-world
 go run .
 ```
 
-## Controls
+## Playing
 
-In the toolbar on the right, the top items are buildings that can be bought by the player for resources.
-The natural features in the lower part appear randomly and are replenished when placed by the player.
+In the toolbar on the right, the top items are **buildings** that can be bought by the player for resources.
+The **natural features** in the lower part appear randomly and are replenished when placed by the player.
 
 * Middle mouse button / mouse wheel: pan and zoom.
 * Space: pause/resume
