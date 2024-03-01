@@ -51,14 +51,27 @@
         {
             "name": "path",
             "is_path": true,
-            "build_on": ["grass", "water", "desert"],
-            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
+            "build_on": ["grass", "desert"],
+            "connects_to": ["path", "bridge", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
             "can_build": true,
             "can_buy": true,
             "build_cost": [
                 {"resource": "wood", "amount": 1}
             ],
             "description": "A path. Required by all buildings"
+        },
+        {
+            "name": "bridge",
+            "is_bridge": true,
+            "build_on": ["water"],
+            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
+            "can_build": true,
+            "can_buy": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 10},
+                {"resource": "stones", "amount": 10}
+            ],
+            "description": "A path over water"
         },
 
         {
@@ -94,9 +107,9 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 5},
                 {"resource": "stones", "amount": 2}
@@ -121,9 +134,9 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 3}
             ],
@@ -147,9 +160,9 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 3}
@@ -174,9 +187,9 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 10}
             ],
@@ -201,9 +214,9 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
-            "connects_to": ["path"],
+            "connects_to": ["path", "bridge"],
             "terrain_below": "path",
-            "self_connect_below": true,
+            "path_connect_below": true,
             "build_cost": [
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}

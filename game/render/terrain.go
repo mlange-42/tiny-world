@@ -202,7 +202,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 			luNatural := !terr.Properties[lu].CanBuy
 			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && prop.CanBuy))
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, true, prop.TerrainBelow)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, false, prop.TerrainBelow)
 
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
@@ -259,7 +259,7 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	selfConnect bool, below terr.Terrain) int {
+	pathConnect bool, below terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
@@ -268,14 +268,14 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 		height = s.drawSprite(img, terrain, landUse,
 			x, y, below, point, height,
 			camOffset, randSprite,
-			terr.Properties[t].SelfConnectBelow, terr.Air)
+			terr.Properties[t].PathConnectBelow, terr.Air)
 	}
 
 	var sp *ebiten.Image
 	if info.IsMultitile() {
 		var neigh terr.Directions
-		if selfConnect {
-			neigh = terrain.NeighborsMask(x, y, t) | landUse.NeighborsMask(x, y, t)
+		if pathConnect {
+			neigh = terrain.NeighborsMaskMulti(x, y, terr.Paths) | landUse.NeighborsMaskMulti(x, y, terr.Paths)
 		} else {
 			conn := terr.Properties[t].ConnectsTo
 			neigh = terrain.NeighborsMaskMulti(x, y, conn) | landUse.NeighborsMaskMulti(x, y, conn)
