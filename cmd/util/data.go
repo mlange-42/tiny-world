@@ -1,8 +1,11 @@
 package util
 
+import "image/color"
+
 type TileSet struct {
-	TileWidth  int `json:"tile_width"`
-	TileHeight int `json:"tile_height"`
+	TileWidth  int        `json:"tile_width"`
+	TileHeight int        `json:"tile_height"`
+	Background color.RGBA `json:"background"`
 }
 
 type RawSprite struct {

@@ -128,7 +128,7 @@ func processFile(base, src string, js multitileJson) {
 		if i == 0 {
 			name = js.File
 		} else {
-			name = fmt.Sprintf("%s_%d", js.File, i)
+			name = fmt.Sprintf("%s_%02d", js.File, i)
 		}
 		outPath := path.Join(base, fmt.Sprintf("%s.png", name))
 		err := util.WriteImage(outPath, images[i])

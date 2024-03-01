@@ -1,0 +1,24 @@
+[
+    {
+        "id": "farm",
+        "file": ["farm"],
+        "multitile": [
+            ["farm"],
+            ["farm"],
+            ["farm_E"],
+            ["farm_E"],
+            ["farm_S"],
+            ["farm_S"],
+            ["farm_SE"],
+            ["farm_SE"],
+            ["farm_E"],
+            ["farm"],
+            ["farm_E"],
+            ["farm_E"],
+            ["farm_S"],
+            ["farm_S"],
+            ["farm_SE"],
+            ["farm_SE"]
+        ]
+    }
+]
