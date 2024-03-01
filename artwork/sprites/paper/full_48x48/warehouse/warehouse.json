@@ -1,0 +1,24 @@
+[
+    {
+        "id": "warehouse",
+        "file": ["warehouse_None"],
+        "multitile": [
+            ["warehouse_None"],
+            ["warehouse_None"],
+            ["warehouse_E"],
+            ["warehouse_E"],
+            ["warehouse_S"],
+            ["warehouse_S"],
+            ["warehouse_SE"],
+            ["warehouse_SE"],
+            ["warehouse_E"],
+            ["warehouse_None"],
+            ["warehouse_E"],
+            ["warehouse_E"],
+            ["warehouse_S"],
+            ["warehouse_S"],
+            ["warehouse_SE"],
+            ["warehouse_SE"]
+        ]
+    }
+]
