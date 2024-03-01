@@ -1,4 +1,7 @@
 [{
     "id": "tree",
-    "file": [ "tree", "tree_dec" ]
+    "file": [ 
+        "tree_c_01", "tree_c_02",
+        "tree_d_01", "tree_d_02"
+    ]
 }]
