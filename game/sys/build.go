@@ -103,7 +103,7 @@ func (s *Build) Update(world *ecs.World) {
 		if !p.BuildOn.Contains(terrHere) {
 			return
 		}
-		fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
+		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
 	} else {
 		if !p.BuildOn.Contains(terrHere) {
 			return
@@ -117,7 +117,7 @@ func (s *Build) Update(world *ecs.World) {
 				world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 				landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			}
-			fac.Set(world, cursor.X, cursor.Y, sel.BuildType)
+			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
 		} else {
 			return
 		}

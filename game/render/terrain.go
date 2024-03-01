@@ -125,7 +125,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			if cursor.X == i && cursor.Y == j {
 				s.drawCursor(img,
-					i, j, height, &point, &off, sel.BuildType)
+					i, j, height, &point, &off, sel.BuildType, sel.RandSprite)
 			}
 		}
 	}
@@ -189,7 +189,7 @@ func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, h
 
 func (s *Terrain) drawCursor(img *ebiten.Image,
 	x, y, height int, point *image.Point, camOffset *image.Point,
-	toBuild terr.Terrain) {
+	toBuild terr.Terrain, randSprite uint16) {
 
 	ter := s.terrain.Get(x, y)
 	lu := s.landUse.Get(x, y)
@@ -205,7 +205,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 			luNatural := !terr.Properties[lu].CanBuy
 			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && prop.CanBuy))
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, false, prop.TerrainBelow)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, &comp.RandomSprite{Rand: randSprite}, false, prop.TerrainBelow)
 
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
