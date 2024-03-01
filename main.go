@@ -84,7 +84,7 @@ func run(saveGame, tileSet string) {
 	fonts := res.NewFonts(data)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites, sprites.TileWidth)
+	ui := res.NewUI(&selection, fonts.Default, &sprites)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	factory := res.NewEntityFactory(&g.Model.World)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	stdimage "image"
 	"image/color"
+	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -20,14 +21,16 @@ import (
 )
 
 type randomButton struct {
-	Terrain terr.Terrain
-	Button  *widget.Button
+	Terrain      terr.Terrain
+	RandomSprite uint16
+	Button       *widget.Button
 }
 
 type UI struct {
 	RandomTerrains []terr.Terrain
 
 	ui             *ebitenui.UI
+	sprites        *Sprites
 	resourceLabels []*widget.Text
 	terrainButtons []*widget.Button
 
@@ -69,15 +72,16 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int) UI {
+func NewUI(selection *Selection, font font.Face, sprites *Sprites) UI {
 	ui := UI{
 		randomButtons: map[int]randomButton{},
 		selection:     selection,
 		font:          font,
 		idPool:        util.NewIntPool[int](8),
+		sprites:       sprites,
 	}
 
-	ui.prepareButtons(sprites, tileWidth)
+	ui.prepareButtons()
 
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewGridLayout(
@@ -102,9 +106,10 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, tileWidth int
 
 func (ui *UI) createRandomButton(rules *Rules) {
 	t := rules.RandomTerrains[rand.Intn(len(rules.RandomTerrains))]
-	button, id := ui.createButton(t)
+	randSprite := uint16(rand.Int31n(math.MaxUint16))
+	button, id := ui.createButton(t, randSprite)
 	ui.randomButtonsContainer.AddChild(button)
-	ui.randomButtons[id] = randomButton{t, button}
+	ui.randomButtons[id] = randomButton{t, randSprite, button}
 }
 
 func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
@@ -119,7 +124,7 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 		ui.selection.Reset()
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Terrain == bt.Terrain {
-				ui.selection.SetBuild(bt2.Terrain, id2)
+				ui.selection.SetBuild(bt2.Terrain, id2, bt2.RandomSprite)
 				break
 			}
 		}
@@ -238,16 +243,18 @@ func (ui *UI) createUI() *widget.Container {
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
-			button, id := ui.createButton(terr.Default)
+			randSprite := uint16(rand.Int31n(math.MaxUint16))
+			button, id := ui.createButton(terr.Default, randSprite)
 			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{terr.Default, button}
+			ui.randomButtons[id] = randomButton{terr.Default, randSprite, button}
 		}
 		ui.updateRandomTerrains()
 	} else {
 		for _, t := range ui.RandomTerrains {
-			button, id := ui.createButton(t)
+			randSprite := uint16(rand.Int31n(math.MaxUint16))
+			button, id := ui.createButton(t, randSprite)
 			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{t, button}
+			ui.randomButtons[id] = randomButton{t, randSprite, button}
 		}
 	}
 }
@@ -310,54 +317,14 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	return anchor
 }
 
-func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
+func (ui *UI) prepareButtons() {
 	ui.buttonImages = make([]widget.ButtonImage, len(terr.Properties))
 	ui.buttonTooltip = make([]string, len(terr.Properties))
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
 
-		img := ebiten.NewImage(tileWidth, tileWidth)
-
-		idx := sprites.GetTerrainIndex(terr.Terrain(i))
-
-		height := 0
-
-		if props.TerrainBelow != terr.Air {
-			idx2 := sprites.GetTerrainIndex(props.TerrainBelow)
-			info2 := sprites.GetInfo(idx2)
-
-			sp2 := sprites.Get(idx2)
-			op := ebiten.DrawImageOptions{}
-			op.GeoM.Translate(0, float64(tileWidth-sp2.Bounds().Dy()))
-			img.DrawImage(sp2, &op)
-
-			height = info2.Height
-		}
-
-		sp1 := sprites.Get(idx)
-		op := ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, float64(tileWidth-sp1.Bounds().Dy()-height))
-		img.DrawImage(sp1, &op)
-
-		slice := image.NewNineSliceSimple(img, 0, tileWidth)
-
-		pressed := ebiten.NewImageFromImage(img)
-		vector.DrawFilledRect(pressed, 0, 0,
-			float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
-			color.RGBA{0, 0, 0, 80}, false)
-		slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
-
-		disabled := ebiten.NewImageFromImage(img)
-		vector.StrokeLine(disabled, 0, 0, float32(img.Bounds().Dx()), float32(img.Bounds().Dy()), 6, color.RGBA{120, 0, 0, 160}, false)
-		sliceDisabled := image.NewNineSliceSimple(disabled, 0, tileWidth)
-
-		ui.buttonImages[i] = widget.ButtonImage{
-			Idle:     slice,
-			Hover:    slicePressed,
-			Pressed:  slicePressed,
-			Disabled: sliceDisabled,
-		}
+		ui.buttonImages[i] = ui.createButtonImage(terr.Terrain(i), 0)
 
 		costs := ""
 		if len(props.BuildCost) > 0 {
@@ -379,7 +346,53 @@ func (ui *UI) prepareButtons(sprites *Sprites, tileWidth int) {
 	}
 }
 
-func (ui *UI) createButton(terrain terr.Terrain) (*widget.Button, int) {
+func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16) widget.ButtonImage {
+	props := &terr.Properties[t]
+
+	tileWidth := ui.sprites.TileWidth
+	img := ebiten.NewImage(tileWidth, tileWidth)
+	idx := ui.sprites.GetTerrainIndex(terr.Terrain(t))
+
+	height := 0
+
+	if props.TerrainBelow != terr.Air {
+		idx2 := ui.sprites.GetTerrainIndex(props.TerrainBelow)
+		info2 := ui.sprites.GetInfo(idx2)
+
+		sp2 := ui.sprites.Get(idx2)
+		op := ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, float64(tileWidth-sp2.Bounds().Dy()))
+		img.DrawImage(sp2, &op)
+
+		height = info2.Height
+	}
+
+	sp1 := ui.sprites.GetRand(idx, 0, int(randSprite))
+	op := ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(tileWidth-sp1.Bounds().Dy()-height))
+	img.DrawImage(sp1, &op)
+
+	slice := image.NewNineSliceSimple(img, 0, tileWidth)
+
+	pressed := ebiten.NewImageFromImage(img)
+	vector.DrawFilledRect(pressed, 0, 0,
+		float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
+		color.RGBA{0, 0, 0, 80}, false)
+	slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
+
+	disabled := ebiten.NewImageFromImage(img)
+	vector.StrokeLine(disabled, 0, 0, float32(img.Bounds().Dx()), float32(img.Bounds().Dy()), 6, color.RGBA{120, 0, 0, 160}, false)
+	sliceDisabled := image.NewNineSliceSimple(disabled, 0, tileWidth)
+
+	return widget.ButtonImage{
+		Idle:     slice,
+		Hover:    slicePressed,
+		Pressed:  slicePressed,
+		Disabled: sliceDisabled,
+	}
+}
+
+func (ui *UI) createButton(terrain terr.Terrain, randSprite ...uint16) (*widget.Button, int) {
 	id := ui.idPool.Get()
 
 	tooltipContainer := widget.NewContainer(
@@ -397,6 +410,13 @@ func (ui *UI) createButton(terrain terr.Terrain) (*widget.Button, int) {
 	)
 	tooltipContainer.AddChild(label)
 
+	bImage := ui.buttonImages[terrain]
+	var randSpriteVal uint16 = 0
+	if len(randSprite) > 0 {
+		bImage = ui.createButtonImage(terrain, randSprite[0])
+		randSpriteVal = randSprite[0]
+	}
+
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -410,10 +430,10 @@ func (ui *UI) createButton(terrain terr.Terrain) (*widget.Button, int) {
 				widget.ToolTipOpts.Delay(time.Millisecond*300),
 			)),
 		),
-		widget.ButtonOpts.Image(&ui.buttonImages[terrain]),
+		widget.ButtonOpts.Image(&bImage),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.selection.SetBuild(terrain, id)
+			ui.selection.SetBuild(terrain, id, randSpriteVal)
 		}),
 	)
 

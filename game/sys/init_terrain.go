@@ -21,8 +21,8 @@ func (s *InitTerrain) Initialize(world *ecs.World) {
 
 	fac := factory.Get()
 
-	fac.Set(world, x, y, terr.Default)
-	fac.Set(world, x, y, terr.Warehouse)
+	fac.Set(world, x, y, terr.Default, 0)
+	fac.Set(world, x, y, terr.Warehouse, 0)
 }
 
 // Update the system
