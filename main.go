@@ -190,7 +190,7 @@ func command() *cobra.Command {
 			run(saveFile, tileSet)
 		},
 	}
-	root.Flags().StringVarP(&tileSet, "tileset", "t", "default", "Tileset to use.")
+	root.Flags().StringVarP(&tileSet, "tileset", "t", "paper", "Tileset to use.")
 	root.Flags().StringVarP(&saveFile, "savefile", "s", "", "Savefile to load.")
 
 	return root
