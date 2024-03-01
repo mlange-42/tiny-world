@@ -229,6 +229,21 @@
                 {"resource": "stones", "amount": 25}
             ],
             "description": "Stores resources"
+        },
+        {
+            "name": "castle",
+            "is_building": true,
+            "build_radius": 12,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": "building_base",
+            "build_cost": [
+                {"resource": "wood", "amount": 50},
+                {"resource": "stones", "amount": 50}
+            ],
+            "description": "Conquers land to colonize."
         }
     ]
 }

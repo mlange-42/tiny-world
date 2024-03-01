@@ -11,6 +11,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
 )
 
@@ -23,6 +24,8 @@ type Terrain struct {
 
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
+
+	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
 
 	time     *res.GameTick
 	rules    *res.Rules
@@ -61,6 +64,8 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
+
+	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
 	s.cursorRed = s.sprites.GetIndex("cursor_red")
 	s.cursorGreen = s.sprites.GetIndex("cursor_green")
@@ -123,7 +128,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				s.drawCursor(img,
+				s.drawCursor(img, world,
 					i, j, height, &point, &off, sel.BuildType, sel.RandSprite)
 			}
 		}
@@ -186,7 +191,7 @@ func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, h
 	s.drawSimpleSprite(img, sprite, &pt, height, camOffset)
 }
 
-func (s *Terrain) drawCursor(img *ebiten.Image,
+func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 	x, y, height int, point *image.Point, camOffset *image.Point,
 	toBuild terr.Terrain, randSprite uint16) {
 
@@ -198,7 +203,8 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		canBuy := prop.TerrainBits.Contains(terr.CanBuy)
 		canDestroy := lu == toBuild && canBuy
 
-		canBuildHere := prop.BuildOn.Contains(ter)
+		canBuildHere := prop.BuildOn.Contains(ter) &&
+			(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
 		if prop.TerrainBits.Contains(terr.IsTerrain) {
 			height = 0
 		} else {

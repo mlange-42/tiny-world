@@ -72,3 +72,7 @@ func (r *RandomSprite) GetRand() uint16 {
 	}
 	return r.Rand
 }
+
+type BuildRadius struct {
+	Radius uint8
+}

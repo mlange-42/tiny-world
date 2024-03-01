@@ -8,7 +8,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/resource"
 )
 
-type TerrainBit uint8
+type TerrainBit uint16
 
 const (
 	IsTerrain TerrainBit = iota
@@ -20,7 +20,7 @@ const (
 	CanBuy
 )
 
-type TerrainBits uint8
+type TerrainBits uint16
 
 func NewTerrainBits(bits ...TerrainBit) TerrainBits {
 	d := TerrainBits(0)
@@ -218,8 +218,9 @@ type TerrainProps struct {
 	Name         string
 	BuildOn      Terrains
 	ConnectsTo   Terrains
-	TerrainBelow Terrain
 	TerrainBits  TerrainBits
+	TerrainBelow Terrain
+	BuildRadius  uint8
 	Description  string
 	BuildCost    []ResourceAmount
 	Storage      []int
@@ -233,6 +234,7 @@ type terrainPropsJs struct {
 	IsBridge     bool               `json:"is_bridge"`
 	IsBuilding   bool               `json:"is_building"`
 	IsWarehouse  bool               `json:"is_warehouse"`
+	BuildRadius  uint8              `json:"build_radius"`
 	BuildOn      []string           `json:"build_on,omitempty"`
 	TerrainBelow string             `json:"terrain_below"`
 	ConnectsTo   []string           `json:"connects_to,omitempty"`
