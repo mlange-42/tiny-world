@@ -31,6 +31,7 @@ type UI struct {
 
 	ui             *ebitenui.UI
 	sprites        *Sprites
+	saveEvent      *SaveEvent
 	resourceLabels []*widget.Text
 	terrainButtons []*widget.Button
 
@@ -72,13 +73,14 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(selection *Selection, font font.Face, sprites *Sprites) UI {
+func NewUI(selection *Selection, font font.Face, sprites *Sprites, save *SaveEvent) UI {
 	ui := UI{
 		randomButtons: map[int]randomButton{},
 		selection:     selection,
 		font:          font,
 		idPool:        util.NewIntPool[int](8),
 		sprites:       sprites,
+		saveEvent:     save,
 	}
 
 	ui.prepareButtons()
@@ -277,7 +279,67 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		),
 	)
 
-	innerContainer := widget.NewContainer(
+	topBar := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(2),
+			widget.GridLayoutOpts.Stretch([]bool{false, true}, []bool{true}),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionCenter,
+				VerticalPosition:   widget.AnchorLayoutPositionStart,
+				StretchHorizontal:  true,
+				StretchVertical:    false,
+			}),
+			widget.WidgetOpts.MinSize(30, 30),
+		),
+	)
+
+	menuContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.Layout(
+			widget.NewRowLayout(
+				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+				widget.RowLayoutOpts.Spacing(4),
+			),
+		),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionStart,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
+	saveButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  false,
+			}),
+		),
+		widget.ButtonOpts.Image(simpleButtonImage()),
+		widget.ButtonOpts.Text("Save", font, &widget.ButtonTextColor{
+			Idle: color.NRGBA{255, 255, 255, 255},
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSave = true
+		}),
+	)
+	menuContainer.AddChild(saveButton)
+
+	innerAnchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
+	infoContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewRowLayout(
@@ -302,17 +364,21 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 			widget.TextOpts.Text("  "+resource.Properties[i].Short, font, color.White),
 			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		)
-		innerContainer.AddChild(label)
+		infoContainer.AddChild(label)
 		counter := widget.NewText(
 			widget.TextOpts.Text("0", font, color.White),
 			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		)
-		innerContainer.AddChild(counter)
+		infoContainer.AddChild(counter)
 		ui.resourceLabels[i] = counter
 	}
 
-	anchor.AddChild(innerContainer)
-	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer)
+	topBar.AddChild(menuContainer)
+	topBar.AddChild(innerAnchor)
+	innerAnchor.AddChild(infoContainer)
+	anchor.AddChild(topBar)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, infoContainer, menuContainer)
 
 	return anchor
 }
@@ -438,4 +504,18 @@ func (ui *UI) createButton(terrain terr.Terrain, randSprite ...uint16) (*widget.
 	)
 
 	return button, id
+}
+
+func simpleButtonImage() *widget.ButtonImage {
+	idle := image.NewNineSliceColor(color.NRGBA{60, 60, 60, 255})
+
+	hover := image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})
+
+	pressed := image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255})
+
+	return &widget.ButtonImage{
+		Idle:    idle,
+		Hover:   hover,
+		Pressed: pressed,
+	}
 }

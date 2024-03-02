@@ -12,7 +12,6 @@ Very early work in progress!
 ### Play in browser
 
 You can play Tiny World in a web browser [here](https://mlange-42.github.io/tiny-world/).
-However, the browser version does not yet support saving a game.
 
 ### Play locally
 
@@ -33,11 +32,3 @@ The **natural features** in the lower part appear randomly and are replenished w
 * Space: pause/resume
 * Left click with selected terrain or buildable: place it.
 * Right click with selected buildable: remove it.
-* Ctrl+S: saves the game to `save/autosave.json`
-
-
-Load a saved game by running with the `-s` option:
-
-```shell
-go run . -s save/autosave.json
-```
