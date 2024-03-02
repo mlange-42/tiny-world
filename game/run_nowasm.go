@@ -3,22 +3,20 @@
 package game
 
 import (
-	"embed"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-func Run(data embed.FS) {
-	gameData = data
-	if err := command().Execute(); err != nil {
+func run(g *Game) {
+	if err := command(g).Execute(); err != nil {
 		fmt.Printf("ERROR: %s\n", err.Error())
 		os.Exit(1)
 	}
 }
 
-func command() *cobra.Command {
+func command(g *Game) *cobra.Command {
 	var tileSet, saveFile string
 	root := &cobra.Command{
 		Use:           "tiny-world",
@@ -29,7 +27,7 @@ func command() *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			run(saveFile, tileSet)
+			runGame(g, saveFile, tileSet)
 		},
 	}
 	root.Flags().StringVarP(&tileSet, "tileset", "t", "paper", "Tileset to use.")

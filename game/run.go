@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche-model/model"
 	"github.com/mlange-42/arche/ecs"
+	"github.com/mlange-42/tiny-world/game/menu"
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
@@ -17,11 +18,40 @@ import (
 
 var gameData embed.FS
 
-func run(saveGame, tileSet string) error {
+func Run(data embed.FS) {
+	gameData = data
+
+	runMenu()
+}
+
+func runMenu() {
+	ebiten.SetVsyncEnabled(true)
+	g := NewGame(model.New())
+
+	ecs.AddResource(&g.Model.World, &g.Screen)
+
+	fonts := res.NewFonts(gameData)
+	ui := menu.NewUI("save", fonts.Default, func() {
+		run(&g)
+	})
+
+	ecs.AddResource(&g.Model.World, &ui)
+
+	g.Model.AddSystem(&menu.UpdateUI{})
+	g.Model.AddUISystem(&menu.DrawUI{})
+
+	g.Initialize()
+	if err := g.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runGame(g *Game, saveGame, tileSet string) error {
 	loadGame := saveGame != ""
 
 	ebiten.SetVsyncEnabled(true)
-	g := NewGame(model.New())
+
+	g.Model = model.New()
 
 	resource.Prepare(gameData, "data/json/resources.json")
 	terr.Prepare(gameData, "data/json/terrain.json")
@@ -141,10 +171,7 @@ func run(saveGame, tileSet string) error {
 
 	// =========== Run ===========
 
-	g.Initialize()
-	if err := g.Run(); err != nil {
-		log.Fatal(err)
-	}
+	g.Model.Initialize()
 
 	return nil
 }

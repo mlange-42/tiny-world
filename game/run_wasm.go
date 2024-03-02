@@ -2,23 +2,18 @@
 
 package game
 
-import (
-	"embed"
-	"syscall/js"
-)
+import "syscall/js"
 
-func Run(data embed.FS) {
-	gameData = data
-
+func run(g *Game) {
 	storage := js.Global().Get("localStorage")
 	jsData := storage.Call("getItem", "savegame")
 
 	if jsData.IsNull() {
-		run("", "paper")
+		runGame(g, "", "paper")
 	} else {
-		if err := run("savegame", "paper"); err != nil {
+		if err := runGame(g, "savegame", "paper"); err != nil {
 			print(err.Error())
-			run("", "paper")
+			runGame(g, "", "paper")
 		}
 	}
 }
