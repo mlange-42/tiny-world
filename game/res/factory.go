@@ -34,7 +34,8 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 		warehouseBuilder:  generic.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite](world),
 		pathBuilder:       generic.NewMap4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite](world),
 
-		radiusMapper: generic.NewMap1[comp.BuildRadius](world),
+		radiusMapper:      generic.NewMap1[comp.BuildRadius](world),
+		consumptionMapper: generic.NewMap1[comp.Consumption](world),
 
 		terrain:         generic.NewResource[Terrain](world),
 		terrainEntities: generic.NewResource[TerrainEntities](world),
