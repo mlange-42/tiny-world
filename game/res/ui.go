@@ -408,7 +408,13 @@ func (ui *UI) prepareButtons() {
 		if props.Production.MaxProduction > 0 {
 			maxProd = fmt.Sprintf(" (max %d)", props.Production.MaxProduction)
 		}
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s.", strings.ToUpper(props.Name), costs, requires, props.Description, maxProd)
+		radius := ""
+		if props.BuildRadius > 0 {
+			radius = fmt.Sprintf("Radius: %d\n", props.BuildRadius)
+		}
+
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s.",
+			strings.ToUpper(props.Name), costs, requires, radius, props.Description, maxProd)
 	}
 }
 
