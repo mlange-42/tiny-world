@@ -102,10 +102,13 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
+	saveEvent := res.SaveEvent{}
+	ecs.AddResource(&g.Model.World, &saveEvent)
+
 	fonts := res.NewFonts(gameData)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites)
+	ui := res.NewUI(&selection, fonts.Default, &sprites, &saveEvent)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	factory := res.NewEntityFactory(&g.Model.World)
