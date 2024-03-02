@@ -5,9 +5,6 @@ package game
 import (
 	"embed"
 	"syscall/js"
-
-	serde "github.com/mlange-42/arche-serde"
-	"github.com/mlange-42/arche/ecs"
 )
 
 func Run(data embed.FS) {
@@ -24,13 +21,4 @@ func Run(data embed.FS) {
 			run("", "paper")
 		}
 	}
-}
-
-func loadWorld(world *ecs.World, path string) error {
-	_ = path
-
-	storage := js.Global().Get("localStorage")
-	jsData := storage.Call("getItem", path)
-
-	return serde.Deserialize([]byte(jsData.String()), world)
 }

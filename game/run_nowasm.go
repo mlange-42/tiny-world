@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"os"
 
-	serde "github.com/mlange-42/arche-serde"
-	"github.com/mlange-42/arche/ecs"
 	"github.com/spf13/cobra"
 )
 
@@ -18,15 +16,6 @@ func Run(data embed.FS) {
 		fmt.Printf("ERROR: %s\n", err.Error())
 		os.Exit(1)
 	}
-}
-
-func loadWorld(world *ecs.World, path string) error {
-	jsData, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	return serde.Deserialize(jsData, world)
 }
 
 func command() *cobra.Command {

@@ -7,10 +7,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche-model/model"
 	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
+	"github.com/mlange-42/tiny-world/game/save"
 	"github.com/mlange-42/tiny-world/game/sys"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
@@ -129,7 +129,7 @@ func run(saveGame, tileSet string) error {
 
 	// =========== Load game ===========
 	if loadGame {
-		err := load(&g.Model.World, saveGame)
+		err := save.LoadWorld(&g.Model.World, saveGame)
 		if err != nil {
 			return err
 		}
@@ -147,20 +147,4 @@ func run(saveGame, tileSet string) error {
 	}
 
 	return nil
-}
-
-func load(world *ecs.World, path string) error {
-	_ = ecs.ComponentID[comp.Tile](world)
-	_ = ecs.ComponentID[comp.Terrain](world)
-	_ = ecs.ComponentID[comp.UpdateTick](world)
-	_ = ecs.ComponentID[comp.Consumption](world)
-	_ = ecs.ComponentID[comp.Production](world)
-	_ = ecs.ComponentID[comp.Warehouse](world)
-	_ = ecs.ComponentID[comp.BuildRadius](world)
-	_ = ecs.ComponentID[comp.Path](world)
-	_ = ecs.ComponentID[comp.Hauler](world)
-	_ = ecs.ComponentID[comp.HaulerSprite](world)
-	_ = ecs.ComponentID[comp.ProductionMarker](world)
-
-	return loadWorld(world, path)
 }
