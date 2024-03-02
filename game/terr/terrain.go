@@ -112,9 +112,9 @@ func Prepare(f fs.FS, file string) {
 				panic(fmt.Sprintf("unknown resource %s", t.Production.Resource))
 			}
 		}
-		if t.Production.ConsumesAmount > 0 {
+		if t.Consumption.Amount > 0 {
 			var ok bool
-			consResource, ok = resource.ResourceID(t.Production.ConsumesResource)
+			consResource, ok = resource.ResourceID(t.Consumption.Resource)
 			if !ok {
 				panic(fmt.Sprintf("unknown resource %s", t.Production.Resource))
 			}
@@ -128,9 +128,9 @@ func Prepare(f fs.FS, file string) {
 		if t.Production.RequiredTerrain != "" {
 			requiredTerrain = toTerrain(idLookup, t.Production.RequiredTerrain)
 		}
-		var productionTerrain Terrain
-		if t.Production.ProductionTerrain != "" {
-			productionTerrain = toTerrain(idLookup, t.Production.ProductionTerrain)
+		var productionTerrain Terrains
+		if len(t.Production.ProductionTerrain) > 0 {
+			productionTerrain = toTerrains(idLookup, t.Production.ProductionTerrain...)
 		}
 
 		storage := make([]int, len(resource.Properties))
@@ -178,11 +178,13 @@ func Prepare(f fs.FS, file string) {
 			Production: Production{
 				Resource:          prodRes,
 				MaxProduction:     t.Production.MaxProduction,
-				ConsumesResource:  consResource,
-				ConsumesAmount:    t.Production.ConsumesAmount,
 				RequiredTerrain:   requiredTerrain,
 				ProductionTerrain: productionTerrain,
 				HaulCapacity:      t.Production.HaulCapacity,
+			},
+			Consumption: Consumption{
+				Resource: consResource,
+				Amount:   t.Consumption.Amount,
 			},
 		}
 
@@ -226,6 +228,7 @@ type TerrainProps struct {
 	BuildCost    []ResourceAmount
 	Storage      []int
 	Production   Production
+	Consumption  Consumption
 }
 
 type terrainPropsJs struct {
@@ -242,6 +245,7 @@ type terrainPropsJs struct {
 	CanBuild     bool               `json:"can_build"`
 	CanBuy       bool               `json:"can_buy"`
 	Production   productionJs       `json:"production"`
+	Consumption  consumptionJs      `json:"consumption"`
 	BuildCost    []resourceAmountJs `json:"build_cost,omitempty"`
 	Storage      []resourceAmountJs `json:"storage,omitempty"`
 	Description  string             `json:"description"`
@@ -250,21 +254,27 @@ type terrainPropsJs struct {
 type Production struct {
 	Resource          resource.Resource
 	MaxProduction     int
-	ConsumesResource  resource.Resource
-	ConsumesAmount    int
 	RequiredTerrain   Terrain
-	ProductionTerrain Terrain
+	ProductionTerrain Terrains
 	HaulCapacity      int
 }
 
 type productionJs struct {
-	Resource          string `json:"resource"`
-	MaxProduction     int    `json:"max_production"`
-	ConsumesResource  string `json:"consumes_resource"`
-	ConsumesAmount    int    `json:"consumes_amount"`
-	RequiredTerrain   string `json:"required_terrain"`
-	ProductionTerrain string `json:"production_terrain"`
-	HaulCapacity      int    `json:"haul_capacity"`
+	Resource          string   `json:"resource"`
+	MaxProduction     int      `json:"max_production"`
+	RequiredTerrain   string   `json:"required_terrain"`
+	ProductionTerrain []string `json:"production_terrain"`
+	HaulCapacity      int      `json:"haul_capacity"`
+}
+
+type Consumption struct {
+	Resource resource.Resource
+	Amount   int
+}
+
+type consumptionJs struct {
+	Resource string `json:"resource"`
+	Amount   int    `json:"amount"`
 }
 
 type ResourceAmount struct {

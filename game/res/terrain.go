@@ -100,6 +100,23 @@ func (g *TerrainGrid) CountNeighbors4(x, y int, tp terr.Terrain) int {
 	return cnt
 }
 
+func (g *TerrainGrid) CountNeighborsMask4(x, y int, tp terr.Terrains) int {
+	cnt := 0
+	if g.isNeighborMask(x, y, 0, -1, tp) {
+		cnt++
+	}
+	if g.isNeighborMask(x, y, 1, 0, tp) {
+		cnt++
+	}
+	if g.isNeighborMask(x, y, 0, 1, tp) {
+		cnt++
+	}
+	if g.isNeighborMask(x, y, -1, 0, tp) {
+		cnt++
+	}
+	return cnt
+}
+
 func (g *TerrainGrid) CountNeighbors8(x, y int, tp terr.Terrain) int {
 	cnt := g.CountNeighbors4(x, y, tp)
 	if g.isNeighbor(x, y, 1, -1, tp) {
@@ -112,6 +129,23 @@ func (g *TerrainGrid) CountNeighbors8(x, y int, tp terr.Terrain) int {
 		cnt++
 	}
 	if g.isNeighbor(x, y, -1, -1, tp) {
+		cnt++
+	}
+	return cnt
+}
+
+func (g *TerrainGrid) CountNeighborsMask8(x, y int, tp terr.Terrains) int {
+	cnt := g.CountNeighborsMask4(x, y, tp)
+	if g.isNeighborMask(x, y, 1, -1, tp) {
+		cnt++
+	}
+	if g.isNeighborMask(x, y, 1, 1, tp) {
+		cnt++
+	}
+	if g.isNeighborMask(x, y, -1, 1, tp) {
+		cnt++
+	}
+	if g.isNeighborMask(x, y, -1, -1, tp) {
 		cnt++
 	}
 	return cnt
