@@ -1,9 +1,6 @@
 package save
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/mlange-42/arche-model/model"
 	"github.com/mlange-42/arche-model/resource"
 	as "github.com/mlange-42/arche-serde"
@@ -31,19 +28,5 @@ func SaveWorld(path string, world *ecs.World) error {
 		return err
 	}
 
-	dir := filepath.Dir(path)
-	err = os.MkdirAll(dir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	f.Write(js)
-
-	return nil
+	return saveToFile(path, js)
 }
