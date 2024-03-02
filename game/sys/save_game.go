@@ -11,7 +11,8 @@ import (
 
 // SaveGame system.
 type SaveGame struct {
-	Path string
+	Folder string
+	Name   string
 }
 
 // Initialize the system
@@ -24,7 +25,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 	}
 	print("Saving game... ")
 
-	err := save.SaveWorld(s.Path, world)
+	err := save.SaveWorld(s.Folder, s.Name, world)
 	if err != nil {
 		log.Printf("Error saving game: %s", err.Error())
 		return

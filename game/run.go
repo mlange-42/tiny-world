@@ -16,6 +16,8 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+const saveFolder = "save"
+
 var gameData embed.FS
 
 func Run(data embed.FS) {
@@ -31,8 +33,8 @@ func runMenu() {
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI("save", fonts.Default, func() {
-		run(&g)
+	ui := menu.NewUI(saveFolder, fonts.Default, func(name string, load bool) {
+		run(&g, name, load)
 	})
 
 	ecs.AddResource(&g.Model.World, &ui)
@@ -47,7 +49,6 @@ func runMenu() {
 }
 
 func runGame(g *Game, loadGame bool, name, tileSet string) error {
-
 	ebiten.SetVsyncEnabled(true)
 
 	g.Model = model.New()
@@ -138,7 +139,8 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	g.Model.AddSystem(&sys.UpdateUI{})
 	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
-		Path: "./save/autosave.json",
+		Folder: "save",
+		Name:   name,
 	})
 	g.Model.AddSystem(&sys.Pause{
 		PauseKey: ebiten.KeySpace,
@@ -158,7 +160,7 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 
 	// =========== Load game ===========
 	if loadGame {
-		err := save.LoadWorld(&g.Model.World, name)
+		err := save.LoadWorld(&g.Model.World, saveFolder, name)
 		if err != nil {
 			return err
 		}

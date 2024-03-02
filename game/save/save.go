@@ -1,6 +1,8 @@
 package save
 
 import (
+	"regexp"
+
 	"github.com/mlange-42/arche-model/model"
 	"github.com/mlange-42/arche-model/resource"
 	as "github.com/mlange-42/arche-serde"
@@ -9,7 +11,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
-func SaveWorld(path string, world *ecs.World) error {
+func SaveWorld(folder, name string, world *ecs.World) error {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
 			generic.T[res.Fonts](),
@@ -28,5 +30,14 @@ func SaveWorld(path string, world *ecs.World) error {
 		return err
 	}
 
-	return saveToFile(path, js)
+	return saveToFile(folder, name, js)
+}
+
+func IsValidName(name string) bool {
+	re := `^[a-zA-Z0-9][a-zA-Z0-9 \-_]*$`
+	matched, err := regexp.Match(re, []byte(name))
+	if err != nil {
+		panic(err)
+	}
+	return matched
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 )
 
-func LoadWorld(world *ecs.World, path string) error {
+func LoadWorld(world *ecs.World, folder, name string) error {
 	_ = ecs.ComponentID[comp.Tile](world)
 	_ = ecs.ComponentID[comp.Terrain](world)
 	_ = ecs.ComponentID[comp.UpdateTick](world)
@@ -18,7 +18,7 @@ func LoadWorld(world *ecs.World, path string) error {
 	_ = ecs.ComponentID[comp.HaulerSprite](world)
 	_ = ecs.ComponentID[comp.ProductionMarker](world)
 
-	return loadWorld(world, path)
+	return loadWorld(world, folder, name)
 }
 
 func ListSaveGames(folder string) ([]string, error) {

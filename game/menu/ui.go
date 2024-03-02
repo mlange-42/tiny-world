@@ -1,8 +1,8 @@
 package menu
 
 import (
-	"fmt"
 	"image/color"
+	"slices"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
@@ -19,12 +19,11 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func NewUI(folder string, font font.Face, start func()) UI {
+func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 	games, err := save.ListSaveGames(folder)
 	if err != nil {
 		panic(err)
 	}
-	println(fmt.Sprint(games))
 
 	ui := UI{}
 
@@ -37,17 +36,23 @@ func NewUI(folder string, font font.Face, start func()) UI {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
 		)),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
 				VerticalPosition:   widget.AnchorLayoutPositionCenter,
 			}),
-			widget.WidgetOpts.MinSize(200, 20),
+			widget.WidgetOpts.MinSize(260, 20),
 		),
 	)
 
 	img := loadButtonImage()
+
+	infoLabel := widget.NewText(
+		widget.TextOpts.Text("   ", font, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
 
 	newName := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(
@@ -89,14 +94,51 @@ func NewUI(folder string, font font.Face, start func()) UI {
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 			name := newName.GetText()
 			if len(name) == 0 {
+				infoLabel.Label = "Give your world a name!"
 				return
 			}
-			start()
+			if slices.Contains(games, name) {
+				infoLabel.Label = "World already exists!"
+				return
+			}
+			if !save.IsValidName(name) {
+				infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+				return
+			}
+			start(name, false)
 		}),
 	)
 
+	worldsLabel := widget.NewText(
+		widget.TextOpts.Text("Load world:", font, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+
+	menuContainer.AddChild(infoLabel)
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(newButton)
+	menuContainer.AddChild(worldsLabel)
+
+	for _, game := range games {
+		gameButton := widget.NewButton(
+			widget.ButtonOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				}),
+			),
+			widget.ButtonOpts.Image(img),
+			widget.ButtonOpts.Text(game, font, &widget.ButtonTextColor{
+				Idle: color.NRGBA{255, 255, 255, 255},
+			}),
+			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+				start(game, true)
+			}),
+		)
+		menuContainer.AddChild(gameButton)
+	}
+
 	rootContainer.AddChild(menuContainer)
 
 	eui := ebitenui.UI{

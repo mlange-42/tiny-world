@@ -9,11 +9,11 @@ import (
 	"github.com/mlange-42/arche/ecs"
 )
 
-func loadWorld(world *ecs.World, path string) error {
-	_ = path
+func loadWorld(world *ecs.World, folder, name string) error {
+	_ = folder
 
 	storage := js.Global().Get("localStorage")
-	jsData := storage.Call("getItem", path)
+	jsData := storage.Call("getItem", name)
 
 	return serde.Deserialize([]byte(jsData.String()), world)
 }

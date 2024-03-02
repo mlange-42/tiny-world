@@ -4,17 +4,19 @@ package save
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 )
 
-func saveToFile(path string, jsData []byte) error {
-	dir := filepath.Dir(path)
+func saveToFile(folder, name string, jsData []byte) error {
+	file := path.Join(folder, name) + ".json"
+	dir := filepath.Dir(file)
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create(path)
+	f, err := os.Create(file)
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ package save
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/mlange-42/arche/ecs"
 )
 
-func loadWorld(world *ecs.World, path string) error {
-	jsData, err := os.ReadFile(path + ".json")
+func loadWorld(world *ecs.World, folder, name string) error {
+	jsData, err := os.ReadFile(path.Join(folder, name) + ".json")
 	if err != nil {
 		return err
 	}
