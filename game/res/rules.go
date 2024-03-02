@@ -11,6 +11,7 @@ import (
 
 type Rules struct {
 	WorldSize           int
+	InitialBuildRadius  int
 	RandomTerrainsCount int
 	RandomTerrains      []terr.Terrain
 
@@ -40,6 +41,7 @@ func NewRules(f fs.FS, file string) Rules {
 
 	return Rules{
 		WorldSize:           rulesHelper.WorldSize,
+		InitialBuildRadius:  rulesHelper.InitialBuildRadius,
 		InitialResources:    storage,
 		RandomTerrainsCount: rulesHelper.RandomTerrainsCount,
 		RandomTerrains:      randTerr,
@@ -48,6 +50,7 @@ func NewRules(f fs.FS, file string) Rules {
 
 type rulesJs struct {
 	WorldSize           int `json:"world_size"`
+	InitialBuildRadius  int `json:"initial_build_radius"`
 	RandomTerrainsCount int `json:"random_terrains_count"`
 
 	RandomTerrains   []string           `json:"random_terrains"`

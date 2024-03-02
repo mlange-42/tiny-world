@@ -3,6 +3,7 @@ package sys
 import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
@@ -13,16 +14,18 @@ type InitTerrain struct {
 
 // Initialize the system
 func (s *InitTerrain) Initialize(world *ecs.World) {
-	factory := generic.NewResource[res.EntityFactory](world)
-	terrain := generic.NewResource[res.Terrain](world)
+	rules := ecs.GetResource[res.Rules](world)
+	fac := ecs.GetResource[res.EntityFactory](world)
+	t := ecs.GetResource[res.Terrain](world)
 
-	t := terrain.Get()
+	radiusMapper := generic.NewMap1[comp.BuildRadius](world)
+
 	x, y := t.Width()/2, t.Height()/2
 
-	fac := factory.Get()
-
 	fac.Set(world, x, y, terr.Default, 0)
-	fac.Set(world, x, y, terr.Warehouse, 0)
+
+	warehouse := fac.Set(world, x, y, terr.Warehouse, 0)
+	radiusMapper.Assign(warehouse, &comp.BuildRadius{Radius: uint8(rules.InitialBuildRadius)})
 }
 
 // Update the system

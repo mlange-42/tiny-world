@@ -29,7 +29,7 @@ func (s *Cheats) Update(world *ecs.World) {
 		inpututil.IsKeyJustPressed(ebiten.KeyR) {
 
 		stock := s.stock.Get()
-		stock.Res = stock.Cap
+		copy(stock.Res, stock.Cap)
 		return
 	}
 

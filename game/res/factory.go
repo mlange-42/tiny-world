@@ -16,6 +16,8 @@ type EntityFactory struct {
 	warehouseBuilder  generic.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite]
 	pathBuilder       generic.Map4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite]
 
+	radiusMapper generic.Map1[comp.BuildRadius]
+
 	terrain         generic.Resource[Terrain]
 	terrainEntities generic.Resource[TerrainEntities]
 	landUse         generic.Resource[LandUse]
@@ -30,6 +32,8 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 		productionBuilder: generic.NewMap6[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.Consumption, comp.RandomSprite](world),
 		warehouseBuilder:  generic.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite](world),
 		pathBuilder:       generic.NewMap4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite](world),
+
+		radiusMapper: generic.NewMap1[comp.BuildRadius](world),
 
 		terrain:         generic.NewResource[Terrain](world),
 		terrainEntities: generic.NewResource[TerrainEntities](world),
@@ -86,25 +90,33 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 
 func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
 	props := &terr.Properties[t]
-	if props.IsWarehouse {
-		return f.createWarehouse(pos, t, randSprite)
+	var e ecs.Entity
+	if props.TerrainBits.Contains(terr.IsWarehouse) {
+		e = f.createWarehouse(pos, t, randSprite)
+	} else if props.TerrainBits.Contains(terr.IsPath) {
+		e = f.createPath(pos, t, randSprite)
+	} else {
+		prod := props.Production
+		if prod.MaxProduction == 0 {
+			e = f.createLandUse(pos, t, randSprite)
+		} else {
+			e = f.createProduction(pos, t, &prod, randSprite)
+		}
 	}
-	if props.IsPath {
-		return f.createPath(pos, t, randSprite)
+
+	if props.BuildRadius > 0 {
+		f.radiusMapper.Assign(e, &comp.BuildRadius{Radius: props.BuildRadius})
 	}
-	prod := props.Production
-	if prod.MaxProduction == 0 {
-		return f.createLandUse(pos, t, randSprite)
-	}
-	return f.createProduction(pos, t, &prod, randSprite)
+
+	return e
 }
 
-func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) {
-	if !terr.Properties[value].IsTerrain {
+func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) ecs.Entity {
+	if !terr.Properties[value].TerrainBits.Contains(terr.IsTerrain) {
 		f.landUse.Get().Set(x, y, value)
 		e := f.Create(image.Pt(x, y), value, randSprite)
 		f.landUseEntities.Get().Set(x, y, e)
-		return
+		return e
 	}
 	t := f.terrain.Get()
 	tE := f.terrainEntities.Get()
@@ -122,6 +134,8 @@ func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, rand
 	f.setNeighbor(t, tE, x+1, y)
 	f.setNeighbor(t, tE, x, y-1)
 	f.setNeighbor(t, tE, x, y+1)
+
+	return e
 }
 
 func (f *EntityFactory) setNeighbor(t *Terrain, tE *TerrainEntities, x, y int) {

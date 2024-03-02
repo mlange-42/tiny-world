@@ -5,8 +5,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 // Build system.
@@ -22,6 +24,8 @@ type Build struct {
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
 	factory         generic.Resource[res.EntityFactory]
+
+	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
 }
 
 // Initialize the system
@@ -37,6 +41,8 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
 	s.factory = generic.NewResource[res.EntityFactory](world)
+
+	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 }
 
 // Update the system
@@ -58,27 +64,31 @@ func (s *Build) Update(world *ecs.World) {
 	mouseFn := inpututil.IsMouseButtonJustPressed
 
 	p := &terr.Properties[sel.BuildType]
-	if !p.CanBuild ||
+	if !p.TerrainBits.Contains(terr.CanBuild) ||
 		!(mouseFn(ebiten.MouseButton0) ||
 			mouseFn(ebiten.MouseButton2)) {
 		return
 	}
 
-	stock := s.stock.Get()
 	view := s.view.Get()
-	landUse := s.landUse.Get()
-	landUseE := s.landUseEntities.Get()
 	mx, my := view.ScreenToGlobal(x, y)
 	cursor := view.GlobalToTile(mx, my)
+	if p.TerrainBits.Contains(terr.CanBuy) && !util.IsBuildable(cursor.X, cursor.Y, s.radiusFilter.Query(world)) {
+		return
+	}
+
+	stock := s.stock.Get()
+	landUse := s.landUse.Get()
+	landUseE := s.landUseEntities.Get()
 
 	remove := mouseFn(ebiten.MouseButton2)
 	if remove {
-		if p.IsTerrain {
+		if p.TerrainBits.Contains(terr.IsTerrain) {
 			sel.Reset()
 			return
 		}
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		if luHere == sel.BuildType && p.CanBuy &&
+		if luHere == sel.BuildType && p.TerrainBits.Contains(terr.CanBuy) &&
 			stock.CanPay(p.BuildCost) {
 
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
@@ -99,7 +109,7 @@ func (s *Build) Update(world *ecs.World) {
 
 	terrain := s.terrain.Get()
 	terrHere := terrain.Get(cursor.X, cursor.Y)
-	if p.IsTerrain {
+	if p.TerrainBits.Contains(terr.IsTerrain) {
 		if !p.BuildOn.Contains(terrHere) {
 			return
 		}
@@ -110,8 +120,8 @@ func (s *Build) Update(world *ecs.World) {
 		}
 
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		luNatural := !terr.Properties[luHere].CanBuy
-		if luHere == terr.Air || (luNatural && p.CanBuy) {
+		luNatural := !terr.Properties[luHere].TerrainBits.Contains(terr.CanBuy)
+		if luHere == terr.Air || (luNatural && p.TerrainBits.Contains(terr.CanBuy)) {
 			if luHere != terr.Air {
 				landUse.Set(cursor.X, cursor.Y, terr.Air)
 				world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))

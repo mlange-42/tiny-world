@@ -11,6 +11,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
 )
 
@@ -23,6 +24,8 @@ type Terrain struct {
 
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
+
+	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
 
 	time     *res.GameTick
 	rules    *res.Rules
@@ -61,6 +64,8 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
+
+	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
 	s.cursorRed = s.sprites.GetIndex("cursor_red")
 	s.cursorGreen = s.sprites.GetIndex("cursor_green")
@@ -103,17 +108,17 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if t != terr.Air && t != terr.Buildable {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
-				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, false, terr.Properties[t].TerrainBelow)
+				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, terr.Properties[t].TerrainBelow)
 			}
 
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				luE := s.landUseE.Get(i, j)
 				randTile := s.spriteMapper.Get(luE)
-				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, false, terr.Properties[lu].TerrainBelow)
+				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, terr.Properties[lu].TerrainBelow)
 			}
 
-			if terr.Properties[lu].IsPath {
+			if terr.Properties[lu].TerrainBits.Contains(terr.IsPath) {
 				path := s.pathMapper.Get(s.landUseE.Get(i, j))
 				offset := 0.1
 				for _, h := range path.Haulers {
@@ -123,7 +128,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				s.drawCursor(img,
+				s.drawCursor(img, world,
 					i, j, height, &point, &off, sel.BuildType, sel.RandSprite)
 			}
 		}
@@ -186,7 +191,7 @@ func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, h
 	s.drawSimpleSprite(img, sprite, &pt, height, camOffset)
 }
 
-func (s *Terrain) drawCursor(img *ebiten.Image,
+func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 	x, y, height int, point *image.Point, camOffset *image.Point,
 	toBuild terr.Terrain, randSprite uint16) {
 
@@ -194,17 +199,19 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 	lu := s.landUse.Get(x, y)
 	luEntity := s.landUseE.Get(x, y)
 	prop := terr.Properties[toBuild]
-	if prop.CanBuild {
-		canDestroy := lu == toBuild && prop.CanBuy
+	if prop.TerrainBits.Contains(terr.CanBuild) {
+		canBuy := prop.TerrainBits.Contains(terr.CanBuy)
+		canDestroy := lu == toBuild && canBuy
 
-		canBuildHere := prop.BuildOn.Contains(ter)
-		if prop.IsTerrain {
+		canBuildHere := prop.BuildOn.Contains(ter) &&
+			(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
+		if prop.TerrainBits.Contains(terr.IsTerrain) {
 			height = 0
 		} else {
-			luNatural := !terr.Properties[lu].CanBuy
-			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && prop.CanBuy))
+			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
+			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && canBuy))
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, &comp.RandomSprite{Rand: randSprite}, false, prop.TerrainBelow)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, &comp.RandomSprite{Rand: randSprite}, prop.TerrainBelow)
 
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
@@ -261,7 +268,7 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	pathConnect bool, below terr.Terrain) int {
+	below terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
@@ -269,19 +276,15 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 	if below != terr.Air {
 		height = s.drawSprite(img, terrain, landUse,
 			x, y, below, point, height,
-			camOffset, randSprite,
-			terr.Properties[t].PathConnectBelow, terr.Air)
+			camOffset, randSprite, terr.Air)
 	}
 
 	var sp *ebiten.Image
 	if info.IsMultitile() {
 		var neigh terr.Directions
-		if pathConnect {
-			neigh = terrain.NeighborsMaskMulti(x, y, terr.Paths) | landUse.NeighborsMaskMulti(x, y, terr.Paths)
-		} else {
-			conn := terr.Properties[t].ConnectsTo
-			neigh = terrain.NeighborsMaskMulti(x, y, conn) | landUse.NeighborsMaskMulti(x, y, conn)
-		}
+		conn := terr.Properties[t].ConnectsTo
+		neigh = terrain.NeighborsMaskMulti(x, y, conn) | landUse.NeighborsMaskMulti(x, y, conn)
+
 		mIdx := s.sprites.GetMultiTileIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
 
 		sp = s.sprites.GetSprite(mIdx)

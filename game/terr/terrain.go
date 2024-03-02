@@ -8,6 +8,38 @@ import (
 	"github.com/mlange-42/tiny-world/game/resource"
 )
 
+type TerrainBit uint16
+
+const (
+	IsTerrain TerrainBit = iota
+	IsPath
+	IsBridge
+	IsBuilding
+	IsWarehouse
+	CanBuild
+	CanBuy
+)
+
+type TerrainBits uint16
+
+func NewTerrainBits(bits ...TerrainBit) TerrainBits {
+	d := TerrainBits(0)
+	for _, dir := range bits {
+		d |= (1 << dir)
+	}
+	return d
+}
+
+func (d *TerrainBits) Set(dir TerrainBit) {
+	*d |= (1 << dir)
+}
+
+// Contains checks whether all the argument's bits are contained in this Subscription.
+func (d TerrainBits) Contains(dir TerrainBit) bool {
+	bits := TerrainBits(1 << dir)
+	return (bits & d) == bits
+}
+
 type Terrain uint8
 
 var Air Terrain
@@ -110,22 +142,39 @@ func Prepare(f fs.FS, file string) {
 			storage[res] = entry.Amount
 		}
 
+		bits := TerrainBits(0)
+		if t.IsTerrain {
+			bits.Set(IsTerrain)
+		}
+		if t.IsPath || t.IsBridge {
+			bits.Set(IsPath)
+		}
+		if t.IsBridge {
+			bits.Set(IsBridge)
+		}
+		if t.IsBuilding {
+			bits.Set(IsBuilding)
+		}
+		if t.IsWarehouse {
+			bits.Set(IsWarehouse)
+		}
+		if t.CanBuild {
+			bits.Set(CanBuild)
+		}
+		if t.CanBuy {
+			bits.Set(CanBuy)
+		}
+
 		p := TerrainProps{
-			Name:             t.Name,
-			IsTerrain:        t.IsTerrain,
-			IsPath:           t.IsPath || t.IsBridge,
-			IsBridge:         t.IsBridge,
-			IsBuilding:       t.IsBuilding,
-			IsWarehouse:      t.IsWarehouse,
-			BuildOn:          toTerrains(idLookup, t.BuildOn...),
-			TerrainBelow:     terrBelow,
-			PathConnectBelow: t.PathConnectBelow,
-			ConnectsTo:       toTerrains(idLookup, t.ConnectsTo...),
-			CanBuild:         t.CanBuild,
-			CanBuy:           t.CanBuy,
-			Description:      t.Description,
-			BuildCost:        cost,
-			Storage:          storage,
+			Name:         t.Name,
+			TerrainBits:  bits,
+			BuildOn:      toTerrains(idLookup, t.BuildOn...),
+			TerrainBelow: terrBelow,
+			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
+			BuildRadius:  t.BuildRadius,
+			Description:  t.Description,
+			BuildCost:    cost,
+			Storage:      storage,
 			Production: Production{
 				Resource:          prodRes,
 				MaxProduction:     t.Production.MaxProduction,
@@ -137,13 +186,13 @@ func Prepare(f fs.FS, file string) {
 			},
 		}
 
-		if p.IsBuilding {
+		if p.TerrainBits.Contains(IsBuilding) {
 			Buildings.Set(Terrain(i))
 		}
-		if p.IsPath {
+		if p.TerrainBits.Contains(IsPath) {
 			Paths.Set(Terrain(i))
 		}
-		if p.IsWarehouse {
+		if p.TerrainBits.Contains(IsWarehouse) {
 			Warehouse = Terrain(i)
 		}
 
@@ -167,41 +216,35 @@ func TerrainID(name string) (Terrain, bool) {
 }
 
 type TerrainProps struct {
-	Name             string
-	IsTerrain        bool
-	IsPath           bool
-	IsBridge         bool
-	IsBuilding       bool
-	IsWarehouse      bool
-	BuildOn          Terrains
-	TerrainBelow     Terrain
-	PathConnectBelow bool
-	ConnectsTo       Terrains
-	CanBuild         bool
-	CanBuy           bool
-	Production       Production
-	BuildCost        []ResourceAmount
-	Storage          []int
-	Description      string
+	Name         string
+	BuildOn      Terrains
+	ConnectsTo   Terrains
+	TerrainBits  TerrainBits
+	TerrainBelow Terrain
+	BuildRadius  uint8
+	Description  string
+	BuildCost    []ResourceAmount
+	Storage      []int
+	Production   Production
 }
 
 type terrainPropsJs struct {
-	Name             string             `json:"name"`
-	IsTerrain        bool               `json:"is_terrain"`
-	IsPath           bool               `json:"is_path"`
-	IsBridge         bool               `json:"is_bridge"`
-	IsBuilding       bool               `json:"is_building"`
-	IsWarehouse      bool               `json:"is_warehouse"`
-	BuildOn          []string           `json:"build_on,omitempty"`
-	TerrainBelow     string             `json:"terrain_below"`
-	PathConnectBelow bool               `json:"path_connect_below"`
-	ConnectsTo       []string           `json:"connects_to,omitempty"`
-	CanBuild         bool               `json:"can_build"`
-	CanBuy           bool               `json:"can_buy"`
-	Production       productionJs       `json:"production"`
-	BuildCost        []resourceAmountJs `json:"build_cost,omitempty"`
-	Storage          []resourceAmountJs `json:"storage,omitempty"`
-	Description      string             `json:"description"`
+	Name         string             `json:"name"`
+	IsTerrain    bool               `json:"is_terrain"`
+	IsPath       bool               `json:"is_path"`
+	IsBridge     bool               `json:"is_bridge"`
+	IsBuilding   bool               `json:"is_building"`
+	IsWarehouse  bool               `json:"is_warehouse"`
+	BuildRadius  uint8              `json:"build_radius"`
+	BuildOn      []string           `json:"build_on,omitempty"`
+	TerrainBelow string             `json:"terrain_below"`
+	ConnectsTo   []string           `json:"connects_to,omitempty"`
+	CanBuild     bool               `json:"can_build"`
+	CanBuy       bool               `json:"can_buy"`
+	Production   productionJs       `json:"production"`
+	BuildCost    []resourceAmountJs `json:"build_cost,omitempty"`
+	Storage      []resourceAmountJs `json:"storage,omitempty"`
+	Description  string             `json:"description"`
 }
 
 type Production struct {
