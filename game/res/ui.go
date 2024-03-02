@@ -401,8 +401,8 @@ func (ui *UI) prepareButtons() {
 			costs += "\n"
 		}
 		requires := ""
-		if props.Production.ConsumesAmount > 0 {
-			requires = fmt.Sprintf("Requires: %d F/min\n", props.Production.ConsumesAmount)
+		if props.Consumption.Amount > 0 {
+			requires = fmt.Sprintf("Requires: %d F/min\n", props.Consumption.Amount)
 		}
 		maxProd := ""
 		if props.Production.MaxProduction > 0 {

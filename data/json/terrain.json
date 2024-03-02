@@ -128,9 +128,11 @@
                 "max_production": 7,
                 "required_terrain": "path",
                 "production_terrain": ["field"],
-                "consumes_resource": "food",
-                "consumes_amount": 1,
                 "haul_capacity": 2
+            },
+            "consumption": {
+                "resource": "food",
+                "amount": 1
             },
             "description": "Produces 1 food/min per neighboring field"
         },
@@ -153,9 +155,11 @@
                 "max_production": 5,
                 "required_terrain": "path",
                 "production_terrain": ["water"],
-                "consumes_resource": "food",
-                "consumes_amount": 1,
                 "haul_capacity": 2
+            },
+            "consumption": {
+                "resource": "food",
+                "amount": 1
             },
             "description": "Produces 1 food/min per neighboring water"
         },
@@ -179,9 +183,11 @@
                 "max_production": 7,
                 "required_terrain": "path",
                 "production_terrain": ["tree"],
-                "consumes_resource": "food",
-                "consumes_amount": 5,
                 "haul_capacity": 2
+            },
+            "consumption": {
+                "resource": "food",
+                "amount": 5
             },
             "description": "Produces 1 wood/min per neighboring tree"
         },
@@ -204,9 +210,11 @@
                 "max_production": 3,
                 "required_terrain": "path",
                 "production_terrain": ["rock"],
-                "consumes_resource": "food",
-                "consumes_amount": 5,
                 "haul_capacity": 2
+            },
+            "consumption": {
+                "resource": "food",
+                "amount": 5
             },
             "description": "Produces 1 stone/min per neighboring rock"
         },
@@ -243,6 +251,10 @@
                 {"resource": "wood", "amount": 50},
                 {"resource": "stones", "amount": 50}
             ],
+            "consumption": {
+                "resource": "food",
+                "amount": 10
+            },
             "description": "Conquers land to colonize."
         }
     ]
