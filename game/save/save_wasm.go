@@ -9,7 +9,7 @@ func saveToFile(path string, jsData []byte) error {
 
 	data := js.ValueOf(string(jsData))
 	storage := js.Global().Get("localStorage")
-	storage.Set("savegame", data)
+	storage.Call("setItem", "savegame", data)
 
 	return nil
 }
