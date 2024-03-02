@@ -127,7 +127,7 @@
                 "resource": "food",
                 "max_production": 7,
                 "required_terrain": "path",
-                "production_terrain": "field",
+                "production_terrain": ["field"],
                 "consumes_resource": "food",
                 "consumes_amount": 1,
                 "haul_capacity": 2
@@ -152,7 +152,7 @@
                 "resource": "food",
                 "max_production": 5,
                 "required_terrain": "path",
-                "production_terrain": "water",
+                "production_terrain": ["water"],
                 "consumes_resource": "food",
                 "consumes_amount": 1,
                 "haul_capacity": 2
@@ -178,7 +178,7 @@
                 "resource": "wood",
                 "max_production": 7,
                 "required_terrain": "path",
-                "production_terrain": "tree",
+                "production_terrain": ["tree"],
                 "consumes_resource": "food",
                 "consumes_amount": 5,
                 "haul_capacity": 2
@@ -203,7 +203,7 @@
                 "resource": "stones",
                 "max_production": 3,
                 "required_terrain": "path",
-                "production_terrain": "rock",
+                "production_terrain": ["rock"],
                 "consumes_resource": "food",
                 "consumes_amount": 5,
                 "haul_capacity": 2

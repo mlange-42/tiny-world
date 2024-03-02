@@ -68,9 +68,9 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 			continue
 		}
 		count := 0
-		if prod.ProductionTerrain != terr.Air {
-			count += terrain.CountNeighbors8(tile.X, tile.Y, prod.ProductionTerrain) +
-				landUse.CountNeighbors8(tile.X, tile.Y, prod.ProductionTerrain)
+		if prod.ProductionTerrain != 0 {
+			count += terrain.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain) +
+				landUse.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain)
 		}
 		pr.Amount = math.MinInt(count, prod.MaxProduction)
 	}

@@ -128,9 +128,9 @@ func Prepare(f fs.FS, file string) {
 		if t.Production.RequiredTerrain != "" {
 			requiredTerrain = toTerrain(idLookup, t.Production.RequiredTerrain)
 		}
-		var productionTerrain Terrain
-		if t.Production.ProductionTerrain != "" {
-			productionTerrain = toTerrain(idLookup, t.Production.ProductionTerrain)
+		var productionTerrain Terrains
+		if len(t.Production.ProductionTerrain) > 0 {
+			productionTerrain = toTerrains(idLookup, t.Production.ProductionTerrain...)
 		}
 
 		storage := make([]int, len(resource.Properties))
@@ -253,18 +253,18 @@ type Production struct {
 	ConsumesResource  resource.Resource
 	ConsumesAmount    int
 	RequiredTerrain   Terrain
-	ProductionTerrain Terrain
+	ProductionTerrain Terrains
 	HaulCapacity      int
 }
 
 type productionJs struct {
-	Resource          string `json:"resource"`
-	MaxProduction     int    `json:"max_production"`
-	ConsumesResource  string `json:"consumes_resource"`
-	ConsumesAmount    int    `json:"consumes_amount"`
-	RequiredTerrain   string `json:"required_terrain"`
-	ProductionTerrain string `json:"production_terrain"`
-	HaulCapacity      int    `json:"haul_capacity"`
+	Resource          string   `json:"resource"`
+	MaxProduction     int      `json:"max_production"`
+	ConsumesResource  string   `json:"consumes_resource"`
+	ConsumesAmount    int      `json:"consumes_amount"`
+	RequiredTerrain   string   `json:"required_terrain"`
+	ProductionTerrain []string `json:"production_terrain"`
+	HaulCapacity      int      `json:"haul_capacity"`
 }
 
 type ResourceAmount struct {
