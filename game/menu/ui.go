@@ -1,11 +1,13 @@
 package menu
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/mlange-42/tiny-world/game/save"
 	"golang.org/x/image/font"
 )
 
@@ -18,6 +20,12 @@ func (ui *UI) UI() *ebitenui.UI {
 }
 
 func NewUI(folder string, font font.Face, start func()) UI {
+	games, err := save.ListSaveGames(folder)
+	if err != nil {
+		panic(err)
+	}
+	println(fmt.Sprint(games))
+
 	ui := UI{}
 
 	rootContainer := widget.NewContainer(
@@ -79,6 +87,10 @@ func NewUI(folder string, font font.Face, start func()) UI {
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			name := newName.GetText()
+			if len(name) == 0 {
+				return
+			}
 			start()
 		}),
 	)

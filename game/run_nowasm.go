@@ -27,7 +27,7 @@ func command(g *Game) *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			runGame(g, saveFile, tileSet)
+			runGame(g, saveFile != "", saveFile, tileSet)
 		},
 	}
 	root.Flags().StringVarP(&tileSet, "tileset", "t", "paper", "Tileset to use.")

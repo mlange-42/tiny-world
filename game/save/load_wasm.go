@@ -17,3 +17,18 @@ func loadWorld(world *ecs.World, path string) error {
 
 	return serde.Deserialize([]byte(jsData.String()), world)
 }
+
+func listSaveGames(folder string) ([]string, error) {
+	_ = folder
+	games := []string{}
+
+	storage := js.Global().Get("localStorage")
+
+	cnt := storage.Get("length").Int()
+	for i := 0; i < cnt; i++ {
+		key := storage.Call("key", i).String()
+		games = append(games, key)
+	}
+
+	return games, nil
+}

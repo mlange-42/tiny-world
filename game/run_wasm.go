@@ -9,11 +9,11 @@ func run(g *Game) {
 	jsData := storage.Call("getItem", "savegame")
 
 	if jsData.IsNull() {
-		runGame(g, "", "paper")
+		runGame(g, false, "", "paper")
 	} else {
-		if err := runGame(g, "savegame", "paper"); err != nil {
+		if err := runGame(g, true, "savegame", "paper"); err != nil {
 			print(err.Error())
-			runGame(g, "", "paper")
+			runGame(g, false, "", "paper")
 		}
 	}
 }

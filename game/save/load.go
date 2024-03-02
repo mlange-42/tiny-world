@@ -20,3 +20,7 @@ func LoadWorld(world *ecs.World, path string) error {
 
 	return loadWorld(world, path)
 }
+
+func ListSaveGames(folder string) ([]string, error) {
+	return listSaveGames(folder)
+}

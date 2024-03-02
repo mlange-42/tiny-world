@@ -46,8 +46,7 @@ func runMenu() {
 	}
 }
 
-func runGame(g *Game, saveGame, tileSet string) error {
-	loadGame := saveGame != ""
+func runGame(g *Game, loadGame bool, name, tileSet string) error {
 
 	ebiten.SetVsyncEnabled(true)
 
@@ -159,7 +158,7 @@ func runGame(g *Game, saveGame, tileSet string) error {
 
 	// =========== Load game ===========
 	if loadGame {
-		err := save.LoadWorld(&g.Model.World, saveGame)
+		err := save.LoadWorld(&g.Model.World, name)
 		if err != nil {
 			return err
 		}
