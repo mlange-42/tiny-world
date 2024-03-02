@@ -70,16 +70,16 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
-	if p.TerrainBits.Contains(terr.CanBuy) && !util.IsBuildable(x, y, s.radiusFilter.Query(world)) {
+	view := s.view.Get()
+	mx, my := view.ScreenToGlobal(x, y)
+	cursor := view.GlobalToTile(mx, my)
+	if p.TerrainBits.Contains(terr.CanBuy) && !util.IsBuildable(cursor.X, cursor.Y, s.radiusFilter.Query(world)) {
 		return
 	}
 
 	stock := s.stock.Get()
-	view := s.view.Get()
 	landUse := s.landUse.Get()
 	landUseE := s.landUseEntities.Get()
-	mx, my := view.ScreenToGlobal(x, y)
-	cursor := view.GlobalToTile(mx, my)
 
 	remove := mouseFn(ebiten.MouseButton2)
 	if remove {

@@ -171,6 +171,7 @@ func Prepare(f fs.FS, file string) {
 			BuildOn:      toTerrains(idLookup, t.BuildOn...),
 			TerrainBelow: terrBelow,
 			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
+			BuildRadius:  t.BuildRadius,
 			Description:  t.Description,
 			BuildCost:    cost,
 			Storage:      storage,

@@ -59,7 +59,7 @@
             "name": "path",
             "is_path": true,
             "build_on": ["grass", "desert"],
-            "connects_to": ["path", "bridge", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
+            "connects_to": ["path", "bridge", "farm", "fisherman", "lumberjack", "mason", "warehouse", "castle"],
             "can_build": true,
             "can_buy": true,
             "build_cost": [
@@ -71,7 +71,7 @@
             "name": "bridge",
             "is_bridge": true,
             "build_on": ["water"],
-            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse"],
+            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse", "castle"],
             "can_build": true,
             "can_buy": true,
             "build_cost": [
