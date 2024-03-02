@@ -36,7 +36,7 @@ func (v *View) Bounds(w, h int) image.Rectangle {
 
 	return image.Rect(
 		v.X-v.TileWidth, v.Y-2*v.TileHeight,
-		v.X+vw+v.TileWidth, v.Y+vh+2*v.TileHeight,
+		v.X+vw+v.TileWidth, v.Y+vh+5*v.TileHeight,
 	)
 }
 
@@ -69,11 +69,11 @@ func (v *View) ScreenToGlobal(x, y int) (int, int) {
 func (v *View) MapBounds(screenWidth, screenHeight int) image.Rectangle {
 	p := v.GlobalToTile(v.ScreenToGlobal(0, 0))
 	xMin := p.X
-	p = v.GlobalToTile(v.ScreenToGlobal(screenWidth+v.TileWidth, screenHeight))
+	p = v.GlobalToTile(v.ScreenToGlobal(screenWidth+v.TileWidth, screenHeight+5*v.TileHeight))
 	xMax := p.X
 	p = v.GlobalToTile(v.ScreenToGlobal(screenWidth+v.TileWidth, 0))
 	yMin := p.Y
-	p = v.GlobalToTile(v.ScreenToGlobal(0, screenHeight))
+	p = v.GlobalToTile(v.ScreenToGlobal(0, screenHeight+5*v.TileHeight))
 	yMax := p.Y
 
 	return image.Rect(xMin, yMin, xMax, yMax)
