@@ -42,12 +42,12 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	prodQuery := s.prodFilter.Query(world)
 	for prodQuery.Next() {
 		prod := prodQuery.Get()
-		production.Prod[prod.Resource] += prod.Amount
+		production.Prod[prod.Resource] += int(prod.Amount)
 	}
 	consQuery := s.consFilter.Query(world)
 	for consQuery.Next() {
 		cons := consQuery.Get()
-		production.Cons[cons.Resource] += cons.Amount
+		production.Cons[cons.Resource] += int(cons.Amount)
 	}
 
 	for i := range resource.Properties {
@@ -58,7 +58,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		tp := stockQuery.Get()
 		st := terr.Properties[tp.Terrain].Storage
 		for i := range resource.Properties {
-			stock.Cap[i] += st[i]
+			stock.Cap[i] += int(st[i])
 		}
 	}
 

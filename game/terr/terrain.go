@@ -133,13 +133,13 @@ func Prepare(f fs.FS, file string) {
 			productionTerrain = toTerrains(idLookup, t.Production.ProductionTerrain...)
 		}
 
-		storage := make([]int, len(resource.Properties))
+		storage := make([]uint8, len(resource.Properties))
 		for _, entry := range t.Storage {
 			res, ok := resource.ResourceID(entry.Resource)
 			if !ok {
 				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
 			}
-			storage[res] = entry.Amount
+			storage[res] = uint8(entry.Amount)
 		}
 
 		bits := TerrainBits(0)
@@ -172,6 +172,7 @@ func Prepare(f fs.FS, file string) {
 			TerrainBelow: terrBelow,
 			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
 			BuildRadius:  t.BuildRadius,
+			Population:   t.Population,
 			Description:  t.Description,
 			BuildCost:    cost,
 			Storage:      storage,
@@ -224,9 +225,10 @@ type TerrainProps struct {
 	TerrainBits  TerrainBits
 	TerrainBelow Terrain
 	BuildRadius  uint8
+	Population   uint8
 	Description  string
 	BuildCost    []ResourceAmount
-	Storage      []int
+	Storage      []uint8
 	Production   Production
 	Consumption  Consumption
 }
@@ -239,6 +241,7 @@ type terrainPropsJs struct {
 	IsBuilding   bool               `json:"is_building"`
 	IsWarehouse  bool               `json:"is_warehouse"`
 	BuildRadius  uint8              `json:"build_radius"`
+	Population   uint8              `json:"population"`
 	BuildOn      []string           `json:"build_on,omitempty"`
 	TerrainBelow string             `json:"terrain_below"`
 	ConnectsTo   []string           `json:"connects_to,omitempty"`
@@ -253,38 +256,38 @@ type terrainPropsJs struct {
 
 type Production struct {
 	Resource          resource.Resource
-	MaxProduction     int
+	MaxProduction     uint8
+	HaulCapacity      uint8
 	RequiredTerrain   Terrain
 	ProductionTerrain Terrains
-	HaulCapacity      int
 }
 
 type productionJs struct {
 	Resource          string   `json:"resource"`
-	MaxProduction     int      `json:"max_production"`
+	MaxProduction     uint8    `json:"max_production"`
+	HaulCapacity      uint8    `json:"haul_capacity"`
 	RequiredTerrain   string   `json:"required_terrain"`
 	ProductionTerrain []string `json:"production_terrain"`
-	HaulCapacity      int      `json:"haul_capacity"`
 }
 
 type Consumption struct {
 	Resource resource.Resource
-	Amount   int
+	Amount   uint8
 }
 
 type consumptionJs struct {
 	Resource string `json:"resource"`
-	Amount   int    `json:"amount"`
+	Amount   uint8  `json:"amount"`
 }
 
 type ResourceAmount struct {
 	Resource resource.Resource
-	Amount   int
+	Amount   uint16
 }
 
 type resourceAmountJs struct {
 	Resource string `json:"resource"`
-	Amount   int    `json:"amount"`
+	Amount   uint16 `json:"amount"`
 }
 
 type props struct {

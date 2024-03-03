@@ -72,7 +72,7 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 			count += terrain.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain) +
 				landUse.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain)
 		}
-		pr.Amount = math.MinInt(count, prod.MaxProduction)
+		pr.Amount = uint8(math.MinInt(count, int(prod.MaxProduction)))
 	}
 }
 
