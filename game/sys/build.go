@@ -47,26 +47,28 @@ func (s *Build) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Build) Update(world *ecs.World) {
-	rules := s.rules.Get()
 	sel := s.selection.Get()
-	ui := s.ui.Get()
-	fac := s.factory.Get()
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		sel.Reset()
 	}
 
+	ui := s.ui.Get()
 	x, y := ebiten.CursorPosition()
 	if ui.MouseInside(x, y) {
 		return
 	}
 
-	mouseFn := inpututil.IsMouseButtonJustPressed
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
+		sel.Reset()
+		return
+	}
+	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+		return
+	}
 
 	p := &terr.Properties[sel.BuildType]
-	if !p.TerrainBits.Contains(terr.CanBuild) ||
-		!(mouseFn(ebiten.MouseButton0) ||
-			mouseFn(ebiten.MouseButton2)) {
+	if sel.BuildType != terr.Bulldoze && !p.TerrainBits.Contains(terr.CanBuild) {
 		return
 	}
 
@@ -77,28 +79,22 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
+	fac := s.factory.Get()
+	rules := s.rules.Get()
 	stock := s.stock.Get()
 	landUse := s.landUse.Get()
 	landUseE := s.landUseEntities.Get()
 
-	remove := mouseFn(ebiten.MouseButton2)
-	if remove {
-		if p.TerrainBits.Contains(terr.IsTerrain) {
-			sel.Reset()
-			return
-		}
+	if sel.BuildType == terr.Bulldoze {
 		luHere := landUse.Get(cursor.X, cursor.Y)
-		if luHere == sel.BuildType && p.TerrainBits.Contains(terr.CanBuy) &&
-			stock.CanPay(p.BuildCost) {
-
+		luProps := &terr.Properties[luHere]
+		if luProps.TerrainBits.Contains(terr.CanBuild) {
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
 			landUse.Set(cursor.X, cursor.Y, terr.Air)
 
 			stock.Pay(p.BuildCost)
 			ui.ReplaceButton(stock, rules)
-		} else {
-			sel.Reset()
 		}
 		return
 	}

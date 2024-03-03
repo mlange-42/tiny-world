@@ -203,7 +203,6 @@ func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 	prop := terr.Properties[toBuild]
 	if prop.TerrainBits.Contains(terr.CanBuild) {
 		canBuy := prop.TerrainBits.Contains(terr.CanBuy)
-		canDestroy := lu == toBuild && canBuy
 
 		canBuildHere := prop.BuildOn.Contains(ter) &&
 			(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
@@ -218,11 +217,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 		if canBuildHere {
 			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
 		} else {
-			if canDestroy {
-				s.drawCursorSprite(img, point, camOffset, s.cursorYellow)
-			} else {
-				s.drawCursorSprite(img, point, camOffset, s.cursorRed)
-			}
+			s.drawCursorSprite(img, point, camOffset, s.cursorRed)
 		}
 	} else if toBuild == terr.Bulldoze {
 		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, prop.TerrainBelow)
