@@ -430,7 +430,7 @@ func (ui *UI) prepareButtons() {
 		}
 		pop := ""
 		if props.Population > 0 {
-			radius = fmt.Sprintf("Population: %d\n", props.Population)
+			pop = fmt.Sprintf("Population: %d\n", props.Population)
 		}
 
 		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s.",
