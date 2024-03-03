@@ -18,6 +18,7 @@ type EntityFactory struct {
 
 	radiusMapper      generic.Map1[comp.BuildRadius]
 	consumptionMapper generic.Map1[comp.Consumption]
+	populationMapper  generic.Map1[comp.Population]
 
 	terrain         generic.Resource[Terrain]
 	terrainEntities generic.Resource[TerrainEntities]
@@ -36,6 +37,7 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 
 		radiusMapper:      generic.NewMap1[comp.BuildRadius](world),
 		consumptionMapper: generic.NewMap1[comp.Consumption](world),
+		populationMapper:  generic.NewMap1[comp.Population](world),
 
 		terrain:         generic.NewResource[Terrain](world),
 		terrainEntities: generic.NewResource[TerrainEntities](world),
@@ -113,6 +115,9 @@ func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint1
 			Resource: props.Consumption.Resource,
 			Amount:   props.Consumption.Amount,
 		})
+	}
+	if props.Population > 0 {
+		f.populationMapper.Assign(e, &comp.Population{Pop: props.Population})
 	}
 
 	return e

@@ -116,6 +116,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 5},
                 {"resource": "stones", "amount": 2}
@@ -144,6 +145,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 3}
             ],
@@ -171,6 +173,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 3}
@@ -199,6 +202,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 10}
             ],
@@ -247,6 +251,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 3,
             "build_cost": [
                 {"resource": "wood", "amount": 50},
                 {"resource": "stones", "amount": 50}

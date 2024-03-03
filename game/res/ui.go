@@ -412,9 +412,13 @@ func (ui *UI) prepareButtons() {
 		if props.BuildRadius > 0 {
 			radius = fmt.Sprintf("Radius: %d\n", props.BuildRadius)
 		}
+		pop := ""
+		if props.Population > 0 {
+			radius = fmt.Sprintf("Population: %d\n", props.Population)
+		}
 
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s.",
-			strings.ToUpper(props.Name), costs, requires, radius, props.Description, maxProd)
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s.",
+			strings.ToUpper(props.Name), costs, requires, pop, radius, props.Description, maxProd)
 	}
 }
 
