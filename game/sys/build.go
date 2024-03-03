@@ -25,7 +25,8 @@ type Build struct {
 	ui              generic.Resource[res.UI]
 	factory         generic.Resource[res.EntityFactory]
 
-	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
+	radiusFilter    generic.Filter2[comp.Tile, comp.BuildRadius]
+	warehouseFilter generic.Filter1[comp.Warehouse]
 }
 
 // Initialize the system
@@ -43,38 +44,22 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.factory = generic.NewResource[res.EntityFactory](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
+	s.warehouseFilter = *generic.NewFilter1[comp.Warehouse]()
 }
 
 // Update the system
 func (s *Build) Update(world *ecs.World) {
+	if s.checkAbort() {
+		return
+	}
 	sel := s.selection.Get()
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		sel.Reset()
-	}
-
 	ui := s.ui.Get()
-	x, y := ebiten.CursorPosition()
-	if ui.MouseInside(x, y) {
-		return
-	}
-
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
-		sel.Reset()
-		return
-	}
-	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-		return
-	}
-
-	p := &terr.Properties[sel.BuildType]
-	if sel.BuildType != terr.Bulldoze && !p.TerrainBits.Contains(terr.CanBuild) {
-		return
-	}
-
 	view := s.view.Get()
+	x, y := ebiten.CursorPosition()
 	mx, my := view.ScreenToGlobal(x, y)
 	cursor := view.GlobalToTile(mx, my)
+
+	p := &terr.Properties[sel.BuildType]
 	if p.TerrainBits.Contains(terr.CanBuy) && !util.IsBuildable(cursor.X, cursor.Y, s.radiusFilter.Query(world)) {
 		return
 	}
@@ -88,6 +73,11 @@ func (s *Build) Update(world *ecs.World) {
 	if sel.BuildType == terr.Bulldoze {
 		luHere := landUse.Get(cursor.X, cursor.Y)
 		luProps := &terr.Properties[luHere]
+
+		if luProps.TerrainBits.Contains(terr.IsWarehouse) && s.isLastWarehouse(world) {
+			return
+		}
+
 		if luProps.TerrainBits.Contains(terr.CanBuild) {
 			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
 			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
@@ -138,3 +128,39 @@ func (s *Build) Update(world *ecs.World) {
 
 // Finalize the system
 func (s *Build) Finalize(world *ecs.World) {}
+
+func (s *Build) checkAbort() bool {
+	sel := s.selection.Get()
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		sel.Reset()
+		return true
+	}
+
+	ui := s.ui.Get()
+	x, y := ebiten.CursorPosition()
+	if ui.MouseInside(x, y) {
+		return true
+	}
+
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
+		sel.Reset()
+		return true
+	}
+	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+		return true
+	}
+
+	p := &terr.Properties[sel.BuildType]
+	if sel.BuildType != terr.Bulldoze && !p.TerrainBits.Contains(terr.CanBuild) {
+		return true
+	}
+	return false
+}
+
+func (s *Build) isLastWarehouse(world *ecs.World) bool {
+	query := s.warehouseFilter.Query(world)
+	count := query.Count()
+	query.Close()
+	return count <= 1
+}
