@@ -16,9 +16,10 @@ type EntityFactory struct {
 	warehouseBuilder  generic.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite]
 	pathBuilder       generic.Map4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite]
 
-	radiusMapper      generic.Map1[comp.BuildRadius]
-	consumptionMapper generic.Map1[comp.Consumption]
-	populationMapper  generic.Map1[comp.Population]
+	radiusMapper            generic.Map1[comp.BuildRadius]
+	consumptionMapper       generic.Map1[comp.Consumption]
+	populationMapper        generic.Map1[comp.Population]
+	populationSupportMapper generic.Map1[comp.PopulationSupport]
 
 	terrain         generic.Resource[Terrain]
 	terrainEntities generic.Resource[TerrainEntities]
@@ -35,9 +36,10 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 		warehouseBuilder:  generic.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite](world),
 		pathBuilder:       generic.NewMap4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite](world),
 
-		radiusMapper:      generic.NewMap1[comp.BuildRadius](world),
-		consumptionMapper: generic.NewMap1[comp.Consumption](world),
-		populationMapper:  generic.NewMap1[comp.Population](world),
+		radiusMapper:            generic.NewMap1[comp.BuildRadius](world),
+		consumptionMapper:       generic.NewMap1[comp.Consumption](world),
+		populationMapper:        generic.NewMap1[comp.Population](world),
+		populationSupportMapper: generic.NewMap1[comp.PopulationSupport](world),
 
 		terrain:         generic.NewResource[Terrain](world),
 		terrainEntities: generic.NewResource[TerrainEntities](world),
@@ -118,6 +120,9 @@ func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint1
 	}
 	if props.Population > 0 {
 		f.populationMapper.Assign(e, &comp.Population{Pop: props.Population})
+	}
+	if props.PopulationSupport.MaxPopulation > 0 {
+		f.populationSupportMapper.Add(e)
 	}
 
 	return e

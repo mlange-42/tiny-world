@@ -261,6 +261,26 @@
                 "amount": 10
             },
             "description": "Conquers land to colonize"
+        },
+        {
+            "name": "windmill",
+            "is_building": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": "building_base",
+            "build_cost": [
+                {"resource": "wood", "amount": 15},
+                {"resource": "stones", "amount": 10}
+            ],
+            "population_support": {
+                "base_population": 8,
+                "max_population": 8,
+                "required_terrain": "path",
+                "malus_terrain": ["tree", "farm", "lumberjack", "mason", "windmill", "castle", "warehouse"]
+            },
+            "description": "Increases the population limit"
         }
     ]
 }

@@ -47,6 +47,10 @@ type Population struct {
 	Pop uint8
 }
 
+type PopulationSupport struct {
+	Pop uint8
+}
+
 type Warehouse struct{}
 
 type ProductionMarker struct {

@@ -18,10 +18,11 @@ type UpdateStats struct {
 	stock      generic.Resource[res.Stock]
 	ui         generic.Resource[res.UI]
 
-	prodFilter       generic.Filter1[comp.Production]
-	consFilter       generic.Filter1[comp.Consumption]
-	stockFilter      generic.Filter1[comp.Terrain]
-	populationFilter generic.Filter1[comp.Population]
+	prodFilter              generic.Filter1[comp.Production]
+	consFilter              generic.Filter1[comp.Consumption]
+	stockFilter             generic.Filter1[comp.Terrain]
+	populationFilter        generic.Filter1[comp.Population]
+	populationSupportFilter generic.Filter1[comp.PopulationSupport]
 }
 
 // Initialize the system
@@ -35,6 +36,7 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
 	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
 	s.populationFilter = *generic.NewFilter1[comp.Population]()
+	s.populationSupportFilter = *generic.NewFilter1[comp.PopulationSupport]()
 }
 
 // Update the system
@@ -69,11 +71,14 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	}
 
 	stock.Population = 0
-	stock.MaxPopulation = rules.InitialPopulation
-
 	popQuery := s.populationFilter.Query(world)
 	for popQuery.Next() {
 		stock.Population += int(popQuery.Get().Pop)
+	}
+	stock.MaxPopulation = rules.InitialPopulation
+	suppQuery := s.populationSupportFilter.Query(world)
+	for suppQuery.Next() {
+		stock.MaxPopulation += int(suppQuery.Get().Pop)
 	}
 
 	for i := range resource.Properties {

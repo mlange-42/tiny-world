@@ -10,31 +10,29 @@ import (
 )
 
 // UpdateProduction system.
-type UpdateProduction struct {
+type UpdatePopulation struct {
 	time    generic.Resource[res.GameTick]
 	speed   generic.Resource[res.GameSpeed]
 	update  generic.Resource[res.UpdateInterval]
 	terrain generic.Resource[res.Terrain]
 	landUse generic.Resource[res.LandUse]
-	stock   generic.Resource[res.Stock]
 
-	filter generic.Filter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
+	filter generic.Filter3[comp.Tile, comp.UpdateTick, comp.PopulationSupport]
 }
 
 // Initialize the system
-func (s *UpdateProduction) Initialize(world *ecs.World) {
+func (s *UpdatePopulation) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[res.GameTick](world)
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
-	s.stock = generic.NewResource[res.Stock](world)
 
-	s.filter = *generic.NewFilter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]().Optional(generic.T[comp.Consumption]())
+	s.filter = *generic.NewFilter3[comp.Tile, comp.UpdateTick, comp.PopulationSupport]()
 }
 
 // Update the system
-func (s *UpdateProduction) Update(world *ecs.World) {
+func (s *UpdatePopulation) Update(world *ecs.World) {
 	if s.speed.Get().Pause {
 		return
 	}
@@ -44,37 +42,36 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 	tick := s.time.Get().Tick
 	interval := s.update.Get().Interval
 	tickMod := tick % interval
-	stock := s.stock.Get()
 
 	query := s.filter.Query(world)
 	for query.Next() {
-		tile, up, pr, cons := query.Get()
+		tile, up, pop := query.Get()
 
 		if up.Tick != tickMod {
 			continue
 		}
-		pr.Amount = 0
-
-		if cons != nil && cons.Amount > 0 && cons.Resource != pr.Resource && stock.Res[cons.Resource] < 1 {
-			continue
-		}
+		pop.Pop = 0
 
 		lu := landUse.Get(tile.X, tile.Y)
 
-		prod := &terr.Properties[lu].Production
-		if prod.RequiredTerrain != terr.Air &&
-			terrain.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 &&
-			landUse.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 {
+		supp := &terr.Properties[lu].PopulationSupport
+		if supp.RequiredTerrain != terr.Air &&
+			terrain.CountNeighbors4(tile.X, tile.Y, supp.RequiredTerrain) == 0 &&
+			landUse.CountNeighbors4(tile.X, tile.Y, supp.RequiredTerrain) == 0 {
 			continue
 		}
-		count := 0
-		if prod.ProductionTerrain != 0 {
-			count += terrain.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain) +
-				landUse.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain)
+		count := int(supp.BasePopulation)
+		if supp.BonusTerrain != 0 {
+			count += terrain.CountNeighborsMask8(tile.X, tile.Y, supp.BonusTerrain) +
+				landUse.CountNeighborsMask8(tile.X, tile.Y, supp.BonusTerrain)
 		}
-		pr.Amount = uint8(math.MinInt(count, int(prod.MaxProduction)))
+		if supp.MalusTerrain != 0 {
+			count -= terrain.CountNeighborsMask8(tile.X, tile.Y, supp.MalusTerrain) +
+				landUse.CountNeighborsMask8(tile.X, tile.Y, supp.MalusTerrain)
+		}
+		pop.Pop = uint8(math.ClampInt(count, 0, int(supp.MaxPopulation)))
 	}
 }
 
 // Finalize the system
-func (s *UpdateProduction) Finalize(world *ecs.World) {}
+func (s *UpdatePopulation) Finalize(world *ecs.World) {}
