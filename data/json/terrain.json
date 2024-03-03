@@ -280,7 +280,7 @@
                 "required_terrain": "path",
                 "malus_terrain": ["tree", "farm", "lumberjack", "mason", "windmill", "castle", "warehouse"]
             },
-            "description": "Increases the population limit"
+            "description": "Increases the population limit by one per neighboring tile without trees or buildings"
         }
     ]
 }
