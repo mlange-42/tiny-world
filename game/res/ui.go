@@ -211,7 +211,8 @@ func (ui *UI) createUI() *widget.Container {
 
 	ui.terrainButtons = make([]*widget.Button, len(terr.Properties))
 	for i := range terr.Properties {
-		if !terr.Properties[i].TerrainBits.Contains(terr.CanBuy) {
+		canBuy := terr.Properties[i].TerrainBits.Contains(terr.CanBuy)
+		if !canBuy && i != int(terr.Bulldoze) {
 			continue
 		}
 		button, _ := ui.createButton(terr.Terrain(i))

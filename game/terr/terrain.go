@@ -45,6 +45,7 @@ type Terrain uint8
 var Air Terrain
 var Buildable Terrain
 var Default Terrain
+var Bulldoze Terrain
 var Warehouse Terrain
 
 type Terrains uint32
@@ -220,6 +221,7 @@ func Prepare(f fs.FS, file string) {
 	Air = toTerrain(idLookup, propsHelper.ZeroTerrain)
 	Buildable = toTerrain(idLookup, propsHelper.Buildable)
 	Default = toTerrain(idLookup, propsHelper.Default)
+	Bulldoze = toTerrain(idLookup, propsHelper.Bulldoze)
 
 	Properties = props
 }
@@ -323,6 +325,7 @@ type props struct {
 	ZeroTerrain string           `json:"zero_terrain"`
 	Buildable   string           `json:"buildable"`
 	Default     string           `json:"default"`
+	Bulldoze    string           `json:"bulldoze"`
 	Terrains    []terrainPropsJs `json:"terrains"`
 }
 
