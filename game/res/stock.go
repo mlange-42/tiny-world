@@ -8,6 +8,9 @@ import (
 type Stock struct {
 	Cap []int
 	Res []int
+
+	Population    int
+	MaxPopulation int
 }
 
 func NewStock(initial []int) Stock {

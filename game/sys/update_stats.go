@@ -13,16 +13,20 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
-	production  generic.Resource[res.Production]
-	stock       generic.Resource[res.Stock]
-	ui          generic.Resource[res.UI]
-	prodFilter  generic.Filter1[comp.Production]
-	consFilter  generic.Filter1[comp.Consumption]
-	stockFilter generic.Filter1[comp.Terrain]
+	rules      generic.Resource[res.Rules]
+	production generic.Resource[res.Production]
+	stock      generic.Resource[res.Stock]
+	ui         generic.Resource[res.UI]
+
+	prodFilter       generic.Filter1[comp.Production]
+	consFilter       generic.Filter1[comp.Consumption]
+	stockFilter      generic.Filter1[comp.Terrain]
+	populationFilter generic.Filter1[comp.Population]
 }
 
 // Initialize the system
 func (s *UpdateStats) Initialize(world *ecs.World) {
+	s.rules = generic.NewResource[res.Rules](world)
 	s.production = generic.NewResource[res.Production](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.ui = generic.NewResource[res.UI](world)
@@ -30,10 +34,12 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
 	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
+	s.populationFilter = *generic.NewFilter1[comp.Population]()
 }
 
 // Update the system
 func (s *UpdateStats) Update(world *ecs.World) {
+	rules := s.rules.Get()
 	ui := s.ui.Get()
 	production := s.production.Get()
 	stock := s.stock.Get()
@@ -62,6 +68,14 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		}
 	}
 
+	stock.Population = 0
+	stock.MaxPopulation = rules.InitialPopulation
+
+	popQuery := s.populationFilter.Query(world)
+	for popQuery.Next() {
+		stock.Population += int(popQuery.Get().Pop)
+	}
+
 	for i := range resource.Properties {
 		if stock.Res[i] > stock.Cap[i] {
 			stock.Res[i] = stock.Cap[i]
@@ -72,6 +86,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 			ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d (%d/%d)", production.Prod[i], stock.Res[i], stock.Cap[i]))
 		}
 	}
+	ui.SetPopulationLabel(fmt.Sprintf("%d/%d", stock.Population, stock.MaxPopulation))
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
