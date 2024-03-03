@@ -14,7 +14,8 @@
         },
         {
             "name": "bulldoze",
-            "is_terrain": true
+            "is_terrain": true,
+            "description": "Bulldoze buildings, trees and rocks."
         },
         {
             "name": "grass",
