@@ -98,7 +98,9 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		if !props.TerrainBits.Contains(terr.CanBuy) {
 			continue
 		}
-		ui.SetButtonEnabled(terr.Terrain(i), stock.CanPay(props.BuildCost))
+		canBuild := stock.CanPay(props.BuildCost) &&
+			(props.Population == 0 || stock.Population+int(props.Population) <= stock.MaxPopulation)
+		ui.SetButtonEnabled(terr.Terrain(i), canBuild)
 	}
 }
 
