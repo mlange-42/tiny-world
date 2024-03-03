@@ -8,6 +8,9 @@ import (
 type Stock struct {
 	Cap []int
 	Res []int
+
+	Population    int
+	MaxPopulation int
 }
 
 func NewStock(initial []int) Stock {
@@ -22,7 +25,7 @@ func NewStock(initial []int) Stock {
 
 func (s *Stock) CanPay(cost []terr.ResourceAmount) bool {
 	for _, c := range cost {
-		if s.Res[c.Resource] < c.Amount {
+		if s.Res[c.Resource] < int(c.Amount) {
 			return false
 		}
 	}
@@ -31,6 +34,6 @@ func (s *Stock) CanPay(cost []terr.ResourceAmount) bool {
 
 func (s *Stock) Pay(cost []terr.ResourceAmount) {
 	for _, c := range cost {
-		s.Res[c.Resource] -= c.Amount
+		s.Res[c.Resource] -= int(c.Amount)
 	}
 }

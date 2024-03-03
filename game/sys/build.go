@@ -106,6 +106,9 @@ func (s *Build) Update(world *ecs.World) {
 	if !stock.CanPay(p.BuildCost) {
 		return
 	}
+	if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
+		return
+	}
 
 	terrain := s.terrain.Get()
 	terrHere := terrain.Get(cursor.X, cursor.Y)

@@ -57,7 +57,7 @@ func (s *DoProduction) Update(world *ecs.World) {
 			continue
 		}
 
-		pr.Countdown -= pr.Amount
+		pr.Countdown -= int(pr.Amount)
 		if pr.Countdown < 0 {
 			pr.Countdown += update.Countdown
 			pr.Stock++

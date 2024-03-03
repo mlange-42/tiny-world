@@ -29,11 +29,12 @@ type randomButton struct {
 type UI struct {
 	RandomTerrains []terr.Terrain
 
-	ui             *ebitenui.UI
-	sprites        *Sprites
-	saveEvent      *SaveEvent
-	resourceLabels []*widget.Text
-	terrainButtons []*widget.Button
+	ui              *ebitenui.UI
+	sprites         *Sprites
+	saveEvent       *SaveEvent
+	resourceLabels  []*widget.Text
+	populationLabel *widget.Text
+	terrainButtons  []*widget.Button
 
 	buttonImages           []widget.ButtonImage
 	buttonTooltip          []string
@@ -52,6 +53,10 @@ func (ui *UI) UI() *ebitenui.UI {
 
 func (ui *UI) SetResourceLabel(id resource.Resource, text string) {
 	ui.resourceLabels[id].Label = text
+}
+
+func (ui *UI) SetPopulationLabel(text string) {
+	ui.populationLabel.Label = text
 }
 
 func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
@@ -372,6 +377,17 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		infoContainer.AddChild(counter)
 		ui.resourceLabels[i] = counter
 	}
+	label := widget.NewText(
+		widget.TextOpts.Text("  Pop", font, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	infoContainer.AddChild(label)
+	counter := widget.NewText(
+		widget.TextOpts.Text("0", font, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	infoContainer.AddChild(counter)
+	ui.populationLabel = counter
 
 	topBar.AddChild(menuContainer)
 	topBar.AddChild(innerAnchor)
@@ -412,9 +428,13 @@ func (ui *UI) prepareButtons() {
 		if props.BuildRadius > 0 {
 			radius = fmt.Sprintf("Radius: %d\n", props.BuildRadius)
 		}
+		pop := ""
+		if props.Population > 0 {
+			radius = fmt.Sprintf("Population: %d\n", props.Population)
+		}
 
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s.",
-			strings.ToUpper(props.Name), costs, requires, radius, props.Description, maxProd)
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s.",
+			strings.ToUpper(props.Name), costs, requires, pop, radius, props.Description, maxProd)
 	}
 }
 

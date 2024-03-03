@@ -59,7 +59,10 @@
             "name": "path",
             "is_path": true,
             "build_on": ["grass", "desert"],
-            "connects_to": ["path", "bridge", "farm", "fisherman", "lumberjack", "mason", "warehouse", "castle"],
+            "connects_to": [
+                "path", "bridge", "farm", "fisherman", "lumberjack", "mason",
+                "warehouse", "castle", "windmill", "watermill"
+            ],
             "can_build": true,
             "can_buy": true,
             "build_cost": [
@@ -71,7 +74,10 @@
             "name": "bridge",
             "is_bridge": true,
             "build_on": ["water"],
-            "connects_to": ["path", "farm", "fisherman", "lumberjack", "mason", "warehouse", "castle"],
+            "connects_to": [
+                "path", "farm", "fisherman", "lumberjack", "mason",
+                "warehouse", "castle", "windmill", "watermill"
+            ],
             "can_build": true,
             "can_buy": true,
             "build_cost": [
@@ -116,6 +122,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 5},
                 {"resource": "stones", "amount": 2}
@@ -144,6 +151,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 3}
             ],
@@ -171,6 +179,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 3}
@@ -199,6 +208,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 10}
             ],
@@ -217,6 +227,46 @@
                 "amount": 5
             },
             "description": "Produces 1 stone/min per neighboring rock"
+        },
+        {
+            "name": "windmill",
+            "is_building": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": "building_base",
+            "build_cost": [
+                {"resource": "wood", "amount": 15},
+                {"resource": "stones", "amount": 10}
+            ],
+            "population_support": {
+                "base_population": 8,
+                "max_population": 8,
+                "required_terrain": "path",
+                "malus_terrain": ["tree", "farm", "lumberjack", "mason", "windmill", "watermill", "castle", "warehouse"]
+            },
+            "description": "Increases the population limit by one per neighboring tile without trees or buildings"
+        },
+        {
+            "name": "watermill",
+            "is_building": true,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "connects_to": ["water"],
+            "terrain_below": "building_base",
+            "build_cost": [
+                {"resource": "wood", "amount": 10},
+                {"resource": "stones", "amount": 15}
+            ],
+            "population_support": {
+                "base_population": 0,
+                "max_population": 7,
+                "required_terrain": "path",
+                "bonus_terrain": ["water"]
+            },
+            "description": "Increases the population limit by one per neighboring water tile"
         },
         {
             "name": "warehouse",
@@ -247,6 +297,7 @@
             "can_buy": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
+            "population": 3,
             "build_cost": [
                 {"resource": "wood", "amount": 50},
                 {"resource": "stones", "amount": 50}

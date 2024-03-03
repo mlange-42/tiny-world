@@ -1,0 +1,24 @@
+[
+    {
+        "id": "watermill",
+        "file": ["watermill"],
+        "multitile": [
+            ["watermill_S"],
+            ["watermill_N"],
+            ["watermill_E"],
+            ["watermill_E"],
+            ["watermill_S"],
+            ["watermill_S"],
+            ["watermill_S"],
+            ["watermill_S"],
+            ["watermill_W"],
+            ["watermill_N"],
+            ["watermill_E"],
+            ["watermill_E"],
+            ["watermill_S"],
+            ["watermill_S"],
+            ["watermill_S"],
+            ["watermill_S"]
+        ]
+    }
+]

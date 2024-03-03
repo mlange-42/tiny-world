@@ -132,14 +132,18 @@ func Prepare(f fs.FS, file string) {
 		if len(t.Production.ProductionTerrain) > 0 {
 			productionTerrain = toTerrains(idLookup, t.Production.ProductionTerrain...)
 		}
+		var suppTerrain Terrain
+		if t.PopulationSupport.RequiredTerrain != "" {
+			suppTerrain = toTerrain(idLookup, t.PopulationSupport.RequiredTerrain)
+		}
 
-		storage := make([]int, len(resource.Properties))
+		storage := make([]uint8, len(resource.Properties))
 		for _, entry := range t.Storage {
 			res, ok := resource.ResourceID(entry.Resource)
 			if !ok {
 				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
 			}
-			storage[res] = entry.Amount
+			storage[res] = uint8(entry.Amount)
 		}
 
 		bits := TerrainBits(0)
@@ -172,6 +176,7 @@ func Prepare(f fs.FS, file string) {
 			TerrainBelow: terrBelow,
 			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
 			BuildRadius:  t.BuildRadius,
+			Population:   t.Population,
 			Description:  t.Description,
 			BuildCost:    cost,
 			Storage:      storage,
@@ -185,6 +190,13 @@ func Prepare(f fs.FS, file string) {
 			Consumption: Consumption{
 				Resource: consResource,
 				Amount:   t.Consumption.Amount,
+			},
+			PopulationSupport: PopulationSupport{
+				BasePopulation:  t.PopulationSupport.BasePopulation,
+				MaxPopulation:   t.PopulationSupport.MaxPopulation,
+				RequiredTerrain: suppTerrain,
+				BonusTerrain:    toTerrains(idLookup, t.PopulationSupport.BonusTerrain...),
+				MalusTerrain:    toTerrains(idLookup, t.PopulationSupport.MalusTerrain...),
 			},
 		}
 
@@ -218,73 +230,93 @@ func TerrainID(name string) (Terrain, bool) {
 }
 
 type TerrainProps struct {
-	Name         string
-	BuildOn      Terrains
-	ConnectsTo   Terrains
-	TerrainBits  TerrainBits
-	TerrainBelow Terrain
-	BuildRadius  uint8
-	Description  string
-	BuildCost    []ResourceAmount
-	Storage      []int
-	Production   Production
-	Consumption  Consumption
+	Name              string
+	BuildOn           Terrains
+	ConnectsTo        Terrains
+	TerrainBits       TerrainBits
+	TerrainBelow      Terrain
+	BuildRadius       uint8
+	Population        uint8
+	Description       string
+	BuildCost         []ResourceAmount
+	Storage           []uint8
+	Production        Production
+	Consumption       Consumption
+	PopulationSupport PopulationSupport
 }
 
 type terrainPropsJs struct {
-	Name         string             `json:"name"`
-	IsTerrain    bool               `json:"is_terrain"`
-	IsPath       bool               `json:"is_path"`
-	IsBridge     bool               `json:"is_bridge"`
-	IsBuilding   bool               `json:"is_building"`
-	IsWarehouse  bool               `json:"is_warehouse"`
-	BuildRadius  uint8              `json:"build_radius"`
-	BuildOn      []string           `json:"build_on,omitempty"`
-	TerrainBelow string             `json:"terrain_below"`
-	ConnectsTo   []string           `json:"connects_to,omitempty"`
-	CanBuild     bool               `json:"can_build"`
-	CanBuy       bool               `json:"can_buy"`
-	Production   productionJs       `json:"production"`
-	Consumption  consumptionJs      `json:"consumption"`
-	BuildCost    []resourceAmountJs `json:"build_cost,omitempty"`
-	Storage      []resourceAmountJs `json:"storage,omitempty"`
-	Description  string             `json:"description"`
+	Name              string              `json:"name"`
+	IsTerrain         bool                `json:"is_terrain"`
+	IsPath            bool                `json:"is_path"`
+	IsBridge          bool                `json:"is_bridge"`
+	IsBuilding        bool                `json:"is_building"`
+	IsWarehouse       bool                `json:"is_warehouse"`
+	BuildRadius       uint8               `json:"build_radius"`
+	Population        uint8               `json:"population"`
+	BuildOn           []string            `json:"build_on,omitempty"`
+	TerrainBelow      string              `json:"terrain_below"`
+	ConnectsTo        []string            `json:"connects_to,omitempty"`
+	CanBuild          bool                `json:"can_build"`
+	CanBuy            bool                `json:"can_buy"`
+	Production        productionJs        `json:"production"`
+	Consumption       consumptionJs       `json:"consumption"`
+	BuildCost         []resourceAmountJs  `json:"build_cost,omitempty"`
+	Storage           []resourceAmountJs  `json:"storage,omitempty"`
+	Description       string              `json:"description"`
+	PopulationSupport populationSupportJs `json:"population_support"`
 }
 
 type Production struct {
 	Resource          resource.Resource
-	MaxProduction     int
+	MaxProduction     uint8
+	HaulCapacity      uint8
 	RequiredTerrain   Terrain
 	ProductionTerrain Terrains
-	HaulCapacity      int
 }
 
 type productionJs struct {
 	Resource          string   `json:"resource"`
-	MaxProduction     int      `json:"max_production"`
+	MaxProduction     uint8    `json:"max_production"`
+	HaulCapacity      uint8    `json:"haul_capacity"`
 	RequiredTerrain   string   `json:"required_terrain"`
 	ProductionTerrain []string `json:"production_terrain"`
-	HaulCapacity      int      `json:"haul_capacity"`
+}
+
+type PopulationSupport struct {
+	BasePopulation  uint8
+	MaxPopulation   uint8
+	RequiredTerrain Terrain
+	BonusTerrain    Terrains
+	MalusTerrain    Terrains
+}
+
+type populationSupportJs struct {
+	BasePopulation  uint8    `json:"base_population"`
+	MaxPopulation   uint8    `json:"max_population"`
+	RequiredTerrain string   `json:"required_terrain"`
+	BonusTerrain    []string `json:"bonus_terrain"`
+	MalusTerrain    []string `json:"malus_terrain"`
 }
 
 type Consumption struct {
 	Resource resource.Resource
-	Amount   int
+	Amount   uint8
 }
 
 type consumptionJs struct {
 	Resource string `json:"resource"`
-	Amount   int    `json:"amount"`
+	Amount   uint8  `json:"amount"`
 }
 
 type ResourceAmount struct {
 	Resource resource.Resource
-	Amount   int
+	Amount   uint16
 }
 
 type resourceAmountJs struct {
 	Resource string `json:"resource"`
-	Amount   int    `json:"amount"`
+	Amount   uint16 `json:"amount"`
 }
 
 type props struct {

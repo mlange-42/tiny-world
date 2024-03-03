@@ -45,7 +45,7 @@ func (s *DoConsumption) Update(world *ecs.World) {
 		if up.Tick != tickMod {
 			continue
 		}
-		cons.Countdown -= cons.Amount
+		cons.Countdown -= int(cons.Amount)
 		if cons.Countdown < 0 {
 			cons.Countdown += update.Countdown
 			stock.Res[cons.Resource]--
