@@ -224,6 +224,13 @@ func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 				s.drawCursorSprite(img, point, camOffset, s.cursorRed)
 			}
 		}
+	} else if toBuild == terr.Bulldoze {
+		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, prop.TerrainBelow)
+		if terr.Properties[lu].TerrainBits.Contains(terr.CanBuild) {
+			s.drawCursorSprite(img, point, camOffset, s.cursorYellow)
+		} else {
+			s.drawCursorSprite(img, point, camOffset, s.cursorRed)
+		}
 	} else {
 		s.drawCursorSprite(img, point, camOffset, s.cursorBlue)
 	}

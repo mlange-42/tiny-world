@@ -2,20 +2,19 @@
     "zero_terrain": "air",
     "buildable": "buildable",
     "default": "grass",
+    "bulldoze": "bulldoze",
     "terrains": [
         {
             "name": "air",
-            "is_terrain": true,
-            "can_build": false,
-            "can_buy": false,
-            "description": ""
+            "is_terrain": true
         },
         {
             "name": "buildable",
-            "is_terrain": true,
-            "can_build": false,
-            "can_buy": false,
-            "description": ""
+            "is_terrain": true
+        },
+        {
+            "name": "bulldoze",
+            "is_terrain": true
         },
         {
             "name": "grass",
