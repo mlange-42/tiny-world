@@ -38,6 +38,7 @@ type Terrain struct {
 	update   *res.UpdateInterval
 
 	prodMapper   generic.Map2[comp.Terrain, comp.Production]
+	popMapper    generic.Map1[comp.PopulationSupport]
 	pathMapper   generic.Map1[comp.Path]
 	haulerMapper generic.Map2[comp.Hauler, comp.HaulerSprite]
 	spriteMapper generic.Map1[comp.RandomSprite]
@@ -61,6 +62,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.update = ecs.GetResource[res.UpdateInterval](world)
 
 	s.prodMapper = generic.NewMap2[comp.Terrain, comp.Production](world)
+	s.popMapper = generic.NewMap1[comp.PopulationSupport](world)
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
@@ -226,22 +228,34 @@ func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 		s.drawCursorSprite(img, point, camOffset, s.cursorBlue)
 	}
 
-	propHere := &terr.Properties[lu]
-	if propHere.Production.MaxProduction == 0 {
+	s.drawBuildingMarker(img, lu, luEntity, point, camOffset)
+}
+
+func (s *Terrain) drawBuildingMarker(img *ebiten.Image, lu terr.Terrain, e ecs.Entity, point, camOffset *image.Point) {
+	if e.IsZero() {
 		return
 	}
 
-	if luEntity.IsZero() {
-		return
+	prop := &terr.Properties[lu]
+	if prop.Production.MaxProduction > 0 {
+		tp, prod := s.prodMapper.Get(e)
+		bStock := terr.Properties[tp.Terrain].Storage[prod.Resource]
+		text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, prop.Production.MaxProduction, prod.Stock, bStock), s.font,
+			int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
+			int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
+			s.sprites.TextColor,
+		)
 	}
-	tp, prod := s.prodMapper.Get(luEntity)
-	bStock := terr.Properties[tp.Terrain].Storage[prod.Resource]
-	text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, propHere.Production.MaxProduction, prod.Stock, bStock), s.font,
-		int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
-		int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
-		s.sprites.TextColor,
-	)
+	if prop.PopulationSupport.MaxPopulation > 0 {
+		pop := s.popMapper.Get(e)
+		text.Draw(img, fmt.Sprintf("%d/%d", pop.Pop, prop.PopulationSupport.MaxPopulation), s.font,
+			int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
+			int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
+			s.sprites.TextColor,
+		)
+	}
 }
+
 func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 	point *image.Point, camOffset *image.Point, cursor int) {
 
