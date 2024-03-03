@@ -179,7 +179,13 @@
      30
     ]
    ]
+  },
+  {
+   "id": "windmill",
+   "index": [
+    32
+   ]
   }
  ],
- "total_sprites": 32
+ "total_sprites": 33
 }
