@@ -15,6 +15,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/mlange-42/tiny-world/game/resource"
+	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
@@ -23,11 +24,12 @@ import (
 type randomButton struct {
 	Terrain      terr.Terrain
 	RandomSprite uint16
+	AllowRemove  bool
 	Button       *widget.Button
 }
 
 type UI struct {
-	RandomTerrains []terr.Terrain
+	RandomTerrains []RandomTerrain
 
 	ui              *ebitenui.UI
 	sprites         *Sprites
@@ -42,9 +44,16 @@ type UI struct {
 	randomButtons          map[int]randomButton
 	mouseBlockers          []*widget.Container
 
+	markerSprite int
+
 	selection *Selection
 	font      font.Face
 	idPool    util.IntPool[int]
+}
+
+type RandomTerrain struct {
+	Terrain     terr.Terrain
+	AllowRemove bool
 }
 
 func (ui *UI) UI() *ebitenui.UI {
@@ -78,14 +87,15 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(selection *Selection, font font.Face, sprites *Sprites, save *SaveEvent) UI {
+func NewUI(selection *Selection, font font.Face, sprts *Sprites, save *SaveEvent) UI {
 	ui := UI{
 		randomButtons: map[int]randomButton{},
 		selection:     selection,
 		font:          font,
 		idPool:        util.NewIntPool[int](8),
-		sprites:       sprites,
+		sprites:       sprts,
 		saveEvent:     save,
+		markerSprite:  sprts.GetIndex(sprites.SpecialCardMarker),
 	}
 
 	ui.prepareButtons()
@@ -114,9 +124,12 @@ func NewUI(selection *Selection, font font.Face, sprites *Sprites, save *SaveEve
 func (ui *UI) createRandomButton(rules *Rules) {
 	t := rules.RandomTerrains[rand.Intn(len(rules.RandomTerrains))]
 	randSprite := uint16(rand.Int31n(math.MaxUint16))
-	button, id := ui.createButton(t, randSprite)
+	allowRemove := terr.Properties[t].TerrainBits.Contains(terr.IsTerrain) &&
+		rand.Float64() < rules.SpecialCardProbability
+
+	button, id := ui.createButton(t, allowRemove, randSprite)
 	ui.randomButtonsContainer.AddChild(button)
-	ui.randomButtons[id] = randomButton{t, randSprite, button}
+	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button}
 }
 
 func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
@@ -130,8 +143,8 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 
 		ui.selection.Reset()
 		for id2, bt2 := range ui.randomButtons {
-			if bt2.Terrain == bt.Terrain {
-				ui.selection.SetBuild(bt2.Terrain, id2, bt2.RandomSprite)
+			if bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
+				ui.selection.SetBuild(bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
 				break
 			}
 		}
@@ -215,7 +228,7 @@ func (ui *UI) createUI() *widget.Container {
 		if !canBuy && i != int(terr.Bulldoze) {
 			continue
 		}
-		button, _ := ui.createButton(terr.Terrain(i))
+		button, _ := ui.createButton(terr.Terrain(i), false)
 		ui.terrainButtons[i] = button
 		buildButtonsContainer.AddChild(button)
 	}
@@ -252,17 +265,17 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, id := ui.createButton(terr.Default, randSprite)
+			button, id := ui.createButton(terr.Default, false, randSprite)
 			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{terr.Default, randSprite, button}
+			ui.randomButtons[id] = randomButton{terr.Default, randSprite, false, button}
 		}
 		ui.updateRandomTerrains()
 	} else {
 		for _, t := range ui.RandomTerrains {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, id := ui.createButton(t, randSprite)
+			button, id := ui.createButton(t.Terrain, t.AllowRemove, randSprite)
 			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{t, randSprite, button}
+			ui.randomButtons[id] = randomButton{t.Terrain, randSprite, t.AllowRemove, button}
 		}
 	}
 }
@@ -270,7 +283,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 func (ui *UI) updateRandomTerrains() {
 	ui.RandomTerrains = ui.RandomTerrains[:0]
 	for _, bt := range ui.randomButtons {
-		ui.RandomTerrains = append(ui.RandomTerrains, bt.Terrain)
+		ui.RandomTerrains = append(ui.RandomTerrains, RandomTerrain{bt.Terrain, bt.AllowRemove})
 	}
 }
 
@@ -407,7 +420,7 @@ func (ui *UI) prepareButtons() {
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
 
-		ui.buttonImages[i] = ui.createButtonImage(terr.Terrain(i), 0)
+		ui.buttonImages[i] = ui.createButtonImage(terr.Terrain(i), 0, false)
 
 		costs := ""
 		if len(props.BuildCost) > 0 {
@@ -439,7 +452,7 @@ func (ui *UI) prepareButtons() {
 	}
 }
 
-func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16) widget.ButtonImage {
+func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove bool) widget.ButtonImage {
 	props := &terr.Properties[t]
 
 	tileWidth := ui.sprites.TileWidth
@@ -465,6 +478,13 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16) widget.Button
 	op.GeoM.Translate(0, float64(tileWidth-sp1.Bounds().Dy()-height))
 	img.DrawImage(sp1, &op)
 
+	if allowRemove {
+		marker := ui.sprites.Get(ui.markerSprite)
+		op := ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, float64(tileWidth-marker.Bounds().Dy()))
+		img.DrawImage(marker, &op)
+	}
+
 	slice := image.NewNineSliceSimple(img, 0, tileWidth)
 
 	pressed := ebiten.NewImageFromImage(img)
@@ -485,7 +505,7 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16) widget.Button
 	}
 }
 
-func (ui *UI) createButton(terrain terr.Terrain, randSprite ...uint16) (*widget.Button, int) {
+func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ...uint16) (*widget.Button, int) {
 	id := ui.idPool.Get()
 
 	tooltipContainer := widget.NewContainer(
@@ -506,7 +526,7 @@ func (ui *UI) createButton(terrain terr.Terrain, randSprite ...uint16) (*widget.
 	bImage := ui.buttonImages[terrain]
 	var randSpriteVal uint16 = 0
 	if len(randSprite) > 0 {
-		bImage = ui.createButtonImage(terrain, randSprite[0])
+		bImage = ui.createButtonImage(terrain, randSprite[0], allowRemove)
 		randSpriteVal = randSprite[0]
 	}
 
@@ -526,7 +546,7 @@ func (ui *UI) createButton(terrain terr.Terrain, randSprite ...uint16) (*widget.
 		widget.ButtonOpts.Image(&bImage),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.selection.SetBuild(terrain, id, randSpriteVal)
+			ui.selection.SetBuild(terrain, id, randSpriteVal, allowRemove)
 		}),
 	)
 

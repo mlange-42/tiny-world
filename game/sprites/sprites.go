@@ -7,4 +7,6 @@ const (
 	CursorYellow = "cursor_yellow"
 
 	HaulerPrefix = "hauler_"
+
+	SpecialCardMarker = "card_marker"
 )

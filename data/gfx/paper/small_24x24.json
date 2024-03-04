@@ -1,0 +1,13 @@
+{
+ "sprite_width": 24,
+ "sprite_height": 24,
+ "sprites": [
+  {
+   "id": "card_marker",
+   "index": [
+    0
+   ]
+  }
+ ],
+ "total_sprites": 1
+}
