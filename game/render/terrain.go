@@ -10,6 +10,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
@@ -69,10 +70,10 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
-	s.cursorRed = s.sprites.GetIndex("cursor_red")
-	s.cursorGreen = s.sprites.GetIndex("cursor_green")
-	s.cursorBlue = s.sprites.GetIndex("cursor_blue")
-	s.cursorYellow = s.sprites.GetIndex("cursor_yellow")
+	s.cursorRed = s.sprites.GetIndex(sprites.CursorRed)
+	s.cursorGreen = s.sprites.GetIndex(sprites.CursorGreen)
+	s.cursorBlue = s.sprites.GetIndex(sprites.CursorBlue)
+	s.cursorYellow = s.sprites.GetIndex(sprites.CursorYellow)
 
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()
@@ -131,7 +132,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 			if cursor.X == i && cursor.Y == j {
 				s.drawCursor(img, world,
-					i, j, height, &point, &off, sel.BuildType, sel.RandSprite)
+					i, j, height, &point, &off, sel)
 			}
 		}
 	}
@@ -195,32 +196,38 @@ func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, h
 
 func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 	x, y, height int, point *image.Point, camOffset *image.Point,
-	toBuild terr.Terrain, randSprite uint16) {
+	sel *res.Selection) {
 
 	ter := s.terrain.Get(x, y)
 	lu := s.landUse.Get(x, y)
 	luEntity := s.landUseE.Get(x, y)
-	prop := terr.Properties[toBuild]
+	prop := terr.Properties[sel.BuildType]
 	if prop.TerrainBits.Contains(terr.CanBuild) {
 		canBuy := prop.TerrainBits.Contains(terr.CanBuy)
 
-		canBuildHere := prop.BuildOn.Contains(ter) &&
-			(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
+		canBuildHere := (prop.BuildOn.Contains(ter) || (sel.AllowRemove && ter != terr.Air && ter != sel.BuildType)) &&
+			(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world))) &&
+			lu == terr.Air
+
 		if prop.TerrainBits.Contains(terr.IsTerrain) {
 			height = 0
 		} else {
 			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
 			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && canBuy))
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, &comp.RandomSprite{Rand: randSprite}, prop.TerrainBelow)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, &comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow)
 
+		cursor := s.cursorRed
 		if canBuildHere {
-			s.drawCursorSprite(img, point, camOffset, s.cursorGreen)
-		} else {
-			s.drawCursorSprite(img, point, camOffset, s.cursorRed)
+			if sel.AllowRemove && !prop.BuildOn.Contains(ter) {
+				cursor = s.cursorYellow
+			} else {
+				cursor = s.cursorGreen
+			}
 		}
-	} else if toBuild == terr.Bulldoze {
-		s.drawSprite(img, s.terrain, s.landUse, x, y, toBuild, point, height, camOffset, nil, prop.TerrainBelow)
+		s.drawCursorSprite(img, point, camOffset, cursor)
+	} else if sel.BuildType == terr.Bulldoze {
+		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, nil, prop.TerrainBelow)
 		if terr.Properties[lu].TerrainBits.Contains(terr.CanBuild) {
 			s.drawCursorSprite(img, point, camOffset, s.cursorYellow)
 		} else {

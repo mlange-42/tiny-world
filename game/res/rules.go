@@ -16,7 +16,8 @@ type Rules struct {
 	RandomTerrainsCount int
 	RandomTerrains      []terr.Terrain
 
-	InitialResources []int
+	InitialResources       []int
+	SpecialCardProbability float64
 }
 
 func NewRules(f fs.FS, file string) Rules {
@@ -41,12 +42,13 @@ func NewRules(f fs.FS, file string) Rules {
 	}
 
 	return Rules{
-		WorldSize:           rulesHelper.WorldSize,
-		InitialBuildRadius:  rulesHelper.InitialBuildRadius,
-		InitialPopulation:   rulesHelper.InitialPopulation,
-		InitialResources:    storage,
-		RandomTerrainsCount: rulesHelper.RandomTerrainsCount,
-		RandomTerrains:      randTerr,
+		WorldSize:              rulesHelper.WorldSize,
+		InitialBuildRadius:     rulesHelper.InitialBuildRadius,
+		InitialPopulation:      rulesHelper.InitialPopulation,
+		InitialResources:       storage,
+		RandomTerrainsCount:    rulesHelper.RandomTerrainsCount,
+		RandomTerrains:         randTerr,
+		SpecialCardProbability: rulesHelper.SpecialCardProbability,
 	}
 }
 
@@ -56,8 +58,9 @@ type rulesJs struct {
 	InitialPopulation   int `json:"initial_population"`
 	RandomTerrainsCount int `json:"random_terrains_count"`
 
-	RandomTerrains   []string           `json:"random_terrains"`
-	InitialResources []resourceAmountJs `json:"initial_resources"`
+	RandomTerrains         []string           `json:"random_terrains"`
+	InitialResources       []resourceAmountJs `json:"initial_resources"`
+	SpecialCardProbability float64            `json:"special_card_probability"`
 }
 
 type resourceAmountJs struct {
