@@ -14,8 +14,8 @@ type RawSprite struct {
 	File       []string   `json:"file"`
 	Height     int        `json:"height,omitempty"`
 	YOffset    int        `json:"y_offset,omitempty"`
-	AnimFrames int        `json:"anim_frames,omitempty"`
-	AnimSpeed  int        `json:"anim_speed,omitempty"`
+	AnimFrames int        `json:"animation_frames,omitempty"`
+	AnimSpeed  int        `json:"animation_speed,omitempty"`
 	Multitile  [][]string `json:"multitile,omitempty"`
 }
 
@@ -24,8 +24,8 @@ type Sprite struct {
 	Index      []int   `json:"index"`
 	Height     int     `json:"height,omitempty"`
 	YOffset    int     `json:"y_offset,omitempty"`
-	AnimFrames int     `json:"anim_frames,omitempty"`
-	AnimSpeed  int     `json:"anim_speed,omitempty"`
+	AnimFrames int     `json:"animation_frames,omitempty"`
+	AnimSpeed  int     `json:"animation_speed,omitempty"`
 	Multitile  [][]int `json:"multitile,omitempty"`
 }
 

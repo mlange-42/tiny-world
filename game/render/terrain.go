@@ -345,7 +345,7 @@ func (s *Terrain) drawSimpleSprite(img *ebiten.Image,
 	camOffset *image.Point) int {
 
 	info := s.sprites.GetInfo(idx)
-	sp := s.sprites.Get(idx)
+	sp := s.sprites.GetRand(idx, int(s.time.Tick), 0)
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
 	op := ebiten.DrawImageOptions{}
