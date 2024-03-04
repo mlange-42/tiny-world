@@ -108,7 +108,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	mapBounds := s.view.MapBounds(img.Bounds().Dx(), img.Bounds().Dy())
 	mapBounds = mapBounds.Intersect(image.Rect(0, 0, s.terrain.Width(), s.terrain.Height()))
 
-	showBuildable := terr.Properties[sel.BuildType].TerrainBits.Contains(terr.CanBuy) ||
+	showBuildable := sel.BuildType != terr.Air ||
 		(s.landUse.Contains(cursor.X, cursor.Y) && terr.Properties[s.landUse.Get(cursor.X, cursor.Y)].BuildRadius > 0)
 
 	for i := mapBounds.Min.X; i < mapBounds.Max.X; i++ {
