@@ -123,7 +123,8 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				luE := s.landUseE.Get(i, j)
 				prod, randTile := s.landUseMapper.Get(luE)
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, terr.Properties[lu].TerrainBelow)
-				if prod != nil && prod.Stock >= terr.Properties[lu].Storage[prod.Resource] {
+				if prod != nil &&
+					(prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource]) {
 					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
 				}
 			}
