@@ -22,6 +22,7 @@ func SaveWorld(folder, name string, world *ecs.World) error {
 			generic.T[res.TerrainEntities](),
 			generic.T[res.LandUse](),
 			generic.T[res.LandUseEntities](),
+			generic.T[res.Buildable](),
 			generic.T[res.SaveEvent](),
 			generic.T[resource.Termination](),
 			generic.T[model.Systems](),

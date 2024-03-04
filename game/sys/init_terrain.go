@@ -26,6 +26,8 @@ func (s *InitTerrain) Initialize(world *ecs.World) {
 
 	warehouse := fac.Set(world, x, y, terr.Warehouse, 0)
 	radiusMapper.Assign(warehouse, &comp.BuildRadius{Radius: uint8(rules.InitialBuildRadius)})
+
+	fac.SetBuildable(x, y, rules.InitialBuildRadius, true)
 }
 
 // Update the system

@@ -8,7 +8,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
-	"github.com/mlange-42/tiny-world/game/util"
 )
 
 // Build system.
@@ -18,7 +17,7 @@ type Build struct {
 	terrain         generic.Resource[res.Terrain]
 	terrainEntities generic.Resource[res.TerrainEntities]
 	landUse         generic.Resource[res.LandUse]
-	landUseEntities generic.Resource[res.LandUseEntities]
+	buildable       generic.Resource[res.Buildable]
 	stock           generic.Resource[res.Stock]
 	selection       generic.Resource[res.Selection]
 	update          generic.Resource[res.UpdateInterval]
@@ -36,7 +35,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.terrainEntities = generic.NewResource[res.TerrainEntities](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
-	s.landUseEntities = generic.NewResource[res.LandUseEntities](world)
+	s.buildable = generic.NewResource[res.Buildable](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.selection = generic.NewResource[res.Selection](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
@@ -52,6 +51,7 @@ func (s *Build) Update(world *ecs.World) {
 	if s.checkAbort() {
 		return
 	}
+	buildable := s.buildable.Get()
 	sel := s.selection.Get()
 	ui := s.ui.Get()
 	view := s.view.Get()
@@ -60,7 +60,7 @@ func (s *Build) Update(world *ecs.World) {
 	cursor := view.GlobalToTile(mx, my)
 
 	p := &terr.Properties[sel.BuildType]
-	if p.TerrainBits.Contains(terr.CanBuy) && !util.IsBuildable(cursor.X, cursor.Y, s.radiusFilter.Query(world)) {
+	if p.TerrainBits.Contains(terr.CanBuy) && buildable.Get(cursor.X, cursor.Y) == 0 {
 		return
 	}
 
@@ -68,7 +68,6 @@ func (s *Build) Update(world *ecs.World) {
 	rules := s.rules.Get()
 	stock := s.stock.Get()
 	landUse := s.landUse.Get()
-	landUseE := s.landUseEntities.Get()
 
 	if sel.BuildType == terr.Bulldoze {
 		luHere := landUse.Get(cursor.X, cursor.Y)
@@ -79,9 +78,7 @@ func (s *Build) Update(world *ecs.World) {
 		}
 
 		if luProps.TerrainBits.Contains(terr.CanBuild) {
-			world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
-			landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
-			landUse.Set(cursor.X, cursor.Y, terr.Air)
+			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
 			stock.Pay(p.BuildCost)
 			ui.ReplaceButton(stock, rules)
@@ -114,9 +111,7 @@ func (s *Build) Update(world *ecs.World) {
 		luNatural := !terr.Properties[luHere].TerrainBits.Contains(terr.CanBuy)
 		if luHere == terr.Air || (luNatural && p.TerrainBits.Contains(terr.CanBuy)) {
 			if luHere != terr.Air {
-				landUse.Set(cursor.X, cursor.Y, terr.Air)
-				world.RemoveEntity(landUseE.Get(cursor.X, cursor.Y))
-				landUseE.Set(cursor.X, cursor.Y, ecs.Entity{})
+				fac.RemoveLandUse(world, cursor.X, cursor.Y)
 			}
 			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
 		} else {

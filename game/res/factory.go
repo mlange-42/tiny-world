@@ -25,6 +25,7 @@ type EntityFactory struct {
 	terrainEntities generic.Resource[TerrainEntities]
 	landUse         generic.Resource[LandUse]
 	landUseEntities generic.Resource[LandUseEntities]
+	buildable       generic.Resource[Buildable]
 
 	update generic.Resource[UpdateInterval]
 }
@@ -45,6 +46,7 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 		terrainEntities: generic.NewResource[TerrainEntities](world),
 		landUse:         generic.NewResource[LandUse](world),
 		landUseEntities: generic.NewResource[LandUseEntities](world),
+		buildable:       generic.NewResource[Buildable](world),
 
 		update: generic.NewResource[UpdateInterval](world),
 	}
@@ -133,6 +135,11 @@ func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, rand
 		f.landUse.Get().Set(x, y, value)
 		e := f.Create(image.Pt(x, y), value, randSprite)
 		f.landUseEntities.Get().Set(x, y, e)
+
+		rad := terr.Properties[value].BuildRadius
+		if rad > 0 {
+			f.SetBuildable(x, y, int(rad), true)
+		}
 		return e
 	}
 	t := f.terrain.Get()
@@ -160,5 +167,42 @@ func (f *EntityFactory) setNeighbor(t *Terrain, tE *TerrainEntities, x, y int) {
 		t.Set(x, y, terr.Buildable)
 		e := f.Create(image.Pt(x, y), terr.Buildable, 0)
 		tE.Set(x, y, e)
+	}
+}
+
+func (f *EntityFactory) RemoveLandUse(world *ecs.World, x, y int) {
+	landUse := f.landUse.Get()
+	luHere := landUse.Get(x, y)
+	if luHere == terr.Air {
+		return
+	}
+
+	rad := terr.Properties[luHere].BuildRadius
+	if rad > 0 {
+		f.SetBuildable(x, y, int(rad), false)
+	}
+
+	luE := f.landUseEntities.Get()
+	world.RemoveEntity(luE.Get(x, y))
+	luE.Set(x, y, ecs.Entity{})
+	landUse.Set(x, y, terr.Air)
+}
+
+func (f *EntityFactory) SetBuildable(x, y, r int, build bool) {
+	var add = 1
+	if !build {
+		add = -1
+	}
+	buildable := f.buildable.Get()
+	r2 := r * r
+	for dx := -r; dx <= r; dx++ {
+		for dy := -r; dy <= r; dy++ {
+			xx, yy := x+dx, y+dy
+			if !buildable.Contains(xx, yy) || dx*dx+dy*dy > r2 {
+				continue
+			}
+			v := buildable.Get(xx, yy)
+			buildable.Set(xx, yy, uint16(int(v)+add))
+		}
 	}
 }

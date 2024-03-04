@@ -12,7 +12,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
-	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
 )
 
@@ -23,21 +22,24 @@ type Terrain struct {
 	cursorBlue    int
 	cursorYellow  int
 	warningMarker int
+	borderInner   int
+	borderOuter   int
 
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
 
 	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
 
-	time     *res.GameTick
-	rules    *res.Rules
-	view     *res.View
-	sprites  *res.Sprites
-	terrain  *res.Terrain
-	terrainE *res.TerrainEntities
-	landUse  *res.LandUse
-	landUseE *res.LandUseEntities
-	update   *res.UpdateInterval
+	time      *res.GameTick
+	rules     *res.Rules
+	view      *res.View
+	sprites   *res.Sprites
+	terrain   *res.Terrain
+	terrainE  *res.TerrainEntities
+	landUse   *res.LandUse
+	landUseE  *res.LandUseEntities
+	buildable *res.Buildable
+	update    *res.UpdateInterval
 
 	prodMapper    generic.Map2[comp.Terrain, comp.Production]
 	popMapper     generic.Map1[comp.PopulationSupport]
@@ -62,6 +64,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.terrainE = ecs.GetResource[res.TerrainEntities](world)
 	s.landUse = ecs.GetResource[res.LandUse](world)
 	s.landUseE = ecs.GetResource[res.LandUseEntities](world)
+	s.buildable = ecs.GetResource[res.Buildable](world)
 	s.update = ecs.GetResource[res.UpdateInterval](world)
 
 	s.prodMapper = generic.NewMap2[comp.Terrain, comp.Production](world)
@@ -78,6 +81,8 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.cursorBlue = s.sprites.GetIndex(sprites.CursorBlue)
 	s.cursorYellow = s.sprites.GetIndex(sprites.CursorYellow)
 	s.warningMarker = s.sprites.GetIndex(sprites.WarningMarker)
+	s.borderInner = s.sprites.GetIndex(sprites.BorderInner)
+	s.borderOuter = s.sprites.GetIndex(sprites.BorderOuter)
 
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()
@@ -103,6 +108,9 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	mapBounds := s.view.MapBounds(img.Bounds().Dx(), img.Bounds().Dy())
 	mapBounds = mapBounds.Intersect(image.Rect(0, 0, s.terrain.Width(), s.terrain.Height()))
 
+	showBuildable := terr.Properties[sel.BuildType].TerrainBits.Contains(terr.CanBuy) ||
+		(s.landUse.Contains(cursor.X, cursor.Y) && terr.Properties[s.landUse.Get(cursor.X, cursor.Y)].BuildRadius > 0)
+
 	for i := mapBounds.Min.X; i < mapBounds.Max.X; i++ {
 		for j := mapBounds.Min.Y; j < mapBounds.Max.Y; j++ {
 			point := s.view.TileToGlobal(i, j)
@@ -116,6 +124,18 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
 				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, terr.Properties[t].TerrainBelow)
+
+				if showBuildable {
+					buildHere := s.buildable.Get(i, j) > 0
+					buildMask, notBuildMask := s.buildable.NeighborsMask(i, j)
+					if (buildHere && notBuildMask > 0) || (!buildHere && buildMask > 0) {
+						if buildHere {
+							_ = s.drawBorderSprite(img, s.borderInner, buildMask, &point, height, &off)
+						} else {
+							_ = s.drawBorderSprite(img, s.borderOuter, notBuildMask, &point, height, &off)
+						}
+					}
+				}
 			}
 
 			lu := s.landUse.Get(i, j)
@@ -139,7 +159,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				s.drawCursor(img, world, i, j, height, &point, &off, sel)
+				s.drawCursor(img, i, j, height, &point, &off, sel)
 			}
 		}
 	}
@@ -201,7 +221,7 @@ func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, h
 	s.drawSimpleSprite(img, sprite, &pt, height, camOffset)
 }
 
-func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
+func (s *Terrain) drawCursor(img *ebiten.Image,
 	x, y, height int, point *image.Point, camOffset *image.Point,
 	sel *res.Selection) {
 
@@ -223,7 +243,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
 			canBuildHere = canBuildHere &&
 				(lu == terr.Air || (luNatural && canBuy)) &&
-				(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
+				(!prop.TerrainBits.Contains(terr.CanBuy) || s.buildable.Get(x, y) > 0)
 			isDestroy = lu != terr.Air && luNatural && canBuy
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, &comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow)
@@ -319,11 +339,43 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 		conn := terr.Properties[t].ConnectsTo
 		neigh = terrain.NeighborsMaskMulti(x, y, conn) | landUse.NeighborsMaskMulti(x, y, conn)
 
-		mIdx := s.sprites.GetMultiTileIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
+		mIdx := s.sprites.GetMultiTileTerrainIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
 
 		sp = s.sprites.GetSprite(mIdx)
 	} else {
 		sp = s.sprites.GetRand(idx, int(s.time.Tick), int(randSprite.GetRand()))
+	}
+	h := sp.Bounds().Dy() - s.view.TileHeight
+
+	op := ebiten.DrawImageOptions{}
+	op.Blend = ebiten.BlendSourceOver
+	if s.view.Zoom < 1 {
+		op.Filter = ebiten.FilterLinear
+	}
+
+	z := s.view.Zoom
+	op.GeoM.Scale(z, z)
+	op.GeoM.Translate(
+		float64(point.X-sp.Bounds().Dx()/2)*z-float64(camOffset.X),
+		float64(point.Y-h-height-info.YOffset)*z-float64(camOffset.Y),
+	)
+	img.DrawImage(sp, &op)
+
+	return height + info.Height
+}
+
+func (s *Terrain) drawBorderSprite(img *ebiten.Image, idx int,
+	neigh terr.Directions, point *image.Point, height int,
+	camOffset *image.Point) int {
+
+	info := s.sprites.GetInfo(idx)
+
+	var sp *ebiten.Image
+	if info.IsMultitile() {
+		mIdx := s.sprites.GetMultiTileIndex(idx, neigh, 0, 0)
+		sp = s.sprites.GetSprite(mIdx)
+	} else {
+		sp = s.sprites.Get(idx)
 	}
 	h := sp.Bounds().Dy() - s.view.TileHeight
 

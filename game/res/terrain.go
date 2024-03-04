@@ -37,6 +37,47 @@ type LandUseEntities struct {
 	Grid[ecs.Entity]
 }
 
+// Buildable resource
+type Buildable struct {
+	Grid[uint16]
+}
+
+func NewBuildable(w, h int) Buildable {
+	return Buildable{
+		Grid: NewGrid[uint16](w, h),
+	}
+}
+
+func (b *Buildable) NeighborsMask(x, y int) (terr.Directions, terr.Directions) {
+	dirs := terr.Directions(0)
+	notDirs := terr.Directions(0)
+	if b.isNeighbor(x, y, 0, -1) {
+		dirs.Set(terr.N)
+	} else {
+		notDirs.Set(terr.N)
+	}
+	if b.isNeighbor(x, y, 1, 0) {
+		dirs.Set(terr.E)
+	} else {
+		notDirs.Set(terr.E)
+	}
+	if b.isNeighbor(x, y, 0, 1) {
+		dirs.Set(terr.S)
+	} else {
+		notDirs.Set(terr.S)
+	}
+	if b.isNeighbor(x, y, -1, 0) {
+		dirs.Set(terr.W)
+	} else {
+		notDirs.Set(terr.W)
+	}
+	return dirs, notDirs
+}
+
+func (b *Buildable) isNeighbor(x, y, dx, dy int) bool {
+	return b.Contains(x+dx, y+dy) && b.Get(x+dx, y+dy) != 0
+}
+
 type TerrainGrid struct {
 	Grid[terr.Terrain]
 }

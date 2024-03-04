@@ -79,6 +79,9 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](rules.WorldSize, rules.WorldSize)}
 	ecs.AddResource(&g.Model.World, &landUseEntities)
 
+	buildable := res.NewBuildable(rules.WorldSize, rules.WorldSize)
+	ecs.AddResource(&g.Model.World, &buildable)
+
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
 
