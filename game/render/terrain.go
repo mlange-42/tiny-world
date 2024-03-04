@@ -12,6 +12,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
 )
 
@@ -137,7 +138,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				s.drawCursor(img, i, j, height, &point, &off, sel)
+				s.drawCursor(img, world, i, j, height, &point, &off, sel)
 			}
 		}
 	}
@@ -199,7 +200,7 @@ func (s *Terrain) drawHauler(img *ebiten.Image, sprite int, haul *comp.Hauler, h
 	s.drawSimpleSprite(img, sprite, &pt, height, camOffset)
 }
 
-func (s *Terrain) drawCursor(img *ebiten.Image,
+func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 	x, y, height int, point *image.Point, camOffset *image.Point,
 	sel *res.Selection) {
 
@@ -219,7 +220,9 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 			isDestroy = sel.AllowRemove && !prop.BuildOn.Contains(ter)
 		} else {
 			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
-			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && canBuy))
+			canBuildHere = canBuildHere &&
+				(lu == terr.Air || (luNatural && canBuy)) &&
+				(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
 			isDestroy = lu != terr.Air && luNatural && canBuy
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, &comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow)
