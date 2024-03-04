@@ -193,7 +193,7 @@ func (ui *UI) createUI() *widget.Container {
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
-				widget.GridLayoutOpts.Columns(2),
+				widget.GridLayoutOpts.Columns(3),
 				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
 				widget.GridLayoutOpts.Spacing(4, 4),
 			),
@@ -225,7 +225,7 @@ func (ui *UI) createUI() *widget.Container {
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
-				widget.GridLayoutOpts.Columns(2),
+				widget.GridLayoutOpts.Columns(3),
 				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
 				widget.GridLayoutOpts.Spacing(4, 4),
 			),

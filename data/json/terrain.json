@@ -61,7 +61,7 @@
             "build_on": ["grass", "desert"],
             "connects_to": [
                 "path", "bridge", "farm", "fisherman", "lumberjack", "mason",
-                "warehouse", "castle", "windmill", "watermill"
+                "warehouse", "tower", "castle", "windmill", "watermill"
             ],
             "can_build": true,
             "can_buy": true,
@@ -76,7 +76,7 @@
             "build_on": ["water"],
             "connects_to": [
                 "path", "farm", "fisherman", "lumberjack", "mason",
-                "warehouse", "castle", "windmill", "watermill"
+                "warehouse", "tower", "castle", "windmill", "watermill"
             ],
             "can_build": true,
             "can_buy": true,
@@ -244,7 +244,10 @@
                 "base_population": 8,
                 "max_population": 8,
                 "required_terrain": "path",
-                "malus_terrain": ["tree", "farm", "lumberjack", "mason", "windmill", "watermill", "castle", "warehouse"]
+                "malus_terrain": [
+                    "tree", "farm", "lumberjack", "mason", "windmill", "watermill",
+                    "tower", "castle", "warehouse"
+                ]
             },
             "description": "Increases the population limit by one per neighboring tile without trees or buildings"
         },
@@ -287,6 +290,26 @@
                 {"resource": "stones", "amount": 25}
             ],
             "description": "Stores resources"
+        },
+        {
+            "name": "tower",
+            "is_building": true,
+            "build_radius": 6,
+            "build_on": ["grass", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": "building_base",
+            "population": 1,
+            "build_cost": [
+                {"resource": "wood", "amount": 15},
+                {"resource": "stones", "amount": 20}
+            ],
+            "consumption": {
+                "resource": "food",
+                "amount": 3
+            },
+            "description": "Conquers land to colonize"
         },
         {
             "name": "castle",
