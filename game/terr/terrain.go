@@ -46,7 +46,7 @@ var Air Terrain
 var Buildable Terrain
 var Default Terrain
 var Bulldoze Terrain
-var Warehouse Terrain
+var FirstBuilding Terrain
 
 type Terrains uint32
 
@@ -207,20 +207,15 @@ func Prepare(f fs.FS, file string) {
 		if p.TerrainBits.Contains(IsPath) {
 			Paths.Set(Terrain(i))
 		}
-		if p.TerrainBits.Contains(IsWarehouse) {
-			Warehouse = Terrain(i)
-		}
 
 		props = append(props, p)
 	}
 
-	if Warehouse == Air {
-		panic("no warehouse building defined")
-	}
-
+	// TODO: better error messages. Panics with "unknown terrain ''"
 	Air = toTerrain(idLookup, propsHelper.ZeroTerrain)
 	Buildable = toTerrain(idLookup, propsHelper.Buildable)
 	Default = toTerrain(idLookup, propsHelper.Default)
+	FirstBuilding = toTerrain(idLookup, propsHelper.FirstBuilding)
 	Bulldoze = toTerrain(idLookup, propsHelper.Bulldoze)
 
 	Properties = props
@@ -322,11 +317,12 @@ type resourceAmountJs struct {
 }
 
 type props struct {
-	ZeroTerrain string           `json:"zero_terrain"`
-	Buildable   string           `json:"buildable"`
-	Default     string           `json:"default"`
-	Bulldoze    string           `json:"bulldoze"`
-	Terrains    []terrainPropsJs `json:"terrains"`
+	ZeroTerrain   string           `json:"zero_terrain"`
+	Buildable     string           `json:"buildable"`
+	Default       string           `json:"default"`
+	FirstBuilding string           `json:"first_building"`
+	Bulldoze      string           `json:"bulldoze"`
+	Terrains      []terrainPropsJs `json:"terrains"`
 }
 
 func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {
@@ -334,7 +330,7 @@ func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {
 	for _, t := range terr {
 		id, ok := lookup[t]
 		if !ok {
-			panic(fmt.Sprintf("unknown terrain %s", t))
+			panic(fmt.Sprintf("unknown terrain '%s'", t))
 		}
 		ret.Set(id)
 	}
@@ -344,7 +340,7 @@ func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {
 func toTerrain(lookup map[string]Terrain, t string) Terrain {
 	id, ok := lookup[t]
 	if !ok {
-		panic(fmt.Sprintf("unknown terrain %s", t))
+		panic(fmt.Sprintf("unknown terrain '%s'", t))
 	}
 	return id
 }
