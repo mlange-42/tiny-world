@@ -105,17 +105,9 @@ func Prepare(f fs.FS, file string) {
 			})
 		}
 		var prodRes resource.Resource
-		var consResource resource.Resource
 		if t.Production.MaxProduction > 0 {
 			var ok bool
 			prodRes, ok = resource.ResourceID(t.Production.Resource)
-			if !ok {
-				panic(fmt.Sprintf("unknown resource %s", t.Production.Resource))
-			}
-		}
-		if t.Consumption.Amount > 0 {
-			var ok bool
-			consResource, ok = resource.ResourceID(t.Consumption.Resource)
 			if !ok {
 				panic(fmt.Sprintf("unknown resource %s", t.Production.Resource))
 			}
@@ -145,6 +137,14 @@ func Prepare(f fs.FS, file string) {
 				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
 			}
 			storage[res] = uint8(entry.Amount)
+		}
+		consumption := make([]uint8, len(resource.Properties))
+		for _, entry := range t.Consumption {
+			res, ok := resource.ResourceID(entry.Resource)
+			if !ok {
+				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
+			}
+			consumption[res] = uint8(entry.Amount)
 		}
 
 		bits := TerrainBits(0)
@@ -188,10 +188,7 @@ func Prepare(f fs.FS, file string) {
 				ProductionTerrain: productionTerrain,
 				HaulCapacity:      t.Production.HaulCapacity,
 			},
-			Consumption: Consumption{
-				Resource: consResource,
-				Amount:   t.Consumption.Amount,
-			},
+			Consumption: consumption,
 			PopulationSupport: PopulationSupport{
 				BasePopulation:  t.PopulationSupport.BasePopulation,
 				MaxPopulation:   t.PopulationSupport.MaxPopulation,
@@ -237,8 +234,8 @@ type TerrainProps struct {
 	Description       string
 	BuildCost         []ResourceAmount
 	Storage           []uint8
+	Consumption       []uint8
 	Production        Production
-	Consumption       Consumption
 	PopulationSupport PopulationSupport
 }
 
@@ -257,7 +254,7 @@ type terrainPropsJs struct {
 	CanBuild          bool                `json:"can_build"`
 	CanBuy            bool                `json:"can_buy"`
 	Production        productionJs        `json:"production"`
-	Consumption       consumptionJs       `json:"consumption"`
+	Consumption       []resourceAmountJs  `json:"consumption,omitempty"`
 	BuildCost         []resourceAmountJs  `json:"build_cost,omitempty"`
 	Storage           []resourceAmountJs  `json:"storage,omitempty"`
 	Description       string              `json:"description"`

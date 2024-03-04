@@ -114,10 +114,20 @@ func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint1
 	if props.BuildRadius > 0 {
 		f.radiusMapper.Assign(e, &comp.BuildRadius{Radius: props.BuildRadius})
 	}
-	if props.Consumption.Amount > 0 {
+
+	hasConsumption := false
+	for _, c := range props.Consumption {
+		if c > 0 {
+			hasConsumption = true
+			break
+		}
+	}
+	if hasConsumption {
+		cons := make([]uint8, len(props.Consumption))
+		copy(cons, props.Consumption)
 		f.consumptionMapper.Assign(e, &comp.Consumption{
-			Resource: props.Consumption.Resource,
-			Amount:   props.Consumption.Amount,
+			Amount:    cons,
+			Countdown: make([]int16, len(props.Consumption)),
 		})
 	}
 	if props.Population > 0 {

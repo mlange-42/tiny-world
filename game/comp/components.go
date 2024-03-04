@@ -38,9 +38,8 @@ type Production struct {
 }
 
 type Consumption struct {
-	Resource  resource.Resource
-	Amount    uint8
-	Countdown int
+	Amount    []uint8
+	Countdown []int16
 }
 
 type Population struct {
