@@ -169,8 +169,12 @@ func (s *Sprites) GetTerrainIndex(t terr.Terrain) int {
 	return s.terrIndices[t]
 }
 
-func (s *Sprites) GetMultiTileIndex(t terr.Terrain, dirs terr.Directions, frame int, rand int) int {
+func (s *Sprites) GetMultiTileTerrainIndex(t terr.Terrain, dirs terr.Directions, frame int, rand int) int {
 	idx := s.terrIndices[t]
+	return s.GetMultiTileIndex(idx, dirs, frame, rand)
+}
+
+func (s *Sprites) GetMultiTileIndex(idx int, dirs terr.Directions, frame int, rand int) int {
 	inf := &s.infos[idx]
 	if inf.IsMultitile() {
 		sprites := inf.Multitile[dirs]

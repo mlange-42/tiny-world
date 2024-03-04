@@ -1,6 +1,9 @@
 package sprites
 
 const (
+	BorderInner = "border_inner"
+	BorderOuter = "border_outer"
+
 	CursorRed    = "cursor_red"
 	CursorGreen  = "cursor_green"
 	CursorBlue   = "cursor_blue"
