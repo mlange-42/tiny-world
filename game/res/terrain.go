@@ -74,23 +74,6 @@ func (b *Buildable) NeighborsMask(x, y int) (terr.Directions, terr.Directions) {
 	return dirs, notDirs
 }
 
-func (b *Buildable) NeighborsMaskNot(x, y int) terr.Directions {
-	dirs := terr.Directions(0)
-	if !b.isNeighbor(x, y, 0, -1) {
-		dirs.Set(terr.N)
-	}
-	if !b.isNeighbor(x, y, 1, 0) {
-		dirs.Set(terr.E)
-	}
-	if !b.isNeighbor(x, y, 0, 1) {
-		dirs.Set(terr.S)
-	}
-	if !b.isNeighbor(x, y, -1, 0) {
-		dirs.Set(terr.W)
-	}
-	return dirs
-}
-
 func (b *Buildable) isNeighbor(x, y, dx, dy int) bool {
 	return b.Contains(x+dx, y+dy) && b.Get(x+dx, y+dy) != 0
 }
