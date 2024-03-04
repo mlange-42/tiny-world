@@ -16,6 +16,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+const TPS = 60
 const saveFolder = "save"
 
 var gameData embed.FS
@@ -61,7 +62,10 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	rules := res.NewRules(gameData, "data/json/rules.json")
 	ecs.AddResource(&g.Model.World, &rules)
 
-	gameSpeed := res.GameSpeed{}
+	gameSpeed := res.GameSpeed{
+		MinSpeed: -2,
+		MaxSpeed: 3,
+	}
 	ecs.AddResource(&g.Model.World, &gameSpeed)
 
 	gameTick := res.GameTick{}
@@ -86,7 +90,7 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	ecs.AddResource(&g.Model.World, &selection)
 
 	update := res.UpdateInterval{
-		Interval:  60,
+		Interval:  TPS,
 		Countdown: 60,
 	}
 	ecs.AddResource(&g.Model.World, &update)
@@ -133,7 +137,7 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	g.Model.AddSystem(&sys.Haul{})
 	g.Model.AddSystem(&sys.UpdateStats{})
 	g.Model.AddSystem(&sys.RemoveMarkers{
-		MaxTime: 60,
+		MaxTime: TPS,
 	})
 
 	g.Model.AddSystem(&sys.Build{})
@@ -150,18 +154,19 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 		Name:   name,
 	})
 	g.Model.AddSystem(&sys.Pause{
-		PauseKey: ebiten.KeySpace,
+		PauseKey:  ebiten.KeySpace,
+		SlowerKey: ebiten.KeyPageDown,
+		FasterKey: ebiten.KeyPageUp,
 	})
 
 	// =========== UI Systems ===========
 
 	g.Model.AddUISystem(&render.CenterView{})
 	g.Model.AddUISystem(&render.Terrain{})
-	//g.Model.AddUISystem(&render.HaulerPaths{})
 	g.Model.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
 		MaxOffset: view.TileHeight*2 + 30,
-		Duration:  60,
+		Duration:  TPS,
 	})
 	g.Model.AddUISystem(&render.UI{})
 
