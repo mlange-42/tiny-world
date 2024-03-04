@@ -254,7 +254,7 @@
                     "tower", "castle", "warehouse"
                 ]
             },
-            "description": "Increases the population limit by one per neighboring tile without trees or buildings. Stores some food and is a drop-off point for food"
+            "description": "Increases the population limit by one per neighboring tile without trees or buildings. Stores some food and is a drop-off point for it"
         },
         {
             "name": "watermill",
@@ -278,7 +278,7 @@
                 "required_terrain": "path",
                 "bonus_terrain": ["water"]
             },
-            "description": "Increases the population limit by one per neighboring water tile. Stores some food and is a drop-off point for food"
+            "description": "Increases the population limit by one per neighboring water tile. Stores some food and is a drop-off point for it"
         },
         {
             "name": "warehouse",
