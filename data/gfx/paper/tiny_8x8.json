@@ -13,7 +13,31 @@
    "index": [
     1
    ]
+  },
+  {
+   "id": "indicator_production",
+   "index": [
+    2
+   ]
+  },
+  {
+   "id": "indicator_production_inactive",
+   "index": [
+    3
+   ]
+  },
+  {
+   "id": "indicator_storage",
+   "index": [
+    4
+   ]
+  },
+  {
+   "id": "indicator_storage_inactive",
+   "index": [
+    5
+   ]
   }
  ],
- "total_sprites": 2
+ "total_sprites": 6
 }
