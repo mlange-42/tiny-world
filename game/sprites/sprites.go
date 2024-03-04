@@ -9,4 +9,5 @@ const (
 	HaulerPrefix = "hauler_"
 
 	SpecialCardMarker = "card_marker"
+	WarningMarker     = "warning_marker"
 )

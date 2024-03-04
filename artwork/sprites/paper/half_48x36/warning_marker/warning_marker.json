@@ -1,0 +1,12 @@
+[
+    {
+        "id": "warning_marker",
+        "file": [
+            "warning_marker", "warning_marker", "warning_marker",  "warning_marker", 
+            "warning_marker", "warning_marker_f2"
+        ],
+        "animation_frames": 6,
+        "animation_speed": 15,
+        "y_offset": 36
+    }
+]

@@ -18,10 +18,11 @@ import (
 
 // Terrain is a system to render the terrain.
 type Terrain struct {
-	cursorGreen  int
-	cursorRed    int
-	cursorBlue   int
-	cursorYellow int
+	cursorGreen   int
+	cursorRed     int
+	cursorBlue    int
+	cursorYellow  int
+	warningMarker int
 
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
@@ -38,11 +39,12 @@ type Terrain struct {
 	landUseE *res.LandUseEntities
 	update   *res.UpdateInterval
 
-	prodMapper   generic.Map2[comp.Terrain, comp.Production]
-	popMapper    generic.Map1[comp.PopulationSupport]
-	pathMapper   generic.Map1[comp.Path]
-	haulerMapper generic.Map2[comp.Hauler, comp.HaulerSprite]
-	spriteMapper generic.Map1[comp.RandomSprite]
+	prodMapper    generic.Map2[comp.Terrain, comp.Production]
+	popMapper     generic.Map1[comp.PopulationSupport]
+	pathMapper    generic.Map1[comp.Path]
+	haulerMapper  generic.Map2[comp.Hauler, comp.HaulerSprite]
+	spriteMapper  generic.Map1[comp.RandomSprite]
+	landUseMapper generic.Map2[comp.Production, comp.RandomSprite]
 
 	font font.Face
 }
@@ -67,6 +69,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
+	s.landUseMapper = generic.NewMap2[comp.Production, comp.RandomSprite](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
@@ -74,6 +77,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.cursorGreen = s.sprites.GetIndex(sprites.CursorGreen)
 	s.cursorBlue = s.sprites.GetIndex(sprites.CursorBlue)
 	s.cursorYellow = s.sprites.GetIndex(sprites.CursorYellow)
+	s.warningMarker = s.sprites.GetIndex(sprites.WarningMarker)
 
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()
@@ -117,8 +121,12 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				luE := s.landUseE.Get(i, j)
-				randTile := s.spriteMapper.Get(luE)
+				prod, randTile := s.landUseMapper.Get(luE)
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, terr.Properties[lu].TerrainBelow)
+				if prod != nil &&
+					(prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource]) {
+					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
+				}
 			}
 
 			if terr.Properties[lu].TerrainBits.Contains(terr.IsPath) {
@@ -131,8 +139,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 
 			if cursor.X == i && cursor.Y == j {
-				s.drawCursor(img, world,
-					i, j, height, &point, &off, sel)
+				s.drawCursor(img, world, i, j, height, &point, &off, sel)
 			}
 		}
 	}
@@ -205,21 +212,25 @@ func (s *Terrain) drawCursor(img *ebiten.Image, world *ecs.World,
 	if prop.TerrainBits.Contains(terr.CanBuild) {
 		canBuy := prop.TerrainBits.Contains(terr.CanBuy)
 
-		canBuildHere := (prop.BuildOn.Contains(ter) || (sel.AllowRemove && ter != terr.Air && ter != sel.BuildType)) &&
-			(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world))) &&
-			lu == terr.Air
+		canBuildHere := (prop.BuildOn.Contains(ter) || (sel.AllowRemove && ter != terr.Air && ter != sel.BuildType))
+		isDestroy := false
 
 		if prop.TerrainBits.Contains(terr.IsTerrain) {
 			height = 0
+			canBuildHere = canBuildHere && lu == terr.Air
+			isDestroy = sel.AllowRemove && !prop.BuildOn.Contains(ter)
 		} else {
 			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
-			canBuildHere = canBuildHere && (lu == terr.Air || (luNatural && canBuy))
+			canBuildHere = canBuildHere &&
+				(lu == terr.Air || (luNatural && canBuy)) &&
+				(!prop.TerrainBits.Contains(terr.CanBuy) || util.IsBuildable(x, y, s.radiusFilter.Query(world)))
+			isDestroy = lu != terr.Air && luNatural && canBuy
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, &comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow)
 
 		cursor := s.cursorRed
 		if canBuildHere {
-			if sel.AllowRemove && !prop.BuildOn.Contains(ter) {
+			if isDestroy || (sel.AllowRemove && !prop.BuildOn.Contains(ter)) {
 				cursor = s.cursorYellow
 			} else {
 				cursor = s.cursorGreen
@@ -338,7 +349,7 @@ func (s *Terrain) drawSimpleSprite(img *ebiten.Image,
 	camOffset *image.Point) int {
 
 	info := s.sprites.GetInfo(idx)
-	sp := s.sprites.Get(idx)
+	sp := s.sprites.GetRand(idx, int(s.time.Tick), 0)
 	h := sp.Bounds().Dy() - s.view.TileHeight
 
 	op := ebiten.DrawImageOptions{}

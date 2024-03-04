@@ -7,7 +7,21 @@
    "index": [
     0
    ]
+  },
+  {
+   "id": "warning_marker",
+   "index": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2
+   ],
+   "y_offset": 36,
+   "animation_frames": 6,
+   "animation_speed": 15
   }
  ],
- "total_sprites": 1
+ "total_sprites": 3
 }
