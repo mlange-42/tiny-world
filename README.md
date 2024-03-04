@@ -29,6 +29,5 @@ In the toolbar on the right, the top items are **buildings** that can be bought 
 The **natural features** in the lower part appear randomly and are replenished when placed by the player.
 
 * Middle mouse button / mouse wheel: pan and zoom.
-* Space: pause/resume
-* Left click with selected terrain or buildable: place it.
-* Right click with selected buildable: remove it.
+* Space: pause/resume.
+* PageUp/PageDown: speed up / slow down.

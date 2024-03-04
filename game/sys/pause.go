@@ -1,6 +1,8 @@
 package sys
 
 import (
+	"math"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
@@ -10,21 +12,43 @@ import (
 
 // Pause system.
 type Pause struct {
-	speedRes generic.Resource[res.GameSpeed]
+	PauseKey  ebiten.Key
+	SlowerKey ebiten.Key
+	FasterKey ebiten.Key
 
-	PauseKey ebiten.Key
+	speed     generic.Resource[res.GameSpeed]
+	update    generic.Resource[res.UpdateInterval]
+	prevSpeed int8
 }
 
 // Initialize the system
 func (s *Pause) Initialize(world *ecs.World) {
-	s.speedRes = generic.NewResource[res.GameSpeed](world)
+	s.speed = generic.NewResource[res.GameSpeed](world)
+	s.update = generic.NewResource[res.UpdateInterval](world)
+
+	speed := s.speed.Get()
+	update := s.update.Get()
+
+	ebiten.SetTPS(int(math.Pow(2, float64(speed.Speed)) * float64(update.Interval)))
 }
 
 // Update the system
 func (s *Pause) Update(world *ecs.World) {
+	speed := s.speed.Get()
+	update := s.update.Get()
 	if inpututil.IsKeyJustPressed(s.PauseKey) {
-		speed := s.speedRes.Get()
 		speed.Pause = !speed.Pause
+	}
+	if inpututil.IsKeyJustPressed(s.SlowerKey) && speed.Speed > speed.MinSpeed {
+		speed.Speed -= 1
+	}
+	if inpututil.IsKeyJustPressed(s.FasterKey) && speed.Speed < speed.MaxSpeed {
+		speed.Speed += 1
+	}
+
+	if s.prevSpeed != speed.Speed {
+		ebiten.SetTPS(int(math.Pow(2, float64(speed.Speed)) * float64(update.Interval)))
+		s.prevSpeed = speed.Speed
 	}
 }
 
