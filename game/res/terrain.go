@@ -37,6 +37,17 @@ type LandUseEntities struct {
 	Grid[ecs.Entity]
 }
 
+// Buildable resource
+type Buildable struct {
+	Grid[uint16]
+}
+
+func NewBuildable(w, h int) Buildable {
+	return Buildable{
+		Grid: NewGrid[uint16](w, h),
+	}
+}
+
 type TerrainGrid struct {
 	Grid[terr.Terrain]
 }

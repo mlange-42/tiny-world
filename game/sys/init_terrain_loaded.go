@@ -14,10 +14,12 @@ type InitTerrainLoaded struct {
 
 // Initialize the system
 func (s *InitTerrainLoaded) Initialize(world *ecs.World) {
+	rules := ecs.GetResource[res.Rules](world)
 	terrain := ecs.GetResource[res.Terrain](world)
 	terrainE := ecs.GetResource[res.TerrainEntities](world)
 	landUse := ecs.GetResource[res.LandUse](world)
 	landUseE := ecs.GetResource[res.LandUseEntities](world)
+	fac := ecs.GetResource[res.EntityFactory](world)
 
 	filter := generic.NewFilter2[comp.Tile, comp.Terrain]()
 	query := filter.Query(world)
@@ -30,6 +32,16 @@ func (s *InitTerrainLoaded) Initialize(world *ecs.World) {
 			landUse.Set(tile.X, tile.Y, ter.Terrain)
 			landUseE.Set(tile.X, tile.Y, query.Entity())
 		}
+	}
+
+	x, y := terrain.Width()/2, terrain.Height()/2
+	fac.SetBuildable(x, y, rules.InitialBuildRadius, true)
+
+	radFilter := generic.NewFilter2[comp.Tile, comp.BuildRadius]()
+	radQuery := radFilter.Query(world)
+	for radQuery.Next() {
+		tile, rad := radQuery.Get()
+		fac.SetBuildable(tile.X, tile.Y, int(rad.Radius), true)
 	}
 }
 
