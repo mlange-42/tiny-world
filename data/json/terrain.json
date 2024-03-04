@@ -2,6 +2,7 @@
     "zero_terrain": "air",
     "buildable": "buildable",
     "default": "grass",
+    "first_building": "warehouse",
     "bulldoze": "bulldoze",
     "terrains": [
         {
