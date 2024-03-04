@@ -55,8 +55,17 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 		}
 		pr.Amount = 0
 
-		if cons != nil && cons.Amount > 0 && cons.Resource != pr.Resource && stock.Res[cons.Resource] < 1 {
-			continue
+		if cons != nil {
+			hasRes := true
+			for i, c := range cons.Amount {
+				if c > 0 && i != int(pr.Resource) && stock.Res[i] < 1 {
+					hasRes = false
+					break
+				}
+			}
+			if !hasRes {
+				continue
+			}
 		}
 
 		lu := landUse.Get(tile.X, tile.Y)

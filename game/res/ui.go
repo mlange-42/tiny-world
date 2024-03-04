@@ -433,10 +433,6 @@ func (ui *UI) prepareButtons() {
 			}
 			costs += "\n"
 		}
-		requires := ""
-		if props.Consumption.Amount > 0 {
-			requires = fmt.Sprintf("Requires: %d F/min\n", props.Consumption.Amount)
-		}
 		maxProd := ""
 		if props.Production.MaxProduction > 0 {
 			maxProd = fmt.Sprintf(" (max %d)", props.Production.MaxProduction)
@@ -449,26 +445,37 @@ func (ui *UI) prepareButtons() {
 		if props.Population > 0 {
 			pop = fmt.Sprintf("Population: %d\n", props.Population)
 		}
+
+		requires := ""
+		requiresTemp := ui.resourcesToString(props.Consumption)
+		if len(requiresTemp) > 0 {
+			requires = fmt.Sprintf("Requires: %s /min\n", requiresTemp)
+		}
+
 		storage := ""
 		if props.TerrainBits.Contains(terr.IsWarehouse) {
-			storage = "Stores: "
-			cnt := 0
-			for i, st := range props.Storage {
-				if st == 0 {
-					continue
-				}
-				if cnt > 0 {
-					storage += ", "
-				}
-				storage += fmt.Sprintf("%d %s", st, resource.Properties[i].Short)
-				cnt++
-			}
-			storage += "\n"
+			storage = fmt.Sprintf("Stores: %s\n", ui.resourcesToString(props.Storage))
 		}
 
 		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s%s.",
 			strings.ToUpper(props.Name), costs, requires, pop, radius, storage, props.Description, maxProd)
 	}
+}
+
+func (ui *UI) resourcesToString(res []uint8) string {
+	out := ""
+	cnt := 0
+	for i, st := range res {
+		if st == 0 {
+			continue
+		}
+		if cnt > 0 {
+			out += ", "
+		}
+		out += fmt.Sprintf("%d %s", st, resource.Properties[i].Short)
+		cnt++
+	}
+	return out
 }
 
 func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove bool) widget.ButtonImage {

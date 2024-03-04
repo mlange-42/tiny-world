@@ -85,6 +85,10 @@
                 {"resource": "wood", "amount": 10},
                 {"resource": "stones", "amount": 10}
             ],
+            "consumption": [
+                {"resource": "wood", "amount": 2},
+                {"resource": "stones", "amount": 1}
+            ],
             "description": "A path over water"
         },
 
@@ -138,10 +142,9 @@
                 "production_terrain": ["field"],
                 "haul_capacity": 2
             },
-            "consumption": {
-                "resource": "food",
-                "amount": 1
-            },
+            "consumption": [
+                {"resource": "food", "amount": 1}
+            ],
             "description": "Produces 1 food/min per neighboring field"
         },
         {
@@ -166,10 +169,9 @@
                 "production_terrain": ["water"],
                 "haul_capacity": 2
             },
-            "consumption": {
-                "resource": "food",
-                "amount": 1
-            },
+            "consumption": [
+                {"resource": "food", "amount": 1}
+            ],
             "description": "Produces 1 food/min per neighboring water"
         },
         {
@@ -195,10 +197,9 @@
                 "production_terrain": ["tree"],
                 "haul_capacity": 2
             },
-            "consumption": {
-                "resource": "food",
-                "amount": 5
-            },
+            "consumption": [
+                {"resource": "food", "amount": 5}
+            ],
             "description": "Produces 1 wood/min per neighboring tree"
         },
         {
@@ -223,10 +224,9 @@
                 "production_terrain": ["rock"],
                 "haul_capacity": 2
             },
-            "consumption": {
-                "resource": "food",
-                "amount": 5
-            },
+            "consumption": [
+                {"resource": "food", "amount": 5}
+            ],
             "description": "Produces 1 stone/min per neighboring rock"
         },
         {
@@ -241,6 +241,9 @@
             "build_cost": [
                 {"resource": "wood", "amount": 15},
                 {"resource": "stones", "amount": 10}
+            ],
+            "consumption": [
+                {"resource": "wood", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
@@ -268,6 +271,9 @@
             "build_cost": [
                 {"resource": "wood", "amount": 10},
                 {"resource": "stones", "amount": 15}
+            ],
+            "consumption": [
+                {"resource": "stones", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
@@ -314,10 +320,11 @@
                 {"resource": "wood", "amount": 15},
                 {"resource": "stones", "amount": 20}
             ],
-            "consumption": {
-                "resource": "food",
-                "amount": 3
-            },
+            "consumption": [
+                {"resource": "food", "amount": 3},
+                {"resource": "wood", "amount": 1},
+                {"resource": "stones", "amount": 1}
+            ],
             "description": "Conquers land to colonize"
         },
         {
@@ -334,10 +341,11 @@
                 {"resource": "wood", "amount": 50},
                 {"resource": "stones", "amount": 50}
             ],
-            "consumption": {
-                "resource": "food",
-                "amount": 10
-            },
+            "consumption": [
+                {"resource": "food", "amount": 10},
+                {"resource": "wood", "amount": 3},
+                {"resource": "stones", "amount": 3}
+            ],
             "description": "Conquers land to colonize"
         }
     ]

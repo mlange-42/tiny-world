@@ -55,7 +55,9 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	consQuery := s.consFilter.Query(world)
 	for consQuery.Next() {
 		cons := consQuery.Get()
-		production.Cons[cons.Resource] += int(cons.Amount)
+		for i, c := range cons.Amount {
+			production.Cons[i] += int(c)
+		}
 	}
 
 	for i := range resource.Properties {
