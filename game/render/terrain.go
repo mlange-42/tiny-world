@@ -1,11 +1,9 @@
 package render
 
 import (
-	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -17,13 +15,19 @@ import (
 
 // Terrain is a system to render the terrain.
 type Terrain struct {
-	cursorGreen   int
-	cursorRed     int
-	cursorBlue    int
-	cursorYellow  int
-	warningMarker int
-	borderInner   int
-	borderOuter   int
+	cursorGreen                 int
+	cursorRed                   int
+	cursorBlue                  int
+	cursorYellow                int
+	warningMarker               int
+	borderInner                 int
+	borderOuter                 int
+	indicatorPopulation         int
+	indicatorPopulationInactive int
+	indicatorProduction         int
+	indicatorProductionInactive int
+	indicatorStorage            int
+	indicatorStorageInactive    int
 
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
@@ -83,6 +87,12 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.warningMarker = s.sprites.GetIndex(sprites.WarningMarker)
 	s.borderInner = s.sprites.GetIndex(sprites.BorderInner)
 	s.borderOuter = s.sprites.GetIndex(sprites.BorderOuter)
+	s.indicatorPopulation = s.sprites.GetIndex(sprites.IndicatorPopulation)
+	s.indicatorPopulationInactive = s.sprites.GetIndex(sprites.IndicatorPopulation + sprites.IndicatorInactiveSuffix)
+	s.indicatorProduction = s.sprites.GetIndex(sprites.IndicatorProduction)
+	s.indicatorProductionInactive = s.sprites.GetIndex(sprites.IndicatorProduction + sprites.IndicatorInactiveSuffix)
+	s.indicatorStorage = s.sprites.GetIndex(sprites.IndicatorStorage)
+	s.indicatorStorageInactive = s.sprites.GetIndex(sprites.IndicatorStorage + sprites.IndicatorInactiveSuffix)
 
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()
@@ -280,19 +290,48 @@ func (s *Terrain) drawBuildingMarker(img *ebiten.Image, lu terr.Terrain, e ecs.E
 	if prop.Production.MaxProduction > 0 {
 		tp, prod := s.prodMapper.Get(e)
 		bStock := terr.Properties[tp.Terrain].Storage[prod.Resource]
-		text.Draw(img, fmt.Sprintf("%d/%d (%d/%d)", prod.Amount, prop.Production.MaxProduction, prod.Stock, bStock), s.font,
-			int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
-			int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
-			s.sprites.TextColor,
-		)
+
+		h := s.sprites.Get(s.indicatorProduction).Bounds().Dy()
+
+		s.drawIndicators(img, int(prod.Amount), int(prop.Production.MaxProduction),
+			s.indicatorProduction, s.indicatorProductionInactive,
+			point, camOffset, 0)
+		s.drawIndicators(img, int(prod.Stock), int(bStock),
+			s.indicatorStorage, s.indicatorStorageInactive,
+			point, camOffset, -h)
 	}
 	if prop.PopulationSupport.MaxPopulation > 0 {
 		pop := s.popMapper.Get(e)
-		text.Draw(img, fmt.Sprintf("%d/%d", pop.Pop, prop.PopulationSupport.MaxPopulation), s.font,
-			int(float64(point.X)*s.view.Zoom-32-float64(camOffset.X)),
-			int(float64(point.Y-2*s.view.TileHeight)*s.view.Zoom-float64(camOffset.Y)),
-			s.sprites.TextColor,
+
+		s.drawIndicators(img, int(pop.Pop), int(prop.PopulationSupport.MaxPopulation),
+			s.indicatorPopulation, s.indicatorPopulationInactive,
+			point, camOffset, 0)
+	}
+}
+
+func (s *Terrain) drawIndicators(img *ebiten.Image,
+	value, maxValue int, active, inactive int,
+	point, camOffset *image.Point, yOffset int) {
+	sp := s.sprites.Get(active)
+	width := sp.Bounds().Dx()
+	widthTotal := width * maxValue
+
+	x := -widthTotal/2 + width/2
+	for i := 0; i < value; i++ {
+		pt := image.Pt(
+			point.X+x,
+			point.Y-yOffset-3*s.view.TileHeight,
 		)
+		s.drawSimpleSprite(img, active, &pt, 0, camOffset)
+		x += width
+	}
+	for i := value; i < int(maxValue); i++ {
+		pt := image.Pt(
+			point.X+x,
+			point.Y-yOffset-3*s.view.TileHeight,
+		)
+		s.drawSimpleSprite(img, inactive, &pt, 0, camOffset)
+		x += width
 	}
 }
 
