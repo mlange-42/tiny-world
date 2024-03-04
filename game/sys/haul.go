@@ -8,6 +8,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/nav"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
@@ -21,7 +22,7 @@ type Haul struct {
 	landUseE generic.Resource[res.LandUseEntities]
 
 	prodFilter      generic.Filter3[comp.Tile, comp.Terrain, comp.Production]
-	warehouseFilter generic.Filter1[comp.Tile]
+	warehouseFilter generic.Filter2[comp.Tile, comp.Terrain]
 	filter          generic.Filter2[comp.Tile, comp.Hauler]
 
 	haulerMap     generic.Map2[comp.Tile, comp.Hauler]
@@ -31,7 +32,7 @@ type Haul struct {
 
 	aStar nav.AStar
 
-	warehouses []comp.Tile
+	warehouses [][]comp.Tile
 	toCreate   []markerEntry
 	arrived    []ecs.Entity
 
@@ -47,7 +48,7 @@ func (s *Haul) Initialize(world *ecs.World) {
 	s.landUseE = generic.NewResource[res.LandUseEntities](world)
 
 	s.prodFilter = *generic.NewFilter3[comp.Tile, comp.Terrain, comp.Production]()
-	s.warehouseFilter = *generic.NewFilter1[comp.Tile]().With(generic.T[comp.Warehouse]())
+	s.warehouseFilter = *generic.NewFilter2[comp.Tile, comp.Terrain]().With(generic.T[comp.Warehouse]())
 	s.filter = *generic.NewFilter2[comp.Tile, comp.Hauler]()
 
 	s.haulerMap = generic.NewMap2[comp.Tile, comp.Hauler](world)
@@ -64,6 +65,8 @@ func (s *Haul) Initialize(world *ecs.World) {
 	for i := range terr.Properties {
 		s.haulerSprites[i] = spr.GetIndex(sprites.HaulerPrefix + terr.Properties[i].Name)
 	}
+
+	s.warehouses = make([][]comp.Tile, len(resource.Properties))
 }
 
 // Update the system
@@ -112,14 +115,20 @@ func (s *Haul) Update(world *ecs.World) {
 	if len(s.toCreate) > 0 {
 		query := s.warehouseFilter.Query(world)
 		for query.Next() {
-			s.warehouses = append(s.warehouses, *query.Get())
+			tile, ter := query.Get()
+			storage := terr.Properties[ter.Terrain].Storage
+			for i, st := range storage {
+				if st > 0 {
+					s.warehouses[i] = append(s.warehouses[i], *tile)
+				}
+			}
 		}
 	}
 
 	for _, entry := range s.toCreate {
 		var bestPath []comp.Tile
 		bestPathLen := math.MaxInt
-		for _, tile := range s.warehouses {
+		for _, tile := range s.warehouses[entry.Resource] {
 			if path, ok := s.aStar.FindPath(entry.Tile, tile); ok {
 				if len(path) < bestPathLen {
 					bestPathLen = len(path)
@@ -180,7 +189,9 @@ func (s *Haul) Update(world *ecs.World) {
 		world.RemoveEntity(e)
 	}
 
-	s.warehouses = s.warehouses[:0]
+	for i := range s.warehouses {
+		s.warehouses[i] = s.warehouses[i][:0]
+	}
 	s.toCreate = s.toCreate[:0]
 	s.arrived = s.arrived[:0]
 }

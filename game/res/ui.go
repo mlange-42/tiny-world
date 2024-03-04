@@ -425,8 +425,11 @@ func (ui *UI) prepareButtons() {
 		costs := ""
 		if len(props.BuildCost) > 0 {
 			costs = "Cost: "
-			for _, cost := range props.BuildCost {
-				costs += fmt.Sprintf("%d %s, ", cost.Amount, resource.Properties[cost.Resource].Short)
+			for i, cost := range props.BuildCost {
+				if i > 0 {
+					costs += ", "
+				}
+				costs += fmt.Sprintf("%d %s", cost.Amount, resource.Properties[cost.Resource].Short)
 			}
 			costs += "\n"
 		}
@@ -446,9 +449,25 @@ func (ui *UI) prepareButtons() {
 		if props.Population > 0 {
 			pop = fmt.Sprintf("Population: %d\n", props.Population)
 		}
+		storage := ""
+		if props.TerrainBits.Contains(terr.IsWarehouse) {
+			storage = "Stores: "
+			cnt := 0
+			for i, st := range props.Storage {
+				if st == 0 {
+					continue
+				}
+				if cnt > 0 {
+					storage += ", "
+				}
+				storage += fmt.Sprintf("%d %s", st, resource.Properties[i].Short)
+				cnt++
+			}
+			storage += "\n"
+		}
 
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s.",
-			strings.ToUpper(props.Name), costs, requires, pop, radius, props.Description, maxProd)
+		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s%s.",
+			strings.ToUpper(props.Name), costs, requires, pop, radius, storage, props.Description, maxProd)
 	}
 }
 
