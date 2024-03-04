@@ -10,6 +10,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
@@ -69,10 +70,10 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
-	s.cursorRed = s.sprites.GetIndex("cursor_red")
-	s.cursorGreen = s.sprites.GetIndex("cursor_green")
-	s.cursorBlue = s.sprites.GetIndex("cursor_blue")
-	s.cursorYellow = s.sprites.GetIndex("cursor_yellow")
+	s.cursorRed = s.sprites.GetIndex(sprites.CursorRed)
+	s.cursorGreen = s.sprites.GetIndex(sprites.CursorGreen)
+	s.cursorBlue = s.sprites.GetIndex(sprites.CursorBlue)
+	s.cursorYellow = s.sprites.GetIndex(sprites.CursorYellow)
 
 	fts := generic.NewResource[res.Fonts](world)
 	fonts := fts.Get()

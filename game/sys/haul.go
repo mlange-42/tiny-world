@@ -8,6 +8,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/nav"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -57,11 +58,11 @@ func (s *Haul) Initialize(world *ecs.World) {
 	s.aStar = nav.NewAStar(s.landUse.Get())
 
 	spritesRes := generic.NewResource[res.Sprites](world)
-	sprites := spritesRes.Get()
+	spr := spritesRes.Get()
 
 	s.haulerSprites = make([]int, len(terr.Properties))
 	for i := range terr.Properties {
-		s.haulerSprites[i] = sprites.GetIndex("hauler_" + terr.Properties[i].Name)
+		s.haulerSprites[i] = spr.GetIndex(sprites.HaulerPrefix + terr.Properties[i].Name)
 	}
 }
 
