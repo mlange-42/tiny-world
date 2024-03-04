@@ -21,6 +21,8 @@ import (
 	"golang.org/x/image/font"
 )
 
+const tooltipSpecial = "\n(*) Can be placed over existing tiles."
+
 type randomButton struct {
 	Terrain      terr.Terrain
 	RandomSprite uint16
@@ -542,8 +544,13 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		widget.ContainerOpts.AutoDisableChildren(),
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255})),
 	)
+
+	text := ui.buttonTooltip[terrain]
+	if allowRemove {
+		text += tooltipSpecial
+	}
 	label := widget.NewText(
-		widget.TextOpts.Text(ui.buttonTooltip[terrain], ui.font, color.White),
+		widget.TextOpts.Text(text, ui.font, color.White),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(250),
 	)
