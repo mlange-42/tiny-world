@@ -85,6 +85,10 @@
                 {"resource": "wood", "amount": 10},
                 {"resource": "stones", "amount": 10}
             ],
+            "consumption": [
+                {"resource": "wood", "amount": 2},
+                {"resource": "stones", "amount": 1}
+            ],
             "description": "A path over water"
         },
 
@@ -238,6 +242,9 @@
                 {"resource": "wood", "amount": 15},
                 {"resource": "stones", "amount": 10}
             ],
+            "consumption": [
+                {"resource": "wood", "amount": 1}
+            ],
             "storage": [
                 {"resource": "food", "amount": 5}
             ],
@@ -264,6 +271,9 @@
             "build_cost": [
                 {"resource": "wood", "amount": 10},
                 {"resource": "stones", "amount": 15}
+            ],
+            "consumption": [
+                {"resource": "stones", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
@@ -311,7 +321,9 @@
                 {"resource": "stones", "amount": 20}
             ],
             "consumption": [
-                {"resource": "food", "amount": 3}
+                {"resource": "food", "amount": 3},
+                {"resource": "wood", "amount": 1},
+                {"resource": "stones", "amount": 1}
             ],
             "description": "Conquers land to colonize"
         },
@@ -330,7 +342,9 @@
                 {"resource": "stones", "amount": 50}
             ],
             "consumption": [
-                {"resource": "food", "amount": 10}
+                {"resource": "food", "amount": 10},
+                {"resource": "wood", "amount": 3},
+                {"resource": "stones", "amount": 3}
             ],
             "description": "Conquers land to colonize"
         }
