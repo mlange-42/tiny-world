@@ -1,0 +1,19 @@
+{
+ "sprite_width": 8,
+ "sprite_height": 8,
+ "sprites": [
+  {
+   "id": "indicator_population",
+   "index": [
+    0
+   ]
+  },
+  {
+   "id": "indicator_population_inactive",
+   "index": [
+    1
+   ]
+  }
+ ],
+ "total_sprites": 2
+}

@@ -13,4 +13,7 @@ const (
 
 	SpecialCardMarker = "card_marker"
 	WarningMarker     = "warning_marker"
+
+	IndicatorPopulation     = "indicator_population"
+	IndicatorInactiveSuffix = "_inactive"
 )
