@@ -12,7 +12,7 @@ Made with [Arche](https://github.com/mlange-42/arche) and [Ebitengine](https://g
 
 ### Play in browser
 
-You can play Tiny World in a web browser [here](https://mlange-42.github.io/tiny-world/).
+You can play Tiny World in a web browser [here](https://mlange-42.github.io/tiny-world/) or [on itch.io](https://mlange-42.itch.io/tiny-world).
 
 ### Play locally
 
