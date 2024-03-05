@@ -15,10 +15,10 @@ import (
 
 // Terrain is a system to render the terrain.
 type Terrain struct {
-	cursorGreen                 int
-	cursorRed                   int
-	cursorBlue                  int
-	cursorYellow                int
+	cursorOk                    int
+	cursorDenied                int
+	cursorNeutral               int
+	cursorDestroy               int
 	warningMarker               int
 	borderInner                 int
 	borderOuter                 int
@@ -80,10 +80,10 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
-	s.cursorRed = s.sprites.GetIndex(sprites.CursorDenied)
-	s.cursorGreen = s.sprites.GetIndex(sprites.CursorOk)
-	s.cursorBlue = s.sprites.GetIndex(sprites.CursorNeutral)
-	s.cursorYellow = s.sprites.GetIndex(sprites.CursorDestroy)
+	s.cursorDenied = s.sprites.GetIndex(sprites.CursorDenied)
+	s.cursorOk = s.sprites.GetIndex(sprites.CursorOk)
+	s.cursorNeutral = s.sprites.GetIndex(sprites.CursorNeutral)
+	s.cursorDestroy = s.sprites.GetIndex(sprites.CursorDestroy)
 	s.warningMarker = s.sprites.GetIndex(sprites.WarningMarker)
 	s.borderInner = s.sprites.GetIndex(sprites.BorderInner)
 	s.borderOuter = s.sprites.GetIndex(sprites.BorderOuter)
@@ -258,24 +258,24 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, &comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow)
 
-		cursor := s.cursorRed
+		cursor := s.cursorDenied
 		if canBuildHere {
 			if isDestroy || (sel.AllowRemove && !prop.BuildOn.Contains(ter)) {
-				cursor = s.cursorYellow
+				cursor = s.cursorDestroy
 			} else {
-				cursor = s.cursorGreen
+				cursor = s.cursorOk
 			}
 		}
 		s.drawCursorSprite(img, point, camOffset, cursor)
 	} else if sel.BuildType == terr.Bulldoze {
 		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, nil, prop.TerrainBelow)
 		if terr.Properties[lu].TerrainBits.Contains(terr.CanBuild) {
-			s.drawCursorSprite(img, point, camOffset, s.cursorYellow)
+			s.drawCursorSprite(img, point, camOffset, s.cursorOk)
 		} else {
-			s.drawCursorSprite(img, point, camOffset, s.cursorRed)
+			s.drawCursorSprite(img, point, camOffset, s.cursorDenied)
 		}
 	} else {
-		s.drawCursorSprite(img, point, camOffset, s.cursorBlue)
+		s.drawCursorSprite(img, point, camOffset, s.cursorNeutral)
 	}
 
 	if sel.BuildType == terr.Air {
