@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -36,4 +37,15 @@ func command(g *Game, name string, load bool) *cobra.Command {
 	root.Flags().StringVarP(&tileSet, "tileset", "t", "paper", "Tileset to use.")
 
 	return root
+}
+
+type canvasHelper struct{}
+
+func newCanvasHelper() *canvasHelper {
+	return &canvasHelper{}
+}
+
+func (c *canvasHelper) isMouseInside(width, height int) bool {
+	x, y := ebiten.CursorPosition()
+	return x >= 0 && y >= 0 && x < width && y < height
 }

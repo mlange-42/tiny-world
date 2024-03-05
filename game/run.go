@@ -108,6 +108,7 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	ecs.AddResource(&g.Model.World, &stock)
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
+	ecs.AddResource(&g.Model.World, &g.Mouse)
 
 	saveEvent := res.SaveEvent{}
 	ecs.AddResource(&g.Model.World, &saveEvent)

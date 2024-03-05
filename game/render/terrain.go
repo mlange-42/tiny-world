@@ -31,6 +31,8 @@ type Terrain struct {
 
 	screen    generic.Resource[res.EbitenImage]
 	selection generic.Resource[res.Selection]
+	mouse     generic.Resource[res.Mouse]
+	ui        generic.Resource[res.UI]
 
 	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
 
@@ -59,6 +61,8 @@ type Terrain struct {
 func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.screen = generic.NewResource[res.EbitenImage](world)
 	s.selection = generic.NewResource[res.Selection](world)
+	s.mouse = generic.NewResource[res.Mouse](world)
+	s.ui = generic.NewResource[res.UI](world)
 
 	s.time = ecs.GetResource[res.GameTick](world)
 	s.rules = ecs.GetResource[res.Rules](world)
@@ -102,6 +106,8 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 // UpdateUI the system
 func (s *Terrain) UpdateUI(world *ecs.World) {
 	sel := s.selection.Get()
+	mouse := s.mouse.Get()
+	ui := s.ui.Get()
 
 	canvas := s.screen.Get()
 	img := canvas.Image
@@ -112,8 +118,11 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 	img.Clear()
 	img.Fill(s.sprites.Background)
 
-	mx, my := s.view.ScreenToGlobal(ebiten.CursorPosition())
+	x, y := ebiten.CursorPosition()
+	mx, my := s.view.ScreenToGlobal(x, y)
 	cursor := s.view.GlobalToTile(mx, my)
+
+	useMouse := mouse.IsInside && !ui.MouseInside(x, y)
 
 	mapBounds := s.view.MapBounds(img.Bounds().Dx(), img.Bounds().Dy())
 	mapBounds = mapBounds.Intersect(image.Rect(0, 0, s.terrain.Width(), s.terrain.Height()))
@@ -168,7 +177,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				}
 			}
 
-			if cursor.X == i && cursor.Y == j {
+			if useMouse && cursor.X == i && cursor.Y == j {
 				s.drawCursor(img, i, j, height, &point, &off, sel)
 			}
 		}
