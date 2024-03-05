@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"fmt"
 	"image/color"
 	"slices"
 
@@ -120,16 +121,28 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 	menuContainer.AddChild(worldsLabel)
 
 	for _, game := range games {
+		contextMenu := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+			)),
+			widget.ContainerOpts.BackgroundImage(
+				image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255}),
+			),
+		)
+
 		gameButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 					Position: widget.RowLayoutPositionCenter,
 					Stretch:  true,
 				}),
+				widget.WidgetOpts.ContextMenu(contextMenu),
 			),
 			widget.ButtonOpts.Image(img),
 			widget.ButtonOpts.Text(game, font, &widget.ButtonTextColor{
-				Idle: color.NRGBA{255, 255, 255, 255},
+				Idle:     color.NRGBA{255, 255, 255, 255},
+				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
@@ -137,6 +150,31 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 			}),
 		)
 		menuContainer.AddChild(gameButton)
+
+		deleteButton := widget.NewButton(
+			widget.ButtonOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				}),
+				widget.WidgetOpts.ContextMenu(contextMenu),
+			),
+			widget.ButtonOpts.Image(img),
+			widget.ButtonOpts.Text(fmt.Sprintf("Delete '%s'", game), font, &widget.ButtonTextColor{
+				Idle:     color.NRGBA{255, 255, 255, 255},
+				Disabled: color.NRGBA{180, 180, 180, 255},
+			}),
+			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+				if err := deleteGame(folder, game); err != nil {
+					infoLabel.Label = err.Error()
+					return
+				}
+				menuContainer.RemoveChild(gameButton)
+			}),
+		)
+		contextMenu.AddChild(deleteButton)
+
 	}
 
 	rootContainer.AddChild(menuContainer)
@@ -161,4 +199,8 @@ func loadButtonImage() *widget.ButtonImage {
 		Hover:   hover,
 		Pressed: pressed,
 	}
+}
+
+func deleteGame(folder, game string) error {
+	return save.DeleteGame(folder, game)
 }

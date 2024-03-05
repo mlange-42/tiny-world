@@ -26,3 +26,8 @@ func saveToFile(folder, name string, jsData []byte) error {
 
 	return nil
 }
+
+func deleteGame(folder, name string) error {
+	file := path.Join(folder, name) + ".json"
+	return os.Remove(file)
+}
