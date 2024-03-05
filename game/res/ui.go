@@ -411,7 +411,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	ui.populationLabel = counter
 
 	labelTimer := widget.NewText(
-		widget.TextOpts.Text("  Time", font, color.White),
+		widget.TextOpts.Text("   ", font, color.White),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 	)
 	infoContainer.AddChild(labelTimer)
