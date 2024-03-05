@@ -384,8 +384,8 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
 			widget.NewRowLayout(
-				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.RowLayoutOpts.Spacing(4),
+				widget.RowLayoutOpts.Padding(widget.Insets{Top: 4, Bottom: 4, Left: 12, Right: 12}),
+				widget.RowLayoutOpts.Spacing(12),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
@@ -401,41 +401,17 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 
 	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
 	for i := range resource.Properties {
-		label := widget.NewText(
-			widget.TextOpts.Text("  "+resource.Properties[i].Short, font, ui.sprites.TextColor),
-			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		)
-		infoContainer.AddChild(label)
-		counter := widget.NewText(
-			widget.TextOpts.Text("0", font, ui.sprites.TextColor),
-			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		)
-		infoContainer.AddChild(counter)
-		ui.resourceLabels[i] = counter
+		cont, lab := ui.createLabel(resource.Properties[i].Short)
+		infoContainer.AddChild(cont)
+		ui.resourceLabels[i] = lab
 	}
-	label := widget.NewText(
-		widget.TextOpts.Text("  Pop", font, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(label)
-	counter := widget.NewText(
-		widget.TextOpts.Text("0", font, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(counter)
-	ui.populationLabel = counter
+	cont, lab := ui.createLabel("Pop")
+	infoContainer.AddChild(cont)
+	ui.populationLabel = lab
 
-	labelTimer := widget.NewText(
-		widget.TextOpts.Text("   ", font, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(labelTimer)
-	counterTimer := widget.NewText(
-		widget.TextOpts.Text("0", font, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(counterTimer)
-	ui.timerLabel = counterTimer
+	cont, lab = ui.createLabel("")
+	infoContainer.AddChild(cont)
+	ui.timerLabel = lab
 
 	topBar.AddChild(menuContainer)
 	topBar.AddChild(innerAnchor)
@@ -445,6 +421,29 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	ui.mouseBlockers = append(ui.mouseBlockers, infoContainer, menuContainer)
 
 	return anchor
+}
+
+func (ui *UI) createLabel(text string) (*widget.Container, *widget.Text) {
+	cont := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Spacing(4),
+		)),
+	)
+
+	if len(text) > 0 {
+		label := widget.NewText(
+			widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
+			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		)
+		cont.AddChild(label)
+	}
+	counter := widget.NewText(
+		widget.TextOpts.Text("", ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	cont.AddChild(counter)
+
+	return cont, counter
 }
 
 func (ui *UI) prepareButtons() {
