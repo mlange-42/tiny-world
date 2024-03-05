@@ -19,7 +19,11 @@ type AssignHaulers struct {
 	haulerFilter generic.Filter1[comp.Hauler]
 	pathFilter   generic.Filter1[comp.Path]
 
-	pathMapper generic.Map1[comp.Path]
+	pathMapper   generic.Map1[comp.Path]
+	haulerMapper generic.Map1[comp.Hauler]
+	prodMapper   generic.Map1[comp.Production]
+
+	toRemove []ecs.Entity
 }
 
 // Initialize the system
@@ -32,6 +36,8 @@ func (s *AssignHaulers) Initialize(world *ecs.World) {
 	s.pathFilter = *generic.NewFilter1[comp.Path]()
 
 	s.pathMapper = generic.NewMap1[comp.Path](world)
+	s.haulerMapper = generic.NewMap1[comp.Hauler](world)
+	s.prodMapper = generic.NewMap1[comp.Production](world)
 }
 
 // Update the system
@@ -64,6 +70,10 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 		xx, yy := int(x+0.5), int(y+0.5)
 
 		pathHere := landUseE.Get(xx, yy)
+		if pathHere.IsZero() {
+			s.toRemove = append(s.toRemove, haulerQuery.Entity())
+			continue
+		}
 		path := s.pathMapper.Get(pathHere)
 
 		path.Haulers = append(path.Haulers, comp.HaulerEntry{Entity: haulerQuery.Entity(), YPos: yPos})
@@ -77,6 +87,18 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 			return cmp.Compare(a.YPos, b.YPos)
 		})
 	}
+
+	for _, e := range s.toRemove {
+		haul := s.haulerMapper.Get(e)
+
+		if world.Alive(haul.Home) {
+			prod := s.prodMapper.Get(haul.Home)
+			prod.IsHauling = false
+		}
+
+		world.RemoveEntity(e)
+	}
+	s.toRemove = s.toRemove[:0]
 }
 
 // Finalize the system
