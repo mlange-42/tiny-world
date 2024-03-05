@@ -608,7 +608,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	label := widget.NewText(
 		widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(250),
+		widget.TextOpts.MaxWidth(360),
 	)
 	tooltipContainer.AddChild(label)
 
