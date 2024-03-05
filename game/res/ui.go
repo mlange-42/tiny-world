@@ -225,7 +225,6 @@ func (ui *UI) createUI() *widget.Container {
 	)
 
 	buildButtonsContainer := widget.NewContainer(
-		//widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
@@ -257,7 +256,6 @@ func (ui *UI) createUI() *widget.Container {
 	innerContainer.AddChild(buildButtonsContainer)
 
 	ui.randomButtonsContainer = widget.NewContainer(
-		//widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
