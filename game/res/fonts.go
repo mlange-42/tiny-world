@@ -10,7 +10,7 @@ import (
 )
 
 const fontFile = "data/fonts/LessRoundBox.ttf"
-const fontSize = 24
+const fontSize = 22
 
 type Fonts struct {
 	Default font.Face
@@ -37,7 +37,7 @@ func NewFonts(fSys fs.FS) Fonts {
 		log.Fatal(err)
 	}
 	// Adjust the line height.
-	fontFace = text.FaceWithLineHeight(fontFace, 24)
+	fontFace = text.FaceWithLineHeight(fontFace, 22)
 
 	return Fonts{
 		Default: fontFace,
