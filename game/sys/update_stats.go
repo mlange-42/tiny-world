@@ -10,6 +10,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 // UpdateStats system.
@@ -103,7 +104,8 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	ui.SetPopulationLabel(fmt.Sprintf("%d/%d", stock.Population, stock.MaxPopulation))
 
 	secs := tick / interval
-	ui.SetTimerLabel(fmt.Sprint(time.Duration(secs) * time.Second))
+	duration := time.Duration(secs) * time.Second
+	ui.SetTimerLabel(fmt.Sprint(util.Format(duration, "15:04")))
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
