@@ -26,7 +26,7 @@ func listSaveGames(folder string) ([]string, error) {
 
 	files, err := os.ReadDir(folder)
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	for _, file := range files {
