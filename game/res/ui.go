@@ -545,17 +545,17 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 		img.DrawImage(marker, &op)
 	}
 
-	slice := image.NewNineSliceSimple(img, 0, tileWidth)
+	slice := image.NewNineSlice(img, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
 
 	pressed := ebiten.NewImageFromImage(img)
 	vector.DrawFilledRect(pressed, 0, 0,
 		float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
 		color.RGBA{0, 0, 0, 80}, false)
-	slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
+	slicePressed := image.NewNineSlice(pressed, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
 
 	disabled := ebiten.NewImageFromImage(img)
 	vector.StrokeLine(disabled, 0, 0, float32(img.Bounds().Dx()), float32(img.Bounds().Dy()), 6, color.RGBA{120, 0, 0, 160}, false)
-	sliceDisabled := image.NewNineSliceSimple(disabled, 0, tileWidth)
+	sliceDisabled := image.NewNineSlice(disabled, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
 
 	return widget.ButtonImage{
 		Idle:     slice,
@@ -598,11 +598,8 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position:  widget.RowLayoutPositionCenter,
-				MaxWidth:  ui.sprites.TileWidth,
-				MaxHeight: ui.sprites.TileWidth,
+				Position: widget.RowLayoutPositionCenter,
 			}),
-			widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
 			widget.WidgetOpts.ToolTip(widget.NewToolTip(
 				widget.ToolTipOpts.Content(tooltipContainer),
 				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
