@@ -8,8 +8,8 @@ import (
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/save"
-	"golang.org/x/image/font"
 )
 
 type UI struct {
@@ -20,7 +20,7 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func NewUI(folder string, font font.Face, start func(string, bool)) UI {
+func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 	games, err := save.ListSaveGames(folder)
 	if err != nil {
 		panic(err)
@@ -50,8 +50,19 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 
 	img := loadButtonImage()
 
+	titleLabel := widget.NewText(
+		widget.TextOpts.Text("Tiny World", fonts.Title, color.RGBA{R: 255, G: 255, B: 255, A: 255}),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+				Stretch:  true,
+			}),
+		),
+	)
+
 	infoLabel := widget.NewText(
-		widget.TextOpts.Text("   ", font, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
+		widget.TextOpts.Text("   ", fonts.Default, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 	)
 
@@ -63,7 +74,7 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 			}),
 		),
 		widget.TextInputOpts.Placeholder("World name"),
-		widget.TextInputOpts.Face(font),
+		widget.TextInputOpts.Face(fonts.Default),
 		widget.TextInputOpts.Image(&widget.TextInputImage{
 			Idle:     image.NewNineSliceColor(color.NRGBA{R: 40, G: 40, B: 40, A: 255}),
 			Disabled: image.NewNineSliceColor(color.NRGBA{R: 80, G: 80, B: 80, A: 255}),
@@ -76,7 +87,7 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 		}),
 		widget.TextInputOpts.Padding(widget.NewInsetsSimple(5)),
 		widget.TextInputOpts.CaretOpts(
-			widget.CaretOpts.Size(font, 2),
+			widget.CaretOpts.Size(fonts.Default, 2),
 		),
 	)
 
@@ -88,7 +99,7 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 			}),
 		),
 		widget.ButtonOpts.Image(img),
-		widget.ButtonOpts.Text("New World", font, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
 			Idle: color.NRGBA{255, 255, 255, 255},
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -111,10 +122,11 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 	)
 
 	worldsLabel := widget.NewText(
-		widget.TextOpts.Text("Load world:", font, color.White),
+		widget.TextOpts.Text("Load world:", fonts.Default, color.White),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 	)
 
+	menuContainer.AddChild(titleLabel)
 	menuContainer.AddChild(infoLabel)
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(newButton)
@@ -140,7 +152,7 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 				widget.WidgetOpts.ContextMenu(contextMenu),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(game, font, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(game, fonts.Default, &widget.ButtonTextColor{
 				Idle:     color.NRGBA{255, 255, 255, 255},
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
@@ -160,7 +172,7 @@ func NewUI(folder string, font font.Face, start func(string, bool)) UI {
 				widget.WidgetOpts.ContextMenu(contextMenu),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(fmt.Sprintf("Delete '%s'", game), font, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(fmt.Sprintf("Delete '%s'", game), fonts.Default, &widget.ButtonTextColor{
 				Idle:     color.NRGBA{255, 255, 255, 255},
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
