@@ -597,9 +597,11 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				MaxWidth:  ui.sprites.TileWidth,
+				MaxHeight: ui.sprites.TileWidth,
 			}),
+			widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
 			widget.WidgetOpts.ToolTip(widget.NewToolTip(
 				widget.ToolTipOpts.Content(tooltipContainer),
 				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
