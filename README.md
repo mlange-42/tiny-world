@@ -3,7 +3,6 @@
 A tiny, slow-paced world and colony building game.
 
 Made with [Arche](https://github.com/mlange-42/arche) and [Ebitengine](https://github.com/hajimehoshi/ebiten).
-Very early work in progress!
 
 ![Tiny World screenshot](https://github.com/mlange-42/tiny-world/assets/44003176/10e5e85a-86fa-42a2-9ae3-f922820b3c4e)
 
@@ -15,7 +14,7 @@ You can play Tiny World in a web browser [here](https://mlange-42.github.io/tiny
 
 ### Play locally
 
-Currently, you need to clone the repository and run the game with [Go](https://go.dev):
+Until there is a first official release, you need to clone the repository and run the game with [Go](https://go.dev):
 
 ```shell
 git clone https://github.com/mlange-42/tiny-world.git
@@ -32,3 +31,5 @@ The **natural features** in the lower part appear randomly and are replenished w
 * Space: pause/resume.
 * PageUp/PageDown: speed up / slow down.
 * F11: toggle fullscreen.
+
+Most UI controls have tooltips. Read them carefully!

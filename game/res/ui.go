@@ -399,15 +399,16 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 
 	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
 	for i := range resource.Properties {
-		cont, lab := ui.createLabel(resource.Properties[i].Short, 130)
+		cont, lab := ui.createLabel(resource.Properties[i].Short,
+			fmt.Sprintf("%s: +prod -cons (stock / max).", util.Capitalize(resource.Properties[i].Name)), 130)
 		infoContainer.AddChild(cont)
 		ui.resourceLabels[i] = lab
 	}
-	cont, lab := ui.createLabel("Pop", 50)
+	cont, lab := ui.createLabel("Pop", "Population: current/max.", 50)
 	infoContainer.AddChild(cont)
 	ui.populationLabel = lab
 
-	cont, lab = ui.createLabel("", 40)
+	cont, lab = ui.createLabel("", "Total game time.", 40)
 	infoContainer.AddChild(cont)
 	ui.timerLabel = lab
 
@@ -421,11 +422,34 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	return anchor
 }
 
-func (ui *UI) createLabel(text string, width int) (*widget.Container, *widget.Text) {
+func (ui *UI) createLabel(text, tooltip string, width int) (*widget.Container, *widget.Text) {
+	tooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	label := widget.NewText(
+		widget.TextOpts.Text(tooltip, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(360),
+	)
+	tooltipContainer.AddChild(label)
+
 	cont := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Spacing(4),
 		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(tooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
+		),
 	)
 
 	if len(text) > 0 {
@@ -584,7 +608,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	label := widget.NewText(
 		widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(250),
+		widget.TextOpts.MaxWidth(360),
 	)
 	tooltipContainer.AddChild(label)
 

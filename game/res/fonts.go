@@ -9,8 +9,8 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
-const fontFile = "data/fonts/JupiteroidRegular.ttf"
-const fontSize = 20
+const fontFile = "data/fonts/LessRoundBox.ttf"
+const fontSize = 24
 
 type Fonts struct {
 	Default font.Face
@@ -37,7 +37,7 @@ func NewFonts(fSys fs.FS) Fonts {
 		log.Fatal(err)
 	}
 	// Adjust the line height.
-	fontFace = text.FaceWithLineHeight(fontFace, 30)
+	fontFace = text.FaceWithLineHeight(fontFace, 24)
 
 	return Fonts{
 		Default: fontFace,
