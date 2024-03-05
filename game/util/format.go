@@ -1,7 +1,12 @@
 package util
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
-func Format(dur time.Duration, format string) string {
-	return time.Unix(0, 0).UTC().Add(time.Duration(dur)).Format(format)
+func FormatDuration(dur time.Duration) string {
+	hours := int(dur.Hours())
+	mins := int(dur.Minutes()) - 60*hours
+	return fmt.Sprintf("%d:%02d", hours, mins)
 }
