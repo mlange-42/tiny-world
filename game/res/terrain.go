@@ -99,6 +99,23 @@ func (g *TerrainGrid) NeighborsMaskMulti(x, y int, tp terr.Terrains) terr.Direct
 	return dirs
 }
 
+func (g *TerrainGrid) NeighborsMaskMultiReplace(x, y int, tp terr.Terrains, rx, ry int, rt terr.Terrain) terr.Directions {
+	dirs := terr.Directions(0)
+	if g.isNeighborMaskReplace(x, y, 0, -1, tp, rx, ry, rt) {
+		dirs.Set(terr.N)
+	}
+	if g.isNeighborMaskReplace(x, y, 1, 0, tp, rx, ry, rt) {
+		dirs.Set(terr.E)
+	}
+	if g.isNeighborMaskReplace(x, y, 0, 1, tp, rx, ry, rt) {
+		dirs.Set(terr.S)
+	}
+	if g.isNeighborMaskReplace(x, y, -1, 0, tp, rx, ry, rt) {
+		dirs.Set(terr.W)
+	}
+	return dirs
+}
+
 func (g *TerrainGrid) NeighborsMask(x, y int, tp terr.Terrain) terr.Directions {
 	dirs := terr.Directions(0)
 	if g.isNeighbor(x, y, 0, -1, tp) {
@@ -117,11 +134,21 @@ func (g *TerrainGrid) NeighborsMask(x, y int, tp terr.Terrain) terr.Directions {
 }
 
 func (g *TerrainGrid) isNeighbor(x, y, dx, dy int, tp terr.Terrain) bool {
-	return g.Contains(x+dx, y+dy) && g.Get(x+dx, y+dy) == tp
+	xx, yy := x+dx, y+dy
+	return g.Contains(xx, yy) && g.Get(xx, yy) == tp
 }
 
 func (g *TerrainGrid) isNeighborMask(x, y, dx, dy int, tp terr.Terrains) bool {
-	return g.Contains(x+dx, y+dy) && tp.Contains(g.Get(x+dx, y+dy))
+	xx, yy := x+dx, y+dy
+	return g.Contains(xx, yy) && tp.Contains(g.Get(xx, yy))
+}
+
+func (g *TerrainGrid) isNeighborMaskReplace(x, y, dx, dy int, tp terr.Terrains, rx, ry int, rt terr.Terrain) bool {
+	xx, yy := x+dx, y+dy
+	if xx == rx && yy == ry {
+		return tp.Contains(rt)
+	}
+	return g.Contains(xx, yy) && tp.Contains(g.Get(xx, yy))
 }
 
 func (g *TerrainGrid) CountNeighbors4(x, y int, tp terr.Terrain) int {
