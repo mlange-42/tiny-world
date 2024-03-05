@@ -7,6 +7,7 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
+	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
@@ -142,7 +143,8 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if t != terr.Air && t != terr.Buildable {
 				tE := s.terrainE.Get(i, j)
 				randTile := s.spriteMapper.Get(tE)
-				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off, randTile, terr.Properties[t].TerrainBelow)
+				height = s.drawSprite(img, s.terrain, s.landUse, i, j, t, &point, height, &off,
+					randTile, terr.Properties[t].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
 
 				if showBuildable {
 					buildHere := s.buildable.Get(i, j) > 0
@@ -161,7 +163,8 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			if lu != terr.Air {
 				luE := s.landUseE.Get(i, j)
 				prod, randTile := s.landUseMapper.Get(luE)
-				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off, randTile, terr.Properties[lu].TerrainBelow)
+				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off,
+					randTile, terr.Properties[lu].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
 				if prod != nil &&
 					(prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource]) {
 					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
@@ -265,7 +268,8 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 				(!prop.TerrainBits.Contains(terr.CanBuy) || s.buildable.Get(x, y) > 0)
 			isDestroy = lu != terr.Air && luNatural && canBuy
 		}
-		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, &comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset,
+			&comp.RandomSprite{Rand: sel.RandSprite}, prop.TerrainBelow, x, y, terr.Air)
 
 		cursor := s.cursorDenied
 		if canBuildHere {
@@ -277,7 +281,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		}
 		s.drawCursorSprite(img, point, camOffset, cursor)
 	} else if sel.BuildType == terr.Bulldoze {
-		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, nil, prop.TerrainBelow)
+		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset, nil, prop.TerrainBelow, x, y, terr.Air)
 		if terr.Properties[lu].TerrainBits.Contains(terr.CanBuild) {
 			s.drawCursorSprite(img, point, camOffset, s.cursorOk)
 		} else {
@@ -372,7 +376,8 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	below terr.Terrain) int {
+	below terr.Terrain,
+	cursorX, cursorY int, cursorTerr terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
@@ -380,14 +385,21 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 	if below != terr.Air {
 		height = s.drawSprite(img, terrain, landUse,
 			x, y, below, point, height,
-			camOffset, randSprite, terr.Air)
+			camOffset, randSprite, terr.Air, cursorX, cursorY, cursorTerr)
 	}
 
 	var sp *ebiten.Image
 	if info.IsMultitile() {
 		var neigh terr.Directions
 		conn := terr.Properties[t].ConnectsTo
-		neigh = terrain.NeighborsMaskMulti(x, y, conn) | landUse.NeighborsMaskMulti(x, y, conn)
+		cursorNear := cursorTerr != terr.Air && math.AbsInt(x-cursorX) <= 1 && math.AbsInt(y-cursorY) <= 1
+		if cursorNear && terr.Properties[cursorTerr].TerrainBits.Contains(terr.IsTerrain) {
+			neigh = terrain.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr) |
+				landUse.NeighborsMaskMulti(x, y, conn)
+		} else {
+			neigh = terrain.NeighborsMaskMulti(x, y, conn) |
+				landUse.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr)
+		}
 
 		mIdx := s.sprites.GetMultiTileTerrainIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
 
