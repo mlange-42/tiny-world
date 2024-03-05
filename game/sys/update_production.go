@@ -16,7 +16,6 @@ type UpdateProduction struct {
 	update  generic.Resource[res.UpdateInterval]
 	terrain generic.Resource[res.Terrain]
 	landUse generic.Resource[res.LandUse]
-	stock   generic.Resource[res.Stock]
 
 	filter generic.Filter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
 }
@@ -28,7 +27,6 @@ func (s *UpdateProduction) Initialize(world *ecs.World) {
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
-	s.stock = generic.NewResource[res.Stock](world)
 
 	s.filter = *generic.NewFilter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]().Optional(generic.T[comp.Consumption]())
 }
@@ -44,7 +42,6 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 	tick := s.time.Get().Tick
 	interval := s.update.Get().Interval
 	tickMod := tick % interval
-	stock := s.stock.Get()
 
 	query := s.filter.Query(world)
 	for query.Next() {
@@ -55,17 +52,8 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 		}
 		pr.Amount = 0
 
-		if cons != nil {
-			hasRes := true
-			for i, c := range cons.Amount {
-				if c > 0 && i != int(pr.Resource) && stock.Res[i] < 1 {
-					hasRes = false
-					break
-				}
-			}
-			if !hasRes {
-				continue
-			}
+		if !cons.IsSatisfied {
+			continue
 		}
 
 		lu := landUse.Get(tile.X, tile.Y)
