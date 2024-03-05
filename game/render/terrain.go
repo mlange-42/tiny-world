@@ -278,7 +278,9 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 		s.drawCursorSprite(img, point, camOffset, s.cursorBlue)
 	}
 
-	s.drawBuildingMarker(img, lu, luEntity, point, camOffset)
+	if sel.BuildType == terr.Air {
+		s.drawBuildingMarker(img, lu, luEntity, point, camOffset)
+	}
 }
 
 func (s *Terrain) drawBuildingMarker(img *ebiten.Image, lu terr.Terrain, e ecs.Entity, point, camOffset *image.Point) {
