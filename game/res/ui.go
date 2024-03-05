@@ -38,6 +38,7 @@ type UI struct {
 	saveEvent       *SaveEvent
 	resourceLabels  []*widget.Text
 	populationLabel *widget.Text
+	timerLabel      *widget.Text
 	terrainButtons  []*widget.Button
 
 	buttonImages           []widget.ButtonImage
@@ -68,6 +69,10 @@ func (ui *UI) SetResourceLabel(id resource.Resource, text string) {
 
 func (ui *UI) SetPopulationLabel(text string) {
 	ui.populationLabel.Label = text
+}
+
+func (ui *UI) SetTimerLabel(text string) {
+	ui.timerLabel.Label = text
 }
 
 func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
@@ -404,6 +409,18 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	)
 	infoContainer.AddChild(counter)
 	ui.populationLabel = counter
+
+	labelTimer := widget.NewText(
+		widget.TextOpts.Text("   ", font, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	infoContainer.AddChild(labelTimer)
+	counterTimer := widget.NewText(
+		widget.TextOpts.Text("0", font, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	infoContainer.AddChild(counterTimer)
+	ui.timerLabel = counterTimer
 
 	topBar.AddChild(menuContainer)
 	topBar.AddChild(innerAnchor)

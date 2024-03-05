@@ -2,6 +2,7 @@ package sys
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -9,6 +10,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 // UpdateStats system.
@@ -17,6 +19,8 @@ type UpdateStats struct {
 	production generic.Resource[res.Production]
 	stock      generic.Resource[res.Stock]
 	ui         generic.Resource[res.UI]
+	tick       generic.Resource[res.GameTick]
+	interval   generic.Resource[res.UpdateInterval]
 
 	prodFilter              generic.Filter1[comp.Production]
 	consFilter              generic.Filter1[comp.Consumption]
@@ -31,6 +35,8 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.production = generic.NewResource[res.Production](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.ui = generic.NewResource[res.UI](world)
+	s.tick = generic.NewResource[res.GameTick](world)
+	s.interval = generic.NewResource[res.UpdateInterval](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
@@ -46,6 +52,8 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	production := s.production.Get()
 	stock := s.stock.Get()
 	production.Reset()
+	tick := s.tick.Get().Tick
+	interval := s.interval.Get().Interval
 
 	prodQuery := s.prodFilter.Query(world)
 	for prodQuery.Next() {
@@ -94,6 +102,10 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		}
 	}
 	ui.SetPopulationLabel(fmt.Sprintf("%d/%d", stock.Population, stock.MaxPopulation))
+
+	secs := tick / interval
+	duration := time.Duration(secs) * time.Second
+	ui.SetTimerLabel(fmt.Sprint(util.Format(duration, "15:04")))
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
