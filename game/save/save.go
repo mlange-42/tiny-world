@@ -49,3 +49,7 @@ func IsValidName(name string) bool {
 	}
 	return matched
 }
+
+func DeleteGame(folder, name string) error {
+	return deleteGame(folder, name)
+}

@@ -15,3 +15,11 @@ func saveToFile(folder, name string, jsData []byte) error {
 
 	return nil
 }
+
+func deleteGame(folder, name string) error {
+	_ = folder
+
+	storage := js.Global().Get("localStorage")
+	storage.Delete(saveGamePrefix + name)
+	return nil
+}
