@@ -153,10 +153,11 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 		Folder: "save",
 		Name:   name,
 	})
-	g.Model.AddSystem(&sys.Pause{
-		PauseKey:  ebiten.KeySpace,
-		SlowerKey: ebiten.KeyPageDown,
-		FasterKey: ebiten.KeyPageUp,
+	g.Model.AddSystem(&sys.GameControls{
+		PauseKey:      ebiten.KeySpace,
+		SlowerKey:     ebiten.KeyPageDown,
+		FasterKey:     ebiten.KeyPageUp,
+		FullscreenKey: ebiten.KeyF11,
 	})
 
 	// =========== UI Systems ===========

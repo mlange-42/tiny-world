@@ -10,11 +10,12 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
-// Pause system.
-type Pause struct {
-	PauseKey  ebiten.Key
-	SlowerKey ebiten.Key
-	FasterKey ebiten.Key
+// GameControls system.
+type GameControls struct {
+	PauseKey      ebiten.Key
+	SlowerKey     ebiten.Key
+	FasterKey     ebiten.Key
+	FullscreenKey ebiten.Key
 
 	speed     generic.Resource[res.GameSpeed]
 	update    generic.Resource[res.UpdateInterval]
@@ -22,7 +23,7 @@ type Pause struct {
 }
 
 // Initialize the system
-func (s *Pause) Initialize(world *ecs.World) {
+func (s *GameControls) Initialize(world *ecs.World) {
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 
@@ -33,9 +34,13 @@ func (s *Pause) Initialize(world *ecs.World) {
 }
 
 // Update the system
-func (s *Pause) Update(world *ecs.World) {
+func (s *GameControls) Update(world *ecs.World) {
 	speed := s.speed.Get()
 	update := s.update.Get()
+
+	if inpututil.IsKeyJustPressed(s.FullscreenKey) {
+		ebiten.SetFullscreen(!ebiten.IsFullscreen())
+	}
 	if inpututil.IsKeyJustPressed(s.PauseKey) {
 		speed.Pause = !speed.Pause
 	}
@@ -53,4 +58,4 @@ func (s *Pause) Update(world *ecs.World) {
 }
 
 // Finalize the system
-func (s *Pause) Finalize(world *ecs.World) {}
+func (s *GameControls) Finalize(world *ecs.World) {}
