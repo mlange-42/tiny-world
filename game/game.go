@@ -27,7 +27,7 @@ func NewGame(mod *model.Model) Game {
 // Initialize the game.
 func (g *Game) Initialize() {
 	//ebiten.SetFullscreen(true)
-	ebiten.SetWindowSize(1024, 768)
+	ebiten.SetWindowSize(1080, 720)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle("Tiny World")
 	g.Model.Initialize()
