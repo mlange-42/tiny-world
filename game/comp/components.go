@@ -38,8 +38,9 @@ type Production struct {
 }
 
 type Consumption struct {
-	Amount    []uint8
-	Countdown []int16
+	Amount      []uint8
+	Countdown   []int16
+	IsSatisfied bool
 }
 
 type Population struct {

@@ -45,12 +45,17 @@ func (s *DoConsumption) Update(world *ecs.World) {
 		if up.Tick != tickMod {
 			continue
 		}
+
+		cons.IsSatisfied = true
 		for i, c := range cons.Amount {
-			if stock.Res[i] > 0 {
-				cons.Countdown[i] -= int16(c)
-				if cons.Countdown[i] < 0 {
+			cons.Countdown[i] -= int16(c)
+			if cons.Countdown[i] < 0 {
+				if stock.Res[i] > 0 {
 					cons.Countdown[i] += int16(update.Countdown)
 					stock.Res[i]--
+				} else {
+					cons.Countdown[i] = 0
+					cons.IsSatisfied = false
 				}
 			}
 		}
