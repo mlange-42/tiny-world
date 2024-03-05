@@ -103,7 +103,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	ui.SetPopulationLabel(fmt.Sprintf("%d/%d", stock.Population, stock.MaxPopulation))
 
 	secs := tick / interval
-	ui.SetTimerLabel(fmt.Sprint(time.Duration(secs)*time.Second))
+	ui.SetTimerLabel(fmt.Sprint(time.Duration(secs) * time.Second))
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
