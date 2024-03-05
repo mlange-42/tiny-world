@@ -18,4 +18,8 @@ const (
 	IndicatorProduction     = "indicator_production"
 	IndicatorStorage        = "indicator_storage"
 	IndicatorInactiveSuffix = "_inactive"
+
+	UiPanel        = "ui_panel"
+	UiPanelHover   = "ui_panel_hover"
+	UiPanelPressed = "ui_panel_pressed"
 )

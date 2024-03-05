@@ -47,7 +47,10 @@ type UI struct {
 	randomButtons          map[int]randomButton
 	mouseBlockers          []*widget.Container
 
-	markerSprite int
+	markerSprite      int
+	background        *image.NineSlice
+	backgroundHover   *image.NineSlice
+	backgroundPressed *image.NineSlice
 
 	selection *Selection
 	font      font.Face
@@ -104,6 +107,18 @@ func NewUI(selection *Selection, font font.Face, sprts *Sprites, save *SaveEvent
 		saveEvent:     save,
 		markerSprite:  sprts.GetIndex(sprites.SpecialCardMarker),
 	}
+
+	sp := ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanel))
+	w := sp.Bounds().Dx()
+	ui.background = image.NewNineSliceSimple(sp, w/4, w/2)
+
+	sp = ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanelHover))
+	w = sp.Bounds().Dx()
+	ui.backgroundHover = image.NewNineSliceSimple(sp, w/4, w/2)
+
+	sp = ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanelPressed))
+	w = sp.Bounds().Dx()
+	ui.backgroundPressed = image.NewNineSliceSimple(sp, w/4, w/2)
 
 	ui.prepareButtons()
 
@@ -190,7 +205,7 @@ func (ui *UI) createUI() *widget.Container {
 	)
 
 	innerContainer := widget.NewContainer(
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
 			widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -210,7 +225,6 @@ func (ui *UI) createUI() *widget.Container {
 	)
 
 	buildButtonsContainer := widget.NewContainer(
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
@@ -242,7 +256,6 @@ func (ui *UI) createUI() *widget.Container {
 	innerContainer.AddChild(buildButtonsContainer)
 
 	ui.randomButtonsContainer = widget.NewContainer(
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
@@ -322,7 +335,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	)
 
 	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
 			widget.NewRowLayout(
 				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
@@ -344,9 +357,9 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 				Stretch:  false,
 			}),
 		),
-		widget.ButtonOpts.Image(simpleButtonImage()),
+		widget.ButtonOpts.Image(ui.simpleButtonImage()),
 		widget.ButtonOpts.Text("Save", font, &widget.ButtonTextColor{
-			Idle: color.NRGBA{255, 255, 255, 255},
+			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
@@ -366,11 +379,11 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	)
 
 	infoContainer := widget.NewContainer(
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
 			widget.NewRowLayout(
-				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.RowLayoutOpts.Spacing(4),
+				widget.RowLayoutOpts.Padding(widget.Insets{Top: 4, Bottom: 4, Left: 12, Right: 12}),
+				widget.RowLayoutOpts.Spacing(12),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
@@ -386,41 +399,17 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 
 	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
 	for i := range resource.Properties {
-		label := widget.NewText(
-			widget.TextOpts.Text("  "+resource.Properties[i].Short, font, color.White),
-			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		)
-		infoContainer.AddChild(label)
-		counter := widget.NewText(
-			widget.TextOpts.Text("0", font, color.White),
-			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		)
-		infoContainer.AddChild(counter)
-		ui.resourceLabels[i] = counter
+		cont, lab := ui.createLabel(resource.Properties[i].Short)
+		infoContainer.AddChild(cont)
+		ui.resourceLabels[i] = lab
 	}
-	label := widget.NewText(
-		widget.TextOpts.Text("  Pop", font, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(label)
-	counter := widget.NewText(
-		widget.TextOpts.Text("0", font, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(counter)
-	ui.populationLabel = counter
+	cont, lab := ui.createLabel("Pop")
+	infoContainer.AddChild(cont)
+	ui.populationLabel = lab
 
-	labelTimer := widget.NewText(
-		widget.TextOpts.Text("   ", font, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(labelTimer)
-	counterTimer := widget.NewText(
-		widget.TextOpts.Text("0", font, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	infoContainer.AddChild(counterTimer)
-	ui.timerLabel = counterTimer
+	cont, lab = ui.createLabel("")
+	infoContainer.AddChild(cont)
+	ui.timerLabel = lab
 
 	topBar.AddChild(menuContainer)
 	topBar.AddChild(innerAnchor)
@@ -430,6 +419,29 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	ui.mouseBlockers = append(ui.mouseBlockers, infoContainer, menuContainer)
 
 	return anchor
+}
+
+func (ui *UI) createLabel(text string) (*widget.Container, *widget.Text) {
+	cont := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Spacing(4),
+		)),
+	)
+
+	if len(text) > 0 {
+		label := widget.NewText(
+			widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
+			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		)
+		cont.AddChild(label)
+	}
+	counter := widget.NewText(
+		widget.TextOpts.Text("", ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	cont.AddChild(counter)
+
+	return cont, counter
 }
 
 func (ui *UI) prepareButtons() {
@@ -530,17 +542,17 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 		img.DrawImage(marker, &op)
 	}
 
-	slice := image.NewNineSliceSimple(img, 0, tileWidth)
+	slice := image.NewNineSlice(img, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
 
 	pressed := ebiten.NewImageFromImage(img)
 	vector.DrawFilledRect(pressed, 0, 0,
 		float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
 		color.RGBA{0, 0, 0, 80}, false)
-	slicePressed := image.NewNineSliceSimple(pressed, 0, tileWidth)
+	slicePressed := image.NewNineSlice(pressed, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
 
 	disabled := ebiten.NewImageFromImage(img)
 	vector.StrokeLine(disabled, 0, 0, float32(img.Bounds().Dx()), float32(img.Bounds().Dy()), 6, color.RGBA{120, 0, 0, 160}, false)
-	sliceDisabled := image.NewNineSliceSimple(disabled, 0, tileWidth)
+	sliceDisabled := image.NewNineSlice(disabled, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
 
 	return widget.ButtonImage{
 		Idle:     slice,
@@ -559,7 +571,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
 		)),
 		widget.ContainerOpts.AutoDisableChildren(),
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
 
 	text := ui.buttonTooltip[terrain]
@@ -567,7 +579,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		text += tooltipSpecial
 	}
 	label := widget.NewText(
-		widget.TextOpts.Text(text, ui.font, color.White),
+		widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(250),
 	)
@@ -582,10 +594,11 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				MaxWidth:  ui.sprites.TileWidth,
+				MaxHeight: ui.sprites.TileWidth,
 			}),
-
+			widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
 			widget.WidgetOpts.ToolTip(widget.NewToolTip(
 				widget.ToolTipOpts.Content(tooltipContainer),
 				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
@@ -603,16 +616,10 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	return button, id
 }
 
-func simpleButtonImage() *widget.ButtonImage {
-	idle := image.NewNineSliceColor(color.NRGBA{60, 60, 60, 255})
-
-	hover := image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})
-
-	pressed := image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255})
-
+func (ui *UI) simpleButtonImage() *widget.ButtonImage {
 	return &widget.ButtonImage{
-		Idle:    idle,
-		Hover:   hover,
-		Pressed: pressed,
+		Idle:    ui.background,
+		Hover:   ui.backgroundHover,
+		Pressed: ui.backgroundPressed,
 	}
 }

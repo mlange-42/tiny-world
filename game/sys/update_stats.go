@@ -105,7 +105,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 
 	secs := tick / interval
 	duration := time.Duration(secs) * time.Second
-	ui.SetTimerLabel(fmt.Sprint(util.Format(duration, "15:04")))
+	ui.SetTimerLabel(util.FormatDuration(duration))
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]

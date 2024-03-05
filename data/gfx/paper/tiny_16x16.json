@@ -36,7 +36,25 @@
     4
    ],
    "y_offset": 10
+  },
+  {
+   "id": "ui_panel",
+   "index": [
+    5
+   ]
+  },
+  {
+   "id": "ui_panel_hover",
+   "index": [
+    6
+   ]
+  },
+  {
+   "id": "ui_panel_pressed",
+   "index": [
+    7
+   ]
   }
  ],
- "total_sprites": 5
+ "total_sprites": 8
 }
