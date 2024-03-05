@@ -7,13 +7,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
+	"golang.org/x/image/font/sfnt"
 )
 
 const fontFile = "data/fonts/LessRoundBox.ttf"
-const fontSize = 22
 
 type Fonts struct {
 	Default font.Face
+	Title   font.Face
 }
 
 func NewFonts(fSys fs.FS) Fonts {
@@ -21,25 +22,36 @@ func NewFonts(fSys fs.FS) Fonts {
 	if err != nil {
 		log.Fatal("error loading font file: ", err)
 	}
-
 	tt, err := opentype.Parse(content)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	const dpi = 72
-	fontFace, err := opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    float64(fontSize),
-		DPI:     dpi,
-		Hinting: font.HintingFull, // Use quantization to save glyph cache images.
-	})
+	defaultFace, err := makeSize(tt, 22)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Adjust the line height.
-	fontFace = text.FaceWithLineHeight(fontFace, 22)
+	titleFace, err := makeSize(tt, 32)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return Fonts{
-		Default: fontFace,
+		Default: defaultFace,
+		Title:   titleFace,
 	}
+}
+
+func makeSize(tt *sfnt.Font, size int) (font.Face, error) {
+	const dpi = 72
+	fontFace, err := opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    float64(size),
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		return nil, err
+	}
+	fontFace = text.FaceWithLineHeight(fontFace, float64(size))
+	return fontFace, nil
 }

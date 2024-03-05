@@ -34,7 +34,7 @@ func runMenu() {
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(saveFolder, fonts.Default, func(name string, load bool) {
+	ui := menu.NewUI(saveFolder, &fonts, func(name string, load bool) {
 		run(&g, name, load)
 	})
 
