@@ -28,8 +28,8 @@ In the toolbar on the right, the top items are **buildings** that can be bought 
 The **natural features** in the lower part appear randomly and are replenished when placed by the player.
 
 * Middle mouse button / mouse wheel: pan and zoom.
-* Space: pause/resume.
-* PageUp/PageDown: speed up / slow down.
+* Space: pause / resume.
+* PageUp / PageDown: speed up / slow down.
 * F11: toggle fullscreen.
 
 Most UI controls have tooltips. Read them carefully!
