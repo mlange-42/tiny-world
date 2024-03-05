@@ -80,10 +80,10 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
-	s.cursorRed = s.sprites.GetIndex(sprites.CursorRed)
-	s.cursorGreen = s.sprites.GetIndex(sprites.CursorGreen)
-	s.cursorBlue = s.sprites.GetIndex(sprites.CursorBlue)
-	s.cursorYellow = s.sprites.GetIndex(sprites.CursorYellow)
+	s.cursorRed = s.sprites.GetIndex(sprites.CursorDenied)
+	s.cursorGreen = s.sprites.GetIndex(sprites.CursorOk)
+	s.cursorBlue = s.sprites.GetIndex(sprites.CursorNeutral)
+	s.cursorYellow = s.sprites.GetIndex(sprites.CursorDestroy)
 	s.warningMarker = s.sprites.GetIndex(sprites.WarningMarker)
 	s.borderInner = s.sprites.GetIndex(sprites.BorderInner)
 	s.borderOuter = s.sprites.GetIndex(sprites.BorderOuter)

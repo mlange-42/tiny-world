@@ -3,25 +3,25 @@
  "sprite_height": 96,
  "sprites": [
   {
-   "id": "cursor_blue",
+   "id": "cursor_denied",
    "index": [
     0
    ]
   },
   {
-   "id": "cursor_green",
+   "id": "cursor_destroy",
    "index": [
     1
    ]
   },
   {
-   "id": "cursor_red",
+   "id": "cursor_neutral",
    "index": [
     2
    ]
   },
   {
-   "id": "cursor_yellow",
+   "id": "cursor_ok",
    "index": [
     3
    ]

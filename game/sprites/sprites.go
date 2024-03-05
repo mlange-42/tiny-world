@@ -4,10 +4,10 @@ const (
 	BorderInner = "border_inner"
 	BorderOuter = "border_outer"
 
-	CursorRed    = "cursor_red"
-	CursorGreen  = "cursor_green"
-	CursorBlue   = "cursor_blue"
-	CursorYellow = "cursor_yellow"
+	CursorDenied  = "cursor_denied"
+	CursorOk      = "cursor_ok"
+	CursorNeutral = "cursor_neutral"
+	CursorDestroy = "cursor_destroy"
 
 	HaulerPrefix = "hauler_"
 
