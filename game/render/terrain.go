@@ -265,7 +265,7 @@ func (s *Terrain) drawCursor(img *ebiten.Image,
 			luNatural := !terr.Properties[lu].TerrainBits.Contains(terr.CanBuy)
 			canBuildHere = canBuildHere &&
 				(lu == terr.Air || (luNatural && canBuy)) &&
-				(!prop.TerrainBits.Contains(terr.CanBuy) || s.buildable.Get(x, y) > 0)
+				(!prop.TerrainBits.Contains(terr.RequiresRange) || s.buildable.Get(x, y) > 0)
 			isDestroy = lu != terr.Air && luNatural && canBuy
 		}
 		s.drawSprite(img, s.terrain, s.landUse, x, y, sel.BuildType, point, height, camOffset,
