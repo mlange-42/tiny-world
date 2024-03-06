@@ -163,23 +163,23 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 		ui.createRandomButton(rules)
 		ui.updateRandomTerrains()
 
-		ui.selection.Reset()
+		ui.ClearSelection()
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
-				ui.selection.SetBuild(bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
+				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
 				break
 			}
 		}
 		return true
 	}
 	if !stock.CanPay(terr.Properties[ui.selection.BuildType].BuildCost) {
-		ui.selection.Reset()
+		ui.ClearSelection()
 	}
 	return false
 }
 
 func (ui *UI) ReplaceAllButtons(rules *Rules) {
-	ui.selection.Reset()
+	ui.ClearSelection()
 	ids := []int{}
 	for id := range ui.randomButtons {
 		ids = append(ids, id)
@@ -633,14 +633,41 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 				widget.ToolTipOpts.Delay(time.Millisecond*300),
 			)),
 		),
+		widget.ButtonOpts.ToggleMode(),
 		widget.ButtonOpts.Image(&bImage),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.selection.SetBuild(terrain, id, randSpriteVal, allowRemove)
+			ui.selectTerrain(args.Button, terrain, id, randSpriteVal, allowRemove)
 		}),
 	)
 
 	return button, id
+}
+
+func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, allowRemove bool) {
+	for _, bt := range ui.terrainButtons {
+		if bt != nil {
+			bt.SetState(widget.WidgetUnchecked)
+		}
+	}
+	for _, bt := range ui.randomButtons {
+		bt.Button.SetState(widget.WidgetUnchecked)
+	}
+
+	ui.selection.SetBuild(terrain, id, randSprite, allowRemove)
+	button.SetState(widget.WidgetChecked)
+}
+
+func (ui *UI) ClearSelection() {
+	for _, bt := range ui.terrainButtons {
+		if bt != nil {
+			bt.SetState(widget.WidgetUnchecked)
+		}
+	}
+	for _, bt := range ui.randomButtons {
+		bt.Button.SetState(widget.WidgetUnchecked)
+	}
+	ui.selection.Reset()
 }
 
 func (ui *UI) simpleButtonImage() *widget.ButtonImage {
