@@ -18,6 +18,7 @@ const (
 	IsWarehouse
 	CanBuild
 	CanBuy
+	RequiresRange
 )
 
 type TerrainBits uint16
@@ -169,6 +170,9 @@ func Prepare(f fs.FS, file string) {
 		if t.CanBuy {
 			bits.Set(CanBuy)
 		}
+		if t.RequiresRange {
+			bits.Set(RequiresRange)
+		}
 
 		p := TerrainProps{
 			Name:         t.Name,
@@ -249,6 +253,7 @@ type terrainPropsJs struct {
 	BuildRadius       uint8               `json:"build_radius"`
 	Population        uint8               `json:"population"`
 	BuildOn           []string            `json:"build_on,omitempty"`
+	RequiresRange     bool                `json:"requires_range"`
 	TerrainBelow      string              `json:"terrain_below"`
 	ConnectsTo        []string            `json:"connects_to,omitempty"`
 	CanBuild          bool                `json:"can_build"`
@@ -291,16 +296,6 @@ type populationSupportJs struct {
 	RequiredTerrain string   `json:"required_terrain"`
 	BonusTerrain    []string `json:"bonus_terrain"`
 	MalusTerrain    []string `json:"malus_terrain"`
-}
-
-type Consumption struct {
-	Resource resource.Resource
-	Amount   uint8
-}
-
-type consumptionJs struct {
-	Resource string `json:"resource"`
-	Amount   uint8  `json:"amount"`
 }
 
 type ResourceAmount struct {

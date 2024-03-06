@@ -24,7 +24,6 @@
             "build_on": ["buildable"],
             "connects_to": ["grass", "water", "desert"],
             "can_build": true,
-            "can_buy": false,
             "description": "A basic land tile"
         },
         {
@@ -34,7 +33,6 @@
             "connects_to": ["water"],
             "terrain_below": "grass",
             "can_build": true,
-            "can_buy": false,
             "description": "A land tile with water. Can be used by fisherman"
         },
         {
@@ -44,7 +42,6 @@
             "connects_to": ["desert"],
             "terrain_below": "grass",
             "can_build": true,
-            "can_buy": false,
             "description": "A desert land tile"
         },
 
@@ -97,6 +94,7 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "build_cost": [
                 {"resource": "wood", "amount": 1},
                 {"resource": "stones", "amount": 1}
@@ -108,14 +106,12 @@
             "name": "tree",
             "build_on": ["grass"],
             "can_build": true,
-            "can_buy": false,
             "description": "Can be used by lumberjacks to produce wood"
         },
         {
             "name": "rock",
             "build_on": ["grass", "desert"],
             "can_build": true,
-            "can_buy": false,
             "description": "Can be used by masons to produce stones"
         },
 
@@ -125,6 +121,7 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "population": 1,
@@ -153,6 +150,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "population": 1,
@@ -180,6 +178,7 @@
             "build_on": ["grass"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "population": 1,
@@ -208,6 +207,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "population": 1,
@@ -236,6 +236,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "build_cost": [
@@ -266,6 +267,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["water"],
             "terrain_below": "building_base",
             "build_cost": [
@@ -293,6 +295,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": true,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "build_cost": [
@@ -313,6 +316,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": false,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "population": 1,
@@ -334,6 +338,7 @@
             "build_on": ["grass", "desert"],
             "can_build": true,
             "can_buy": true,
+            "requires_range": false,
             "connects_to": ["path", "bridge"],
             "terrain_below": "building_base",
             "population": 3,

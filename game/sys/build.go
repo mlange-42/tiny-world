@@ -60,7 +60,7 @@ func (s *Build) Update(world *ecs.World) {
 	cursor := view.GlobalToTile(mx, my)
 
 	p := &terr.Properties[sel.BuildType]
-	if p.TerrainBits.Contains(terr.CanBuy) && buildable.Get(cursor.X, cursor.Y) == 0 {
+	if p.TerrainBits.Contains(terr.RequiresRange) && buildable.Get(cursor.X, cursor.Y) == 0 {
 		return
 	}
 
