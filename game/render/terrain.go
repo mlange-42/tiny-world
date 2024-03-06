@@ -393,12 +393,17 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 		var neigh terr.Directions
 		conn := terr.Properties[t].ConnectsTo
 		cursorNear := cursorTerr != terr.Air && math.AbsInt(x-cursorX) <= 1 && math.AbsInt(y-cursorY) <= 1
-		if cursorNear && terr.Properties[cursorTerr].TerrainBits.Contains(terr.IsTerrain) {
-			neigh = terrain.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr) |
-				landUse.NeighborsMaskMulti(x, y, conn)
+		if cursorNear {
+			if terr.Properties[cursorTerr].TerrainBits.Contains(terr.IsTerrain) {
+				neigh = terrain.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr) |
+					landUse.NeighborsMaskMulti(x, y, conn)
+			} else {
+				neigh = terrain.NeighborsMaskMulti(x, y, conn) |
+					landUse.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr)
+			}
 		} else {
 			neigh = terrain.NeighborsMaskMulti(x, y, conn) |
-				landUse.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr)
+				landUse.NeighborsMaskMulti(x, y, conn)
 		}
 
 		mIdx := s.sprites.GetMultiTileTerrainIndex(t, neigh, int(s.time.Tick), int(randSprite.GetRand()))
