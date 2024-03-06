@@ -7,8 +7,8 @@ import (
 type View struct {
 	TileWidth, TileHeight int
 	X, Y                  int
-	Zoom                  float64
 	MouseOffset           int
+	Zoom                  float64
 }
 
 func NewView(tileWidth, tileHeight int) View {

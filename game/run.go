@@ -145,7 +145,10 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	g.Model.AddSystem(&sys.AssignHaulers{})
 
 	g.Model.AddSystem(&sys.PanAndZoom{
-		PanButton: ebiten.MouseButton1,
+		PanButton:        ebiten.MouseButton1,
+		KeyboardPanSpeed: 4,
+		MinZoom:          0.25,
+		MaxZoom:          4,
 	})
 
 	g.Model.AddSystem(&sys.UpdateUI{})
