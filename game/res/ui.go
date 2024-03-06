@@ -400,7 +400,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
 	for i := range resource.Properties {
 		cont, lab := ui.createLabel(resource.Properties[i].Short,
-			fmt.Sprintf("%s: +prod -cons (stock / max).", util.Capitalize(resource.Properties[i].Name)), 130)
+			fmt.Sprintf("%s: +production -consumption (stock / max).", util.Capitalize(resource.Properties[i].Name)), 130)
 		infoContainer.AddChild(cont)
 		ui.resourceLabels[i] = lab
 	}
