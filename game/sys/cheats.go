@@ -26,6 +26,7 @@ func (s *Cheats) Initialize(world *ecs.World) {
 func (s *Cheats) Update(world *ecs.World) {
 	if ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		ebiten.IsKeyPressed(ebiten.KeyControl) &&
+		ebiten.IsKeyPressed(ebiten.KeyAlt) &&
 		inpututil.IsKeyJustPressed(ebiten.KeyR) {
 
 		stock := s.stock.Get()
@@ -35,6 +36,7 @@ func (s *Cheats) Update(world *ecs.World) {
 
 	if ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		ebiten.IsKeyPressed(ebiten.KeyControl) &&
+		ebiten.IsKeyPressed(ebiten.KeyAlt) &&
 		inpututil.IsKeyJustPressed(ebiten.KeyN) {
 
 		ui := s.ui.Get()
