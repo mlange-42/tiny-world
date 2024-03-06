@@ -48,12 +48,16 @@ func (s *Build) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Build) Update(world *ecs.World) {
+	ui := s.ui.Get()
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
+		ui.ClearSelection()
+		return
+	}
 	if s.checkAbort() {
 		return
 	}
 	buildable := s.buildable.Get()
 	sel := s.selection.Get()
-	ui := s.ui.Get()
 	view := s.view.Get()
 	x, y := ebiten.CursorPosition()
 	mx, my := view.ScreenToGlobal(x, y)
@@ -127,24 +131,15 @@ func (s *Build) Update(world *ecs.World) {
 func (s *Build) Finalize(world *ecs.World) {}
 
 func (s *Build) checkAbort() bool {
-	sel := s.selection.Get()
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		sel.Reset()
+	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
 		return true
 	}
+
+	sel := s.selection.Get()
 
 	ui := s.ui.Get()
 	x, y := ebiten.CursorPosition()
 	if ui.MouseInside(x, y) {
-		return true
-	}
-
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
-		sel.Reset()
-		return true
-	}
-	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
 		return true
 	}
 
