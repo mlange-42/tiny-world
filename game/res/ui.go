@@ -28,6 +28,7 @@ type randomButton struct {
 	RandomSprite uint16
 	AllowRemove  bool
 	Button       *widget.Button
+	Index        int
 }
 
 type UI struct {
@@ -44,6 +45,7 @@ type UI struct {
 	buttonImages           []widget.ButtonImage
 	buttonTooltip          []string
 	randomButtonsContainer *widget.Container
+	randomContainers       []*widget.Container
 	randomButtons          map[int]randomButton
 	mouseBlockers          []*widget.Container
 
@@ -143,24 +145,24 @@ func NewUI(selection *Selection, font font.Face, sprts *Sprites, save *SaveEvent
 	return ui
 }
 
-func (ui *UI) createRandomButton(rules *Rules) {
+func (ui *UI) createRandomButton(rules *Rules, index int) {
 	t := rules.RandomTerrains[rand.Intn(len(rules.RandomTerrains))]
 	randSprite := uint16(rand.Int31n(math.MaxUint16))
 	allowRemove := terr.Properties[t].TerrainBits.Contains(terr.IsTerrain) &&
 		rand.Float64() < rules.SpecialCardProbability
 
 	button, id := ui.createButton(t, allowRemove, randSprite)
-	ui.randomButtonsContainer.AddChild(button)
-	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button}
+	ui.randomContainers[index].AddChild(button)
+	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button, index}
 }
 
 func (ui *UI) ReplaceButton(stock *Stock, rules *Rules) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
-		ui.randomButtonsContainer.RemoveChild(bt.Button)
+		ui.randomContainers[bt.Index].RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
 
-		ui.createRandomButton(rules)
+		ui.createRandomButton(rules, bt.Index)
 		ui.updateRandomTerrains()
 
 		ui.ClearSelection()
@@ -186,10 +188,10 @@ func (ui *UI) ReplaceAllButtons(rules *Rules) {
 	}
 	for _, id := range ids {
 		bt := ui.randomButtons[id]
-		ui.randomButtonsContainer.RemoveChild(bt.Button)
+		ui.randomContainers[bt.Index].RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
 
-		ui.createRandomButton(rules)
+		ui.createRandomButton(rules, bt.Index)
 		ui.updateRandomTerrains()
 	}
 }
@@ -282,20 +284,31 @@ func (ui *UI) createUI() *widget.Container {
 }
 
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
+	ui.randomContainers = make([]*widget.Container, randomTerrains)
 	if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
 			button, id := ui.createButton(terr.Default, false, randSprite)
-			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{terr.Default, randSprite, false, button}
+
+			container := widget.NewContainer(widget.ContainerOpts.Layout(
+				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
+			container.AddChild(button)
+			ui.randomContainers[i] = container
+			ui.randomButtonsContainer.AddChild(container)
+			ui.randomButtons[id] = randomButton{terr.Default, randSprite, false, button, i}
 		}
 		ui.updateRandomTerrains()
 	} else {
-		for _, t := range ui.RandomTerrains {
+		for i, t := range ui.RandomTerrains {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
 			button, id := ui.createButton(t.Terrain, t.AllowRemove, randSprite)
-			ui.randomButtonsContainer.AddChild(button)
-			ui.randomButtons[id] = randomButton{t.Terrain, randSprite, t.AllowRemove, button}
+
+			container := widget.NewContainer(widget.ContainerOpts.Layout(
+				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
+			container.AddChild(button)
+			ui.randomContainers[i] = container
+			ui.randomButtonsContainer.AddChild(container)
+			ui.randomButtons[id] = randomButton{t.Terrain, randSprite, t.AllowRemove, button, i}
 		}
 	}
 }
