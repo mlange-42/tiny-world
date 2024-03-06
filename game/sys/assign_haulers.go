@@ -8,12 +8,14 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // AssignHaulers system.
 type AssignHaulers struct {
 	speed    generic.Resource[res.GameSpeed]
 	update   generic.Resource[res.UpdateInterval]
+	landUse  generic.Resource[res.LandUse]
 	landUseE generic.Resource[res.LandUseEntities]
 
 	haulerFilter generic.Filter1[comp.Hauler]
@@ -30,6 +32,7 @@ type AssignHaulers struct {
 func (s *AssignHaulers) Initialize(world *ecs.World) {
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
+	s.landUse = generic.NewResource[res.LandUse](world)
 	s.landUseE = generic.NewResource[res.LandUseEntities](world)
 
 	s.haulerFilter = *generic.NewFilter1[comp.Hauler]()
@@ -47,6 +50,7 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 	}
 
 	update := s.update.Get()
+	landUse := s.landUse.Get()
 	landUseE := s.landUseE.Get()
 
 	pathQuery := s.pathFilter.Query(world)
@@ -69,11 +73,12 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 
 		xx, yy := int(x+0.5), int(y+0.5)
 
-		pathHere := landUseE.Get(xx, yy)
-		if pathHere.IsZero() {
+		lu := landUse.Get(xx, yy)
+		if !terr.Properties[lu].TerrainBits.Contains(terr.IsPath) {
 			s.toRemove = append(s.toRemove, haulerQuery.Entity())
 			continue
 		}
+		pathHere := landUseE.Get(xx, yy)
 		path := s.pathMapper.Get(pathHere)
 
 		path.Haulers = append(path.Haulers, comp.HaulerEntry{Entity: haulerQuery.Entity(), YPos: yPos})
