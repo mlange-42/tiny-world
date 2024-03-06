@@ -392,7 +392,8 @@ func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *r
 	if info.IsMultitile() {
 		var neigh terr.Directions
 		conn := terr.Properties[t].ConnectsTo
-		cursorNear := cursorTerr != terr.Air && math.AbsInt(x-cursorX) <= 1 && math.AbsInt(y-cursorY) <= 1
+		cursorNear := terr.Properties[cursorTerr].TerrainBits.Contains(terr.CanBuild) &&
+			math.AbsInt(x-cursorX) <= 1 && math.AbsInt(y-cursorY) <= 1
 		if cursorNear {
 			if terr.Properties[cursorTerr].TerrainBits.Contains(terr.IsTerrain) {
 				neigh = terrain.NeighborsMaskMultiReplace(x, y, conn, cursorX, cursorY, cursorTerr) |
