@@ -3,7 +3,6 @@ package res
 import (
 	"fmt"
 	stdimage "image"
-	"image/color"
 	"math"
 	"math/rand"
 	"strings"
@@ -13,7 +12,6 @@ import (
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
@@ -49,7 +47,12 @@ type UI struct {
 	randomButtons          map[int]randomButton
 	mouseBlockers          []*widget.Container
 
-	markerSprite      int
+	specialCardSprite    int
+	buttonIdleSprite     int
+	buttonHoverSprite    int
+	buttonPressedSprite  int
+	buttonDisabledSprite int
+
 	background        *image.NineSlice
 	backgroundHover   *image.NineSlice
 	backgroundPressed *image.NineSlice
@@ -57,6 +60,8 @@ type UI struct {
 	selection *Selection
 	font      font.Face
 	idPool    util.IntPool[int]
+
+	buttonSize stdimage.Point
 }
 
 type RandomTerrain struct {
@@ -107,10 +112,17 @@ func NewUI(selection *Selection, font font.Face, sprts *Sprites, save *SaveEvent
 		idPool:        util.NewIntPool[int](8),
 		sprites:       sprts,
 		saveEvent:     save,
-		markerSprite:  sprts.GetIndex(sprites.SpecialCardMarker),
-	}
 
-	sp := ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanel))
+		specialCardSprite:    sprts.GetIndex(sprites.SpecialCardMarker),
+		buttonIdleSprite:     sprts.GetIndex(sprites.Button),
+		buttonHoverSprite:    sprts.GetIndex(sprites.ButtonHover),
+		buttonPressedSprite:  sprts.GetIndex(sprites.ButtonPressed),
+		buttonDisabledSprite: sprts.GetIndex(sprites.ButtonDisabled),
+	}
+	sp := ui.sprites.Get(ui.buttonIdleSprite)
+	ui.buttonSize = sp.Bounds().Max
+
+	sp = ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanel))
 	w := sp.Bounds().Dx()
 	ui.background = image.NewNineSliceSimple(sp, w/4, w/2)
 
@@ -552,8 +564,9 @@ func (ui *UI) resourcesToString(res []uint8) string {
 func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove bool) widget.ButtonImage {
 	props := &terr.Properties[t]
 
-	tileWidth := ui.sprites.TileWidth
-	img := ebiten.NewImage(tileWidth, tileWidth)
+	xOff := (ui.buttonSize.X - ui.sprites.TileWidth) / 2
+	yOff := (ui.buttonSize.Y - ui.sprites.TileWidth) / 2
+	img := ebiten.NewImage(ui.buttonSize.X, ui.buttonSize.Y)
 	idx := ui.sprites.GetTerrainIndex(terr.Terrain(t))
 
 	height := 0
@@ -564,7 +577,7 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 
 		sp2 := ui.sprites.Get(idx2)
 		op := ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, float64(tileWidth-sp2.Bounds().Dy()))
+		op.GeoM.Translate(float64(xOff), float64(ui.buttonSize.X-sp2.Bounds().Dy()-yOff))
 		img.DrawImage(sp2, &op)
 
 		height = info2.Height
@@ -572,31 +585,40 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 
 	sp1 := ui.sprites.GetRand(idx, 0, int(randSprite))
 	op := ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, float64(tileWidth-sp1.Bounds().Dy()-height))
+	op.GeoM.Translate(float64(xOff), float64(ui.buttonSize.X-sp1.Bounds().Dy()-height-yOff))
 	img.DrawImage(sp1, &op)
 
 	if allowRemove {
-		marker := ui.sprites.Get(ui.markerSprite)
+		marker := ui.sprites.Get(ui.specialCardSprite)
 		op := ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, float64(tileWidth-marker.Bounds().Dy()))
+		op.GeoM.Translate(float64(xOff), float64(ui.buttonSize.X-marker.Bounds().Dy()-yOff))
 		img.DrawImage(marker, &op)
 	}
 
-	slice := image.NewNineSlice(img, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
+	op = ebiten.DrawImageOptions{}
+	idle := ebiten.NewImageFromImage(img)
+	button := ui.sprites.Get(ui.buttonIdleSprite)
+	idle.DrawImage(button, &op)
+	sliceIdle := image.NewNineSlice(idle, [3]int{ui.buttonSize.X, 0, 0}, [3]int{ui.buttonSize.Y, 0, 0})
+
+	hover := ebiten.NewImageFromImage(img)
+	button = ui.sprites.Get(ui.buttonPressedSprite)
+	hover.DrawImage(button, &op)
+	sliceHover := image.NewNineSlice(hover, [3]int{ui.buttonSize.X, 0, 0}, [3]int{ui.buttonSize.Y, 0, 0})
 
 	pressed := ebiten.NewImageFromImage(img)
-	vector.DrawFilledRect(pressed, 0, 0,
-		float32(img.Bounds().Dx()), float32(img.Bounds().Dy()),
-		color.RGBA{0, 0, 0, 80}, false)
-	slicePressed := image.NewNineSlice(pressed, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
+	button = ui.sprites.Get(ui.buttonPressedSprite)
+	pressed.DrawImage(button, &op)
+	slicePressed := image.NewNineSlice(pressed, [3]int{ui.buttonSize.X, 0, 0}, [3]int{ui.buttonSize.Y, 0, 0})
 
 	disabled := ebiten.NewImageFromImage(img)
-	vector.StrokeLine(disabled, 0, 0, float32(img.Bounds().Dx()), float32(img.Bounds().Dy()), 6, color.RGBA{120, 0, 0, 160}, false)
-	sliceDisabled := image.NewNineSlice(disabled, [3]int{tileWidth, 0, 0}, [3]int{tileWidth, 0, 0})
+	button = ui.sprites.Get(ui.buttonDisabledSprite)
+	disabled.DrawImage(button, &op)
+	sliceDisabled := image.NewNineSlice(disabled, [3]int{ui.buttonSize.X, 0, 0}, [3]int{ui.buttonSize.Y, 0, 0})
 
 	return widget.ButtonImage{
-		Idle:     slice,
-		Hover:    slicePressed,
+		Idle:     sliceIdle,
+		Hover:    sliceHover,
 		Pressed:  slicePressed,
 		Disabled: sliceDisabled,
 	}

@@ -1,0 +1,31 @@
+{
+ "sprite_width": 52,
+ "sprite_height": 52,
+ "sprites": [
+  {
+   "id": "button",
+   "index": [
+    0
+   ]
+  },
+  {
+   "id": "button_hover",
+   "index": [
+    1
+   ]
+  },
+  {
+   "id": "button_pressed",
+   "index": [
+    1
+   ]
+  },
+  {
+   "id": "button_disabled",
+   "index": [
+    2
+   ]
+  }
+ ],
+ "total_sprites": 3
+}
