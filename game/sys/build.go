@@ -1,6 +1,8 @@
 package sys
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
@@ -12,6 +14,7 @@ import (
 
 // Build system.
 type Build struct {
+	time            generic.Resource[res.GameTick]
 	rules           generic.Resource[res.Rules]
 	view            generic.Resource[res.View]
 	terrain         generic.Resource[res.Terrain]
@@ -30,6 +33,7 @@ type Build struct {
 
 // Initialize the system
 func (s *Build) Initialize(world *ecs.World) {
+	s.time = generic.NewResource[res.GameTick](world)
 	s.rules = generic.NewResource[res.Rules](world)
 	s.view = generic.NewResource[res.View](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
@@ -85,7 +89,7 @@ func (s *Build) Update(world *ecs.World) {
 			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
 			stock.Pay(p.BuildCost)
-			ui.ReplaceButton(stock, rules)
+			ui.ReplaceButton(stock, rules, s.time.Get().Tick, image.Pt(x, y))
 		}
 		return
 	}
@@ -124,7 +128,7 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	stock.Pay(p.BuildCost)
-	ui.ReplaceButton(stock, rules)
+	ui.ReplaceButton(stock, rules, s.time.Get().Tick, image.Pt(x, y))
 }
 
 // Finalize the system
