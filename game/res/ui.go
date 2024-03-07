@@ -193,10 +193,18 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, tick int64, target stdim
 		ui.updateRandomTerrains()
 
 		ui.ClearSelection()
+		// Try at the same index first
+		for id2, bt2 := range ui.randomButtons {
+			if bt2.Index == bt.Index && bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
+				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
+				return true
+			}
+		}
+		// Try to find any
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
 				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
-				break
+				return true
 			}
 		}
 		return true
