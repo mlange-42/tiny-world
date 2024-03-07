@@ -28,6 +28,8 @@ This game is about building a settlement, while building the world itself at the
 `
 const helpTooltipWidth = 720
 
+const saveTooltipText = "Save game to disk or local browser storage."
+
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
 
 type randomButton struct {
@@ -430,12 +432,33 @@ func (ui *UI) createMenu() *widget.Container {
 		),
 	)
 
+	saveTooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	saveLabel := widget.NewText(
+		widget.TextOpts.Text(saveTooltipText, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(360),
+	)
+	saveTooltipContainer.AddChild(saveLabel)
+
 	saveButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
 				Stretch:  false,
 			}),
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(saveTooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
 		widget.ButtonOpts.Text("Save", ui.font, &widget.ButtonTextColor{
@@ -447,7 +470,7 @@ func (ui *UI) createMenu() *widget.Container {
 		}),
 	)
 
-	tooltipContainer := widget.NewContainer(
+	helpTooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
@@ -455,17 +478,17 @@ func (ui *UI) createMenu() *widget.Container {
 		widget.ContainerOpts.AutoDisableChildren(),
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
-	label := widget.NewText(
+	helpLabel := widget.NewText(
 		widget.TextOpts.Text(helpText, ui.font, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(helpTooltipWidth),
 	)
-	tooltipContainer.AddChild(label)
+	helpTooltipContainer.AddChild(helpLabel)
 
 	helpButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.ToolTip(widget.NewToolTip(
-				widget.ToolTipOpts.Content(tooltipContainer),
+				widget.ToolTipOpts.Content(helpTooltipContainer),
 				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
 				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
 				widget.ToolTipOpts.Delay(time.Millisecond*300),

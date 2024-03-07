@@ -35,4 +35,4 @@ The **natural features** in the lower part appear randomly and are replenished w
 * Game speed: PageUp / PageDown
 * Toggle fullscreen: F11
 
-Most UI controls have tooltips. Read them carefully!
+All UI controls have tooltips. Read them carefully!
