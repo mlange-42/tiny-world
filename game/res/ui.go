@@ -150,7 +150,7 @@ func NewUI(world *ecs.World, selection *Selection, font font.Face, sprts *Sprite
 		)),
 	)
 
-	hudContainer := ui.createHUD(font)
+	hudContainer := ui.createHUD()
 	rootContainer.AddChild(hudContainer)
 
 	uiContainer := ui.createUI()
@@ -355,7 +355,7 @@ func (ui *UI) updateRandomTerrains() {
 	}
 }
 
-func (ui *UI) createHUD(font font.Face) *widget.Container {
+func (ui *UI) createHUD() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 		widget.ContainerOpts.WidgetOpts(
@@ -406,7 +406,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 			}),
 		),
 		widget.ButtonOpts.Image(ui.simpleButtonImage()),
-		widget.ButtonOpts.Text("Save", font, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Save", ui.font, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
