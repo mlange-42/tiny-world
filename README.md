@@ -5,7 +5,7 @@ A tiny, slow-paced world and colony building game.
 Made with [Arche](https://github.com/mlange-42/arche) and [Ebitengine](https://github.com/hajimehoshi/ebiten).
 
 <div align="center" width="100%">
-<img alt="Tiny World screenshot" src="https://github.com/mlange-42/tiny-world/assets/44003176/fdd95c02-5445-4c56-bc20-a225ae13c2a7"></img>
+<img alt="Tiny World screenshot" src="https://github.com/mlange-42/tiny-world/assets/44003176/139936a8-0aaf-4225-bf37-da55caac7ec4"></img>
 </div>
 
 ## Usage
