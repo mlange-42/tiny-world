@@ -22,6 +22,12 @@ import (
 	"golang.org/x/image/font"
 )
 
+const helpText = `Tiny World Help
+
+This game is about building a settlement, while building the world itself at the same time.
+`
+const helpTooltipWidth = 720
+
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
 
 type randomButton struct {
@@ -441,12 +447,29 @@ func (ui *UI) createMenu() *widget.Container {
 		}),
 	)
 
+	tooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	label := widget.NewText(
+		widget.TextOpts.Text(helpText, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(helpTooltipWidth),
+	)
+	tooltipContainer.AddChild(label)
+
 	helpButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  false,
-			}),
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(tooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
 		),
 		widget.ButtonOpts.Image(ui.nonButtonImage()),
 		widget.ButtonOpts.Text("?", ui.font, &widget.ButtonTextColor{
