@@ -22,4 +22,9 @@ const (
 	UiPanel        = "ui_panel"
 	UiPanelHover   = "ui_panel_hover"
 	UiPanelPressed = "ui_panel_pressed"
+
+	Button         = "button"
+	ButtonHover    = "button_hover"
+	ButtonPressed  = "button_pressed"
+	ButtonDisabled = "button_disabled"
 )

@@ -1,0 +1,18 @@
+[
+    {
+        "id": "button",
+        "file": ["button"]
+    },
+    {
+        "id": "button_hover",
+        "file": ["button_pressed"]
+    },
+    {
+        "id": "button_pressed",
+        "file": ["button_pressed"]
+    },
+    {
+        "id": "button_disabled",
+        "file": ["button_disabled"]
+    }
+]
