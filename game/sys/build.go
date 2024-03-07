@@ -89,7 +89,7 @@ func (s *Build) Update(world *ecs.World) {
 			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
 			stock.Pay(p.BuildCost)
-			ui.ReplaceButton(stock, rules, s.time.Get().Tick, image.Pt(x, y))
+			ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
 		}
 		return
 	}
@@ -128,7 +128,7 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	stock.Pay(p.BuildCost)
-	ui.ReplaceButton(stock, rules, s.time.Get().Tick, image.Pt(x, y))
+	ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
 }
 
 // Finalize the system

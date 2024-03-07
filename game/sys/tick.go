@@ -20,11 +20,10 @@ func (s *Tick) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Tick) Update(world *ecs.World) {
-	if s.speed.Get().Pause {
-		return
+	s.time.Get().RenderTick++
+	if !s.speed.Get().Pause {
+		s.time.Get().Tick++
 	}
-
-	s.time.Get().Tick++
 }
 
 // Finalize the system

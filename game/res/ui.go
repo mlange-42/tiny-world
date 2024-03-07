@@ -175,7 +175,7 @@ func (ui *UI) createRandomButton(rules *Rules, index int) {
 	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button, index}
 }
 
-func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, tick int64, target stdimage.Point) bool {
+func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target stdimage.Point) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
 		ui.animMapper.NewWith(&comp.CardAnimation{
@@ -183,7 +183,7 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, tick int64, target stdim
 			Target:     target,
 			Terrain:    bt.Terrain,
 			RandSprite: bt.RandomSprite,
-			StartTick:  tick,
+			StartTick:  renderTick,
 		})
 
 		ui.randomContainers[bt.Index].RemoveChild(bt.Button)
