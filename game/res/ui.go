@@ -382,6 +382,32 @@ func (ui *UI) createHUD() *widget.Container {
 		),
 	)
 
+	menu := ui.createMenu()
+
+	innerAnchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
+	info := ui.createInfo()
+	innerAnchor.AddChild(info)
+
+	topBar.AddChild(menu)
+	topBar.AddChild(innerAnchor)
+
+	anchor.AddChild(topBar)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, info, menu)
+
+	return anchor
+}
+
+func (ui *UI) createMenu() *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -415,17 +441,9 @@ func (ui *UI) createHUD() *widget.Container {
 		}),
 	)
 	menuContainer.AddChild(saveButton)
-
-	innerAnchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
-		),
-	)
-
+	return menuContainer
+}
+func (ui *UI) createInfo() *widget.Container {
 	infoContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -460,14 +478,7 @@ func (ui *UI) createHUD() *widget.Container {
 	infoContainer.AddChild(cont)
 	ui.timerLabel = lab
 
-	topBar.AddChild(menuContainer)
-	topBar.AddChild(innerAnchor)
-	innerAnchor.AddChild(infoContainer)
-	anchor.AddChild(topBar)
-
-	ui.mouseBlockers = append(ui.mouseBlockers, infoContainer, menuContainer)
-
-	return anchor
+	return infoContainer
 }
 
 func (ui *UI) createLabel(text, tooltip string, width int) (*widget.Container, *widget.Text) {
