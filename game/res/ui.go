@@ -25,6 +25,16 @@ import (
 const helpText = `Tiny World Help
 
 This game is about building a settlement, while building the world itself at the same time.
+
+The toolbar at the right contains buildings (top) and natural features (bottom).
+
+Buildings can be built from the resources wood and stores. Most buildings require food to operate, and some require wood or stones for maintenance.
+
+The natural features in the bottom part can be placed for free, but are used up by placement. They are replenished randomly. Special tiles with a star can be placed over existing terrain, while normal tiles can only be added at the edges of your world.
+
+Your resource production, consumption, stock and capacity are displayed in the info bar at the top.
+
+For further information, see the tooltips of the individual buildings and natural features.
 `
 const helpTooltipWidth = 720
 
@@ -482,6 +492,7 @@ func (ui *UI) createMenu() *widget.Container {
 		widget.TextOpts.Text(helpText, ui.font, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(helpTooltipWidth),
+		widget.TextOpts.ProcessBBCode(true),
 	)
 	helpTooltipContainer.AddChild(helpLabel)
 
