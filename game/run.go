@@ -116,7 +116,7 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	fonts := res.NewFonts(gameData)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&selection, fonts.Default, &sprites, &saveEvent)
+	ui := res.NewUI(&g.Model.World, &selection, fonts.Default, &sprites, &saveEvent)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	factory := res.NewEntityFactory(&g.Model.World)
@@ -174,6 +174,10 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 		Duration:  TPS,
 	})
 	g.Model.AddUISystem(&render.UI{})
+	g.Model.AddUISystem(&render.CardAnimation{
+		MaxOffset: 200,
+		Duration:  TPS / 4,
+	})
 
 	// =========== Load game ===========
 	if loadGame {

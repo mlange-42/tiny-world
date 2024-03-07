@@ -84,3 +84,11 @@ func (r *RandomSprite) GetRand() uint16 {
 type BuildRadius struct {
 	Radius uint8
 }
+
+type CardAnimation struct {
+	image.Point
+	Target     image.Point
+	Terrain    terr.Terrain
+	RandSprite uint16
+	StartTick  int64
+}

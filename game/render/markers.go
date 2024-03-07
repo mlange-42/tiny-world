@@ -62,7 +62,7 @@ func (s *Markers) UpdateUI(world *ecs.World) {
 
 	halfWidth := view.TileWidth / 2
 
-	drawCursor := func(point *image.Point, cursor int) {
+	drawSprite := func(point *image.Point, cursor int) {
 		info := sprites.GetInfo(cursor)
 		sp := sprites.Get(cursor)
 		h := sp.Bounds().Dy() - view.TileHeight
@@ -86,7 +86,7 @@ func (s *Markers) UpdateUI(world *ecs.World) {
 		passed := tick - mark.StartTick
 		off := s.MinOffset + (s.MaxOffset-s.MinOffset)*int(passed)/s.Duration
 		point.Y -= off
-		drawCursor(&point, s.resources[mark.Resource])
+		drawSprite(&point, s.resources[mark.Resource])
 	}
 }
 
