@@ -39,7 +39,7 @@ func (s *CardAnimation) InitializeUI(world *ecs.World) {
 
 // UpdateUI the system
 func (s *CardAnimation) UpdateUI(world *ecs.World) {
-	tick := s.time.Get().Tick
+	tick := s.time.Get().RenderTick
 	sprites := s.sprites.Get()
 	canvas := s.screen.Get()
 	img := canvas.Image

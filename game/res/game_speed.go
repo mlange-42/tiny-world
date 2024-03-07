@@ -8,5 +8,6 @@ type GameSpeed struct {
 }
 
 type GameTick struct {
-	Tick int64
+	Tick       int64
+	RenderTick int64
 }
