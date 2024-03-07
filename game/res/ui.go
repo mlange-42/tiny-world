@@ -431,7 +431,7 @@ func (ui *UI) createMenu() *widget.Container {
 				Stretch:  false,
 			}),
 		),
-		widget.ButtonOpts.Image(ui.simpleButtonImage()),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
 		widget.ButtonOpts.Text("Save", ui.font, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
@@ -440,7 +440,26 @@ func (ui *UI) createMenu() *widget.Container {
 			ui.saveEvent.ShouldSave = true
 		}),
 	)
+
+	helpButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  false,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.nonButtonImage()),
+		widget.ButtonOpts.Text("?", ui.font, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+
+		}),
+	)
+
 	menuContainer.AddChild(saveButton)
+	menuContainer.AddChild(helpButton)
 	return menuContainer
 }
 func (ui *UI) createInfo() *widget.Container {
@@ -739,10 +758,18 @@ func (ui *UI) ClearSelection() {
 	ui.selection.Reset()
 }
 
-func (ui *UI) simpleButtonImage() *widget.ButtonImage {
+func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	return &widget.ButtonImage{
 		Idle:    ui.background,
 		Hover:   ui.backgroundHover,
 		Pressed: ui.backgroundPressed,
+	}
+}
+
+func (ui *UI) nonButtonImage() *widget.ButtonImage {
+	return &widget.ButtonImage{
+		Idle:    ui.background,
+		Hover:   ui.background,
+		Pressed: ui.background,
 	}
 }
