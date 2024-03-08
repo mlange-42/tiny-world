@@ -2,6 +2,7 @@ package sys
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/mlange-42/arche/ecs"
@@ -20,6 +21,7 @@ type UpdateStats struct {
 	stock      generic.Resource[res.Stock]
 	ui         generic.Resource[res.UI]
 	tick       generic.Resource[res.GameTick]
+	speed      generic.Resource[res.GameSpeed]
 	interval   generic.Resource[res.UpdateInterval]
 
 	prodFilter              generic.Filter1[comp.Production]
@@ -36,6 +38,7 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.stock = generic.NewResource[res.Stock](world)
 	s.ui = generic.NewResource[res.UI](world)
 	s.tick = generic.NewResource[res.GameTick](world)
+	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.interval = generic.NewResource[res.UpdateInterval](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
@@ -53,6 +56,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	stock := s.stock.Get()
 	production.Reset()
 	tick := s.tick.Get().Tick
+	speed := s.speed.Get()
 	interval := s.interval.Get().Interval
 
 	prodQuery := s.prodFilter.Query(world)
@@ -106,6 +110,15 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	secs := tick / interval
 	duration := time.Duration(secs) * time.Second
 	ui.SetTimerLabel(util.FormatDuration(duration))
+	speedStr := "P"
+	if !speed.Pause {
+		if speed.Speed >= 0 {
+			speedStr = fmt.Sprintf("x%d", int(math.Pow(2, float64(speed.Speed))))
+		} else {
+			speedStr = fmt.Sprintf("x1/%d", int(1/math.Pow(2, float64(speed.Speed))))
+		}
+	}
+	ui.SetSpeedLabel(speedStr)
 
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
