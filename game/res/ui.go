@@ -28,7 +28,7 @@ This game is about building a settlement, while building the world itself at the
 
 The toolbar at the right contains buildings (top) and natural features (bottom).
 
-Buildings can be built from the resources wood and stores. Most buildings require food to operate, and some require wood or stones for maintenance.
+Buildings can be built from the resources wood and stones. Most buildings require food to operate, and some require wood or stones for maintenance.
 
 The natural features in the bottom part can be placed for free, but are used up by placement. They are replenished randomly. Special tiles with a star can be placed over existing terrain, while normal tiles can only be added at the edges of your world.
 
