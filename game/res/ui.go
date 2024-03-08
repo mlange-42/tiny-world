@@ -41,7 +41,14 @@ const helpText = "Tiny World Help" +
 	"as well as current and maximum storage. " +
 	"For population buildings, indicators show current and maximum supported population." +
 	"\n\n" +
-	"For further information, see the tooltips of the individual buildings and natural features."
+	"For further information, see the tooltips of the individual buildings and natural features." +
+	"\n\n" +
+	"Controls:\n" +
+	" - Pan: Arrows, WASD or middle mouse button\n" +
+	" - Zoom: +/- or mouse wheel\n" +
+	" - Pause/resume: Space\n" +
+	" - Game speed: PageUp / PageDown\n" +
+	" - Toggle fullscreen: F11"
 
 const helpTooltipWidth = 760
 
@@ -66,6 +73,7 @@ type UI struct {
 	resourceLabels  []*widget.Text
 	populationLabel *widget.Text
 	timerLabel      *widget.Text
+	speedLabel      *widget.Text
 	terrainButtons  []*widget.Button
 
 	animMapper generic.Map1[comp.CardAnimation]
@@ -113,6 +121,10 @@ func (ui *UI) SetPopulationLabel(text string) {
 
 func (ui *UI) SetTimerLabel(text string) {
 	ui.timerLabel.Label = text
+}
+
+func (ui *UI) SetSpeedLabel(text string) {
+	ui.speedLabel.Label = text
 }
 
 func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
@@ -549,22 +561,26 @@ func (ui *UI) createInfo() *widget.Container {
 	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
 	for i := range resource.Properties {
 		cont, lab := ui.createLabel(resource.Properties[i].Short,
-			fmt.Sprintf("%s:\n   +production -consumption\n   (stock / max)", util.Capitalize(resource.Properties[i].Name)), 130)
+			fmt.Sprintf("%s:\n   +production -consumption\n   (stock / max)", util.Capitalize(resource.Properties[i].Name)), 130, widget.TextPositionStart)
 		infoContainer.AddChild(cont)
 		ui.resourceLabels[i] = lab
 	}
-	cont, lab := ui.createLabel("Pop", "Population: current/max", 50)
+	cont, lab := ui.createLabel("Pop", "Population: current/max", 50, widget.TextPositionStart)
 	infoContainer.AddChild(cont)
 	ui.populationLabel = lab
 
-	cont, lab = ui.createLabel("", "Total game time", 40)
+	cont, lab = ui.createLabel("", "Total game time.", 30, widget.TextPositionEnd)
 	infoContainer.AddChild(cont)
 	ui.timerLabel = lab
+
+	cont, lab = ui.createLabel("", "Game speed.\nControl with PageUp/PageDown/Space.", 35, widget.TextPositionEnd)
+	infoContainer.AddChild(cont)
+	ui.speedLabel = lab
 
 	return infoContainer
 }
 
-func (ui *UI) createLabel(text, tooltip string, width int) (*widget.Container, *widget.Text) {
+func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosition) (*widget.Container, *widget.Text) {
 	tooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -606,7 +622,7 @@ func (ui *UI) createLabel(text, tooltip string, width int) (*widget.Container, *
 			widget.WidgetOpts.MinSize(width, 0),
 		),
 		widget.TextOpts.Text("", ui.font, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.Position(align, widget.TextPositionCenter),
 	)
 	cont.AddChild(counter)
 
