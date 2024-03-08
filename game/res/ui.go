@@ -5,7 +5,6 @@ import (
 	stdimage "image"
 	"math"
 	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/ebitenui/ebitenui"
@@ -21,6 +20,32 @@ import (
 	"github.com/mlange-42/tiny-world/game/util"
 	"golang.org/x/image/font"
 )
+
+const helpText = "Tiny World Help" +
+	"\n\n" +
+	"This game is about building a settlement, while building the world itself at the same time." +
+	"\n\n" +
+	"The toolbar at the right contains buildings (top) and natural features (bottom)." +
+	"\n\n" +
+	"Buildings can be built from the resources wood and stones. " +
+	"Most buildings require food to operate, and some require wood or stones for maintenance." +
+	"\n\n" +
+	"The natural features in the bottom part can be placed for free, but are used up by placement. " +
+	"They are replenished randomly. " +
+	"Special tiles with a star can be placed over existing terrain, " +
+	"while normal tiles can only be added at the edges of your world." +
+	"\n\n" +
+	"Your resource production, consumption, stock and capacity are displayed in the info bar at the top." +
+	"\n\n" +
+	"When hovering a production building, indicators show its current and maximum production, " +
+	"as well as current and maximum storage. " +
+	"For population buildings, indicators show current and maximum supported population." +
+	"\n\n" +
+	"For further information, see the tooltips of the individual buildings and natural features."
+
+const helpTooltipWidth = 760
+
+const saveTooltipText = "Save game to disk or local browser storage."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
 
@@ -150,7 +175,7 @@ func NewUI(world *ecs.World, selection *Selection, font font.Face, sprts *Sprite
 		)),
 	)
 
-	hudContainer := ui.createHUD(font)
+	hudContainer := ui.createHUD()
 	rootContainer.AddChild(hudContainer)
 
 	uiContainer := ui.createUI()
@@ -355,7 +380,7 @@ func (ui *UI) updateRandomTerrains() {
 	}
 }
 
-func (ui *UI) createHUD(font font.Face) *widget.Container {
+func (ui *UI) createHUD() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 		widget.ContainerOpts.WidgetOpts(
@@ -382,6 +407,32 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		),
 	)
 
+	menu := ui.createMenu()
+
+	innerAnchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
+	info := ui.createInfo()
+	innerAnchor.AddChild(info)
+
+	topBar.AddChild(menu)
+	topBar.AddChild(innerAnchor)
+
+	anchor.AddChild(topBar)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, info, menu)
+
+	return anchor
+}
+
+func (ui *UI) createMenu() *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -398,15 +449,36 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 		),
 	)
 
+	saveTooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	saveLabel := widget.NewText(
+		widget.TextOpts.Text(saveTooltipText, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(360),
+	)
+	saveTooltipContainer.AddChild(saveLabel)
+
 	saveButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
 				Stretch:  false,
 			}),
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(saveTooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
 		),
-		widget.ButtonOpts.Image(ui.simpleButtonImage()),
-		widget.ButtonOpts.Text("Save", font, &widget.ButtonTextColor{
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save", ui.font, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -414,18 +486,47 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 			ui.saveEvent.ShouldSave = true
 		}),
 	)
-	menuContainer.AddChild(saveButton)
 
-	innerAnchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
+	helpTooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	helpLabel := widget.NewText(
+		widget.TextOpts.ProcessBBCode(true),
+		widget.TextOpts.Text(helpText, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(helpTooltipWidth),
+	)
+	helpTooltipContainer.AddChild(helpLabel)
+
+	helpButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(helpTooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
 		),
+		widget.ButtonOpts.Image(ui.nonButtonImage()),
+		widget.ButtonOpts.Text("?", ui.font, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+
+		}),
 	)
 
+	menuContainer.AddChild(saveButton)
+	menuContainer.AddChild(helpButton)
+	return menuContainer
+}
+func (ui *UI) createInfo() *widget.Container {
 	infoContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -460,14 +561,7 @@ func (ui *UI) createHUD(font font.Face) *widget.Container {
 	infoContainer.AddChild(cont)
 	ui.timerLabel = lab
 
-	topBar.AddChild(menuContainer)
-	topBar.AddChild(innerAnchor)
-	innerAnchor.AddChild(infoContainer)
-	anchor.AddChild(topBar)
-
-	ui.mouseBlockers = append(ui.mouseBlockers, infoContainer, menuContainer)
-
-	return anchor
+	return infoContainer
 }
 
 func (ui *UI) createLabel(text, tooltip string, width int) (*widget.Container, *widget.Text) {
@@ -528,6 +622,7 @@ func (ui *UI) prepareButtons() {
 
 		ui.buttonImages[i] = ui.createButtonImage(terr.Terrain(i), 0, false)
 
+		anyInfo := false
 		costs := ""
 		if len(props.BuildCost) > 0 {
 			costs = "Cost: "
@@ -538,33 +633,43 @@ func (ui *UI) prepareButtons() {
 				costs += fmt.Sprintf("%d %s", cost.Amount, resource.Properties[cost.Resource].Short)
 			}
 			costs += "\n"
+			anyInfo = true
 		}
 		maxProd := ""
 		if props.Production.MaxProduction > 0 {
 			maxProd = fmt.Sprintf(" (max %d)", props.Production.MaxProduction)
+			anyInfo = true
 		}
 		radius := ""
 		if props.BuildRadius > 0 {
 			radius = fmt.Sprintf("Radius: %d\n", props.BuildRadius)
+			anyInfo = true
 		}
 		pop := ""
 		if props.Population > 0 {
 			pop = fmt.Sprintf("Population: %d\n", props.Population)
+			anyInfo = true
 		}
 
 		requires := ""
 		requiresTemp := ui.resourcesToString(props.Consumption)
 		if len(requiresTemp) > 0 {
 			requires = fmt.Sprintf("Requires: %s /min\n", requiresTemp)
+			anyInfo = true
 		}
 
 		storage := ""
 		if props.TerrainBits.Contains(terr.IsWarehouse) {
 			storage = fmt.Sprintf("Stores: %s\n", ui.resourcesToString(props.Storage))
+			anyInfo = true
 		}
 
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s%s.",
-			strings.ToUpper(props.Name), costs, requires, pop, radius, storage, props.Description, maxProd)
+		text := fmt.Sprintf("%s\n\n%s%s.", util.Capitalize(props.Name), props.Description, maxProd)
+
+		if anyInfo {
+			text += fmt.Sprintf("\n\n%s%s%s%s%s", costs, requires, pop, radius, storage)
+		}
+		ui.buttonTooltip[i] = text
 	}
 }
 
@@ -728,10 +833,18 @@ func (ui *UI) ClearSelection() {
 	ui.selection.Reset()
 }
 
-func (ui *UI) simpleButtonImage() *widget.ButtonImage {
+func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	return &widget.ButtonImage{
 		Idle:    ui.background,
 		Hover:   ui.backgroundHover,
 		Pressed: ui.backgroundPressed,
+	}
+}
+
+func (ui *UI) nonButtonImage() *widget.ButtonImage {
+	return &widget.ButtonImage{
+		Idle:    ui.background,
+		Hover:   ui.background,
+		Pressed: ui.background,
 	}
 }
