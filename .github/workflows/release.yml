@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  build-linux:
+    name: Linux build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        shell: bash
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libgl1-mesa-dev xorg-dev
+          go get ./...
+      - name: Build
+        run: GOOS=linux GOARCH=amd64 go build .
+      - name: Compress binaries
+        run: |
+          tar -czf tiny-world.tar.gz tiny-world
+        shell: bash
+      - name: Upload binaries
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: tiny-world.tar.gz
+          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-linux-amd64.tar.gz
+          tag: ${{ github.ref }}
+
+  build-windows:
+    name: Windows build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        shell: bash
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: go get ./...
+      - name: Build
+        run: GOOS=windows GOARCH=amd64 go build .
+      - name: Compress binaries
+        run: |
+          tar -czf tiny-world.tar.gz tiny-world.exe
+        shell: bash
+      - name: Upload binaries
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: tiny-world.tar.gz
+          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-windows-amd64.tar.gz
+          tag: ${{ github.ref }}
+
+  build-macos:
+    name: MacOS build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        shell: bash
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: go get ./...
+      - name: Build
+        run: GOOS=darwin GOARCH=amd64 go build .
+      - name: Compress binaries
+        run: |
+          tar -czf tiny-world.tar.gz tiny-world
+        shell: bash
+      - name: Upload binaries
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: tiny-world.tar.gz
+          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-macos-amd64.tar.gz
+          tag: ${{ github.ref }}
