@@ -18,7 +18,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
 	"github.com/mlange-42/tiny-world/game/util"
-	"golang.org/x/image/font"
 )
 
 const helpText = "Tiny World Help" +
@@ -50,7 +49,7 @@ const helpText = "Tiny World Help" +
 	" - Game speed: PageUp / PageDown\n" +
 	" - Toggle fullscreen: F11"
 
-const helpTooltipWidth = 760
+const helpTooltipWidth = 800
 
 const saveTooltipText = "Save game to disk or local browser storage."
 
@@ -96,7 +95,7 @@ type UI struct {
 	backgroundPressed *image.NineSlice
 
 	selection *Selection
-	font      font.Face
+	fonts     *Fonts
 	idPool    util.IntPool[int]
 
 	buttonSize stdimage.Point
@@ -146,11 +145,11 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(world *ecs.World, selection *Selection, font font.Face, sprts *Sprites, save *SaveEvent) UI {
+func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent) UI {
 	ui := UI{
 		randomButtons: map[int]randomButton{},
 		selection:     selection,
-		font:          font,
+		fonts:         fonts,
 		idPool:        util.NewIntPool[int](8),
 		sprites:       sprts,
 		saveEvent:     save,
@@ -470,7 +469,7 @@ func (ui *UI) createMenu() *widget.Container {
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
 	saveLabel := widget.NewText(
-		widget.TextOpts.Text(saveTooltipText, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Text(saveTooltipText, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
@@ -490,7 +489,7 @@ func (ui *UI) createMenu() *widget.Container {
 			)),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save", ui.font, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Save", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -509,7 +508,7 @@ func (ui *UI) createMenu() *widget.Container {
 	)
 	helpLabel := widget.NewText(
 		widget.TextOpts.ProcessBBCode(true),
-		widget.TextOpts.Text(helpText, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Text(helpText, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(helpTooltipWidth),
 	)
@@ -525,7 +524,7 @@ func (ui *UI) createMenu() *widget.Container {
 			)),
 		),
 		widget.ButtonOpts.Image(ui.nonButtonImage()),
-		widget.ButtonOpts.Text("?", ui.font, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("?", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -590,7 +589,7 @@ func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosi
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
 	label := widget.NewText(
-		widget.TextOpts.Text(tooltip, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Text(tooltip, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
@@ -612,7 +611,7 @@ func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosi
 
 	if len(text) > 0 {
 		label := widget.NewText(
-			widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
+			widget.TextOpts.Text(text, ui.fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		)
 		cont.AddChild(label)
@@ -621,7 +620,7 @@ func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosi
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.MinSize(width, 0),
 		),
-		widget.TextOpts.Text("", ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Text("", ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(align, widget.TextPositionCenter),
 	)
 	cont.AddChild(counter)
@@ -785,7 +784,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		text += tooltipSpecial
 	}
 	label := widget.NewText(
-		widget.TextOpts.Text(text, ui.font, ui.sprites.TextColor),
+		widget.TextOpts.Text(text, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
