@@ -103,9 +103,11 @@ func (s *Build) Update(world *ecs.World) {
 
 	terrain := s.terrain.Get()
 	terrHere := terrain.Get(cursor.X, cursor.Y)
+	luHere := landUse.Get(cursor.X, cursor.Y)
 	if p.TerrainBits.Contains(terr.IsTerrain) {
-		canBuild := p.BuildOn.Contains(terrHere) ||
-			(sel.AllowRemove && terrHere != terr.Air && terrHere != sel.BuildType)
+		canBuild := luHere == terr.Air
+		canBuild = canBuild &&
+			(p.BuildOn.Contains(terrHere) || (sel.AllowRemove && terrHere != terr.Air && terrHere != sel.BuildType))
 		if !canBuild {
 			return
 		}
@@ -115,7 +117,6 @@ func (s *Build) Update(world *ecs.World) {
 			return
 		}
 
-		luHere := landUse.Get(cursor.X, cursor.Y)
 		luNatural := !terr.Properties[luHere].TerrainBits.Contains(terr.CanBuy)
 		if luHere == terr.Air || (luNatural && p.TerrainBits.Contains(terr.CanBuy)) {
 			if luHere != terr.Air {
