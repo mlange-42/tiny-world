@@ -121,16 +121,18 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 		}),
 	)
 
-	worldsLabel := widget.NewText(
-		widget.TextOpts.Text("Load world:", fonts.Default, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-
 	menuContainer.AddChild(titleLabel)
 	menuContainer.AddChild(infoLabel)
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(newButton)
-	menuContainer.AddChild(worldsLabel)
+
+	if len(games) > 0 {
+		worldsLabel := widget.NewText(
+			widget.TextOpts.Text("Load world:", fonts.Default, color.White),
+			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		)
+		menuContainer.AddChild(worldsLabel)
+	}
 
 	for _, game := range games {
 		contextMenu := widget.NewContainer(
