@@ -5,7 +5,6 @@ import (
 	stdimage "image"
 	"math"
 	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/ebitenui/ebitenui"
@@ -623,6 +622,7 @@ func (ui *UI) prepareButtons() {
 
 		ui.buttonImages[i] = ui.createButtonImage(terr.Terrain(i), 0, false)
 
+		anyInfo := false
 		costs := ""
 		if len(props.BuildCost) > 0 {
 			costs = "Cost: "
@@ -633,33 +633,43 @@ func (ui *UI) prepareButtons() {
 				costs += fmt.Sprintf("%d %s", cost.Amount, resource.Properties[cost.Resource].Short)
 			}
 			costs += "\n"
+			anyInfo = true
 		}
 		maxProd := ""
 		if props.Production.MaxProduction > 0 {
 			maxProd = fmt.Sprintf(" (max %d)", props.Production.MaxProduction)
+			anyInfo = true
 		}
 		radius := ""
 		if props.BuildRadius > 0 {
 			radius = fmt.Sprintf("Radius: %d\n", props.BuildRadius)
+			anyInfo = true
 		}
 		pop := ""
 		if props.Population > 0 {
 			pop = fmt.Sprintf("Population: %d\n", props.Population)
+			anyInfo = true
 		}
 
 		requires := ""
 		requiresTemp := ui.resourcesToString(props.Consumption)
 		if len(requiresTemp) > 0 {
 			requires = fmt.Sprintf("Requires: %s /min\n", requiresTemp)
+			anyInfo = true
 		}
 
 		storage := ""
 		if props.TerrainBits.Contains(terr.IsWarehouse) {
 			storage = fmt.Sprintf("Stores: %s\n", ui.resourcesToString(props.Storage))
+			anyInfo = true
 		}
 
-		ui.buttonTooltip[i] = fmt.Sprintf("%s\n%s%s%s%s%s%s%s.",
-			strings.ToUpper(props.Name), costs, requires, pop, radius, storage, props.Description, maxProd)
+		text := fmt.Sprintf("%s\n\n%s%s.", util.Capitalize(props.Name), props.Description, maxProd)
+
+		if anyInfo {
+			text += fmt.Sprintf("\n\n%s%s%s%s%s", costs, requires, pop, radius, storage)
+		}
+		ui.buttonTooltip[i] = text
 	}
 }
 
