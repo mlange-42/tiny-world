@@ -89,6 +89,9 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	selection := res.Selection{}
 	ecs.AddResource(&g.Model.World, &selection)
 
+	bounds := res.WorldBounds{}
+	ecs.AddResource(&g.Model.World, &bounds)
+
 	update := res.UpdateInterval{
 		Interval:  TPS,
 		Countdown: 60,

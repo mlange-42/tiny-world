@@ -26,6 +26,7 @@ type EntityFactory struct {
 	landUse         generic.Resource[LandUse]
 	landUseEntities generic.Resource[LandUseEntities]
 	buildable       generic.Resource[Buildable]
+	bounds          generic.Resource[WorldBounds]
 
 	update generic.Resource[UpdateInterval]
 }
@@ -47,6 +48,7 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 		landUse:         generic.NewResource[LandUse](world),
 		landUseEntities: generic.NewResource[LandUseEntities](world),
 		buildable:       generic.NewResource[Buildable](world),
+		bounds:          generic.NewResource[WorldBounds](world),
 
 		update: generic.NewResource[UpdateInterval](world),
 	}
@@ -95,7 +97,7 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 	return e
 }
 
-func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
+func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
 	props := &terr.Properties[t]
 	var e ecs.Entity
 	if props.TerrainBits.Contains(terr.IsWarehouse) {
@@ -143,7 +145,7 @@ func (f *EntityFactory) Create(pos image.Point, t terr.Terrain, randSprite uint1
 func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) ecs.Entity {
 	if !terr.Properties[value].TerrainBits.Contains(terr.IsTerrain) {
 		f.landUse.Get().Set(x, y, value)
-		e := f.Create(image.Pt(x, y), value, randSprite)
+		e := f.create(image.Pt(x, y), value, randSprite)
 		f.landUseEntities.Get().Set(x, y, e)
 
 		rad := terr.Properties[value].BuildRadius
@@ -161,7 +163,7 @@ func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, rand
 	}
 
 	t.Set(x, y, value)
-	e := f.Create(image.Pt(x, y), value, randSprite)
+	e := f.create(image.Pt(x, y), value, randSprite)
 	tE.Set(x, y, e)
 
 	f.setNeighbor(t, tE, x-1, y)
@@ -169,13 +171,16 @@ func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, rand
 	f.setNeighbor(t, tE, x, y-1)
 	f.setNeighbor(t, tE, x, y+1)
 
+	bounds := f.bounds.Get()
+	bounds.AddPoint(image.Pt(x, y))
+
 	return e
 }
 
 func (f *EntityFactory) setNeighbor(t *Terrain, tE *TerrainEntities, x, y int) {
 	if t.Contains(x, y) && t.Get(x, y) == terr.Air {
 		t.Set(x, y, terr.Buildable)
-		e := f.Create(image.Pt(x, y), terr.Buildable, 0)
+		e := f.create(image.Pt(x, y), terr.Buildable, 0)
 		tE.Set(x, y, e)
 	}
 }
