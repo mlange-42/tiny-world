@@ -86,7 +86,7 @@
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 1}
             ],
-            "description": "A path over water"
+            "description": "A path over water. Can bridge a single water tile only"
         },
 
         {
