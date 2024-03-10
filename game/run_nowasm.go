@@ -11,6 +11,7 @@ import (
 )
 
 func run(g *Game, name string, load bool) {
+	cobra.MousetrapHelpText = ""
 	if err := command(g, name, load).Execute(); err != nil {
 		fmt.Printf("ERROR: %s\n", err.Error())
 		os.Exit(1)
