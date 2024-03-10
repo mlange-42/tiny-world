@@ -78,3 +78,16 @@ func (v *View) MapBounds(screenWidth, screenHeight int) image.Rectangle {
 
 	return image.Rect(xMin, yMin, xMax, yMax)
 }
+
+func (v *View) BoundsToGlobal(b *WorldBounds) image.Rectangle {
+	p := v.TileToGlobal(b.Min.X, b.Min.Y)
+	yMin := p.Y
+	p = v.TileToGlobal(b.Max.X, b.Max.Y)
+	yMax := p.Y
+	p = v.TileToGlobal(b.Max.X, b.Min.Y)
+	xMax := p.X
+	p = v.TileToGlobal(b.Min.X, b.Max.Y)
+	xMin := p.X
+
+	return image.Rect(xMin, yMin, xMax, yMax)
+}

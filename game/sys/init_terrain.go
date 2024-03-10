@@ -1,6 +1,9 @@
 package sys
 
 import (
+	"fmt"
+	"image"
+
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -17,10 +20,14 @@ func (s *InitTerrain) Initialize(world *ecs.World) {
 	rules := ecs.GetResource[res.Rules](world)
 	fac := ecs.GetResource[res.EntityFactory](world)
 	t := ecs.GetResource[res.Terrain](world)
+	bounds := ecs.GetResource[res.WorldBounds](world)
 
 	radiusMapper := generic.NewMap1[comp.BuildRadius](world)
 
 	x, y := t.Width()/2, t.Height()/2
+	bounds.Min = image.Pt(x-1, y-1)
+	bounds.Max = image.Pt(x+1, y+1)
+	fmt.Println(bounds.Rectangle)
 
 	fac.Set(world, x, y, terr.Default, 0)
 

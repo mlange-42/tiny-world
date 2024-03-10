@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"image"
 	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -9,6 +10,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 type mouse struct {
@@ -27,6 +29,8 @@ type PanAndZoom struct {
 	mouseStart mouse
 
 	view    generic.Resource[res.View]
+	screen  generic.Resource[res.EbitenImage]
+	bounds  generic.Resource[res.WorldBounds]
 	terrain generic.Resource[res.Terrain]
 	sprites generic.Resource[res.Sprites]
 
@@ -36,6 +40,8 @@ type PanAndZoom struct {
 // Initialize the system
 func (s *PanAndZoom) Initialize(world *ecs.World) {
 	s.view = generic.NewResource[res.View](world)
+	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.bounds = generic.NewResource[res.WorldBounds](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.sprites = generic.NewResource[res.Sprites](world)
 }
@@ -43,6 +49,8 @@ func (s *PanAndZoom) Initialize(world *ecs.World) {
 // Update the system
 func (s *PanAndZoom) Update(world *ecs.World) {
 	view := s.view.Get()
+	screen := s.screen.Get()
+	bounds := s.bounds.Get()
 
 	if inpututil.IsMouseButtonJustPressed(s.PanButton) {
 		s.mouseStart.X, s.mouseStart.Y = ebiten.CursorPosition()
@@ -88,6 +96,14 @@ func (s *PanAndZoom) Update(world *ecs.World) {
 		view.Y -= (my - view.Y)
 	}
 	s.inputChars = s.inputChars[:0]
+
+	glBounds := view.BoundsToGlobal(bounds)
+	center := image.Pt(view.ScreenToGlobal(screen.Width/2, screen.Height/2))
+	if !center.In(glBounds) {
+		center := util.Clamp(glBounds, center)
+		view.X = center.X - int(float64(screen.Width/2)/view.Zoom)
+		view.Y = center.Y - int(float64(screen.Height/2)/view.Zoom)
+	}
 }
 
 // Finalize the system
