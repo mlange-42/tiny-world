@@ -79,7 +79,7 @@ jobs:
       - name: Install dependencies
         run: go get ./...
       - name: Build
-        run: GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build .
+        run: GOOS=darwin CGO_ENABLED=1 go build .
       - name: Compress binaries
         run: |
           tar -czf tiny-world.tar.gz tiny-world
