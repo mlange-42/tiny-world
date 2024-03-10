@@ -1,8 +1,12 @@
-name: Release
+name: Test Release
 
 on:
-  release:
-    types: [ created ]
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
 
 jobs:
   build-linux:
@@ -28,13 +32,11 @@ jobs:
         run: |
           tar -czf tiny-world.tar.gz tiny-world
         shell: bash
-      - name: Upload binaries
-        uses: svenstaro/upload-release-action@v2
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: tiny-world.tar.gz
-          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-linux-amd64.tar.gz
-          tag: ${{ github.ref }}
+          name: tiny-world-linux-amd64.tar.gz
+          path: tiny-world.tar.gz
 
   build-windows:
     name: Windows build
@@ -56,10 +58,8 @@ jobs:
         run: |
           tar -czf tiny-world.tar.gz tiny-world.exe
         shell: bash
-      - name: Upload binaries
-        uses: svenstaro/upload-release-action@v2
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: tiny-world.tar.gz
-          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-windows-amd64.tar.gz
-          tag: ${{ github.ref }}
+          name: tiny-world-windows-amd64.tar.gz
+          path: tiny-world.tar.gz
