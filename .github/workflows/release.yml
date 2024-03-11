@@ -91,7 +91,7 @@ jobs:
           tag: ${{ github.ref }}
 
   build-macos-amd64:
-    name: MacOS adm64 build
+    name: MacOS amd64 build
     runs-on: macos-latest
     steps:
       - name: Get tag
