@@ -161,7 +161,13 @@ func (ui *UI) createNewWorldPanel(mapsFolder string, games []string, fonts *res.
 			widget.CaretOpts.Size(fonts.Default, 2),
 		),
 	)
+
+	mapsLabel := widget.NewText(
+		widget.TextOpts.Text("Maps:", fonts.Default, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
 	menuContainer.AddChild(newName)
+	menuContainer.AddChild(mapsLabel)
 
 	for _, m := range maps {
 		newButton := widget.NewButton(
