@@ -10,6 +10,11 @@ import (
 	"github.com/mlange-42/arche/ecs"
 )
 
+const (
+	fileTypeJson  fileType = saveGamePrefix
+	fileTypeAscii fileType = saveMapPrefix
+)
+
 func loadWorld(world *ecs.World, folder, name string) error {
 	_ = folder
 
@@ -19,7 +24,7 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize([]byte(jsData.String()), world)
 }
 
-func listSaveGames(folder string) ([]string, error) {
+func listFiles(folder string, ft fileType) ([]string, error) {
 	_ = folder
 	games := []string{}
 
@@ -28,10 +33,19 @@ func listSaveGames(folder string) ([]string, error) {
 	cnt := storage.Get("length").Int()
 	for i := 0; i < cnt; i++ {
 		key := storage.Call("key", i).String()
-		if strings.HasPrefix(key, saveGamePrefix) {
-			games = append(games, strings.TrimPrefix(key, saveGamePrefix))
+		if strings.HasPrefix(key, string(ft)) {
+			games = append(games, strings.TrimPrefix(key, string(ft)))
 		}
 	}
 
 	return games, nil
+}
+
+func loadMap(folder, name string) (string, error) {
+	_ = folder
+
+	storage := js.Global().Get("localStorage")
+	mapData := storage.Call("getItem", saveMapPrefix+name)
+
+	return mapData.String(), nil
 }

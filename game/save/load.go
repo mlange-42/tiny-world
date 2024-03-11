@@ -5,6 +5,8 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 )
 
+type fileType string
+
 func LoadWorld(world *ecs.World, folder, name string) error {
 	_ = ecs.ComponentID[comp.Tile](world)
 	_ = ecs.ComponentID[comp.Terrain](world)
@@ -22,5 +24,13 @@ func LoadWorld(world *ecs.World, folder, name string) error {
 }
 
 func ListSaveGames(folder string) ([]string, error) {
-	return listSaveGames(folder)
+	return listFiles(folder, fileTypeJson)
+}
+
+func LoadMap(folder, name string) (string, error) {
+	return loadMap(folder, name)
+}
+
+func ListMaps(folder string) ([]string, error) {
+	return listFiles(folder, fileTypeAscii)
 }

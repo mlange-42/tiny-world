@@ -12,6 +12,11 @@ import (
 	"github.com/mlange-42/arche/ecs"
 )
 
+const (
+	fileTypeJson  fileType = ".json"
+	fileTypeAscii fileType = ".asc"
+)
+
 func loadWorld(world *ecs.World, folder, name string) error {
 	jsData, err := os.ReadFile(path.Join(folder, name) + ".json")
 	if err != nil {
@@ -21,7 +26,7 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize(jsData, world)
 }
 
-func listSaveGames(folder string) ([]string, error) {
+func listFiles(folder string, ft fileType) ([]string, error) {
 	games := []string{}
 
 	files, err := os.ReadDir(folder)
@@ -34,11 +39,19 @@ func listSaveGames(folder string) ([]string, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name())
-		if ext == ".json" || ext == ".JSON" {
-			base := strings.TrimSuffix(file.Name(), ".json")
-			base = strings.TrimSuffix(base, ".JSON")
+		if ext == string(ft) {
+			base := strings.TrimSuffix(file.Name(), string(ft))
 			games = append(games, base)
 		}
 	}
 	return games, nil
+}
+
+func loadMap(folder, name string) (string, error) {
+	mapData, err := os.ReadFile(path.Join(folder, name) + ".asc")
+	if err != nil {
+		return "", err
+	}
+
+	return string(mapData), nil
 }
