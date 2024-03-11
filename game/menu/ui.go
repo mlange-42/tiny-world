@@ -29,11 +29,52 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 	}
 
 	ui := UI{}
+	ui.infoLabel = widget.NewText(
+		widget.TextOpts.Text("   ", fonts.Default, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
 
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
 			widget.AnchorLayoutOpts.Padding(widget.NewInsetsSimple(12)),
 		)),
+	)
+
+	newWorldTab := widget.NewTabBookTab("New World",
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+		)),
+	)
+	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
+
+	loadWorldTab := widget.NewTabBookTab("Load World",
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+		)),
+	)
+	loadWorldTab.AddChild(ui.createLoadPanel(folder, games, fonts, start))
+
+	img := loadButtonImage()
+	tabContainer := widget.NewTabBook(
+		widget.TabBookOpts.TabButtonImage(img),
+		widget.TabBookOpts.TabButtonText(fonts.Default, &widget.ButtonTextColor{Idle: color.White, Disabled: color.White}),
+		widget.TabBookOpts.TabButtonSpacing(0),
+		widget.TabBookOpts.ContainerOpts(
+			widget.ContainerOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionCenter,
+					VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				}),
+				widget.WidgetOpts.MinSize(260, 20),
+			),
+		),
+		widget.TabBookOpts.TabButtonOpts(
+			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(98, 0)),
+		),
+		widget.TabBookOpts.Tabs(newWorldTab, loadWorldTab),
 	)
 
 	menuContainer := widget.NewContainer(
@@ -46,12 +87,24 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
 				VerticalPosition:   widget.AnchorLayoutPositionCenter,
 			}),
-			widget.WidgetOpts.MinSize(260, 20),
+			widget.WidgetOpts.MinSize(260, 360),
 		),
 	)
 
-	menuContainer.AddChild(ui.createNewWorldPanel(games, fonts, start))
-	menuContainer.AddChild(ui.createLoadPanel(folder, games, fonts, start))
+	titleLabel := widget.NewText(
+		widget.TextOpts.Text("Tiny World", fonts.Title, color.RGBA{R: 255, G: 255, B: 255, A: 255}),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+				Stretch:  true,
+			}),
+		),
+	)
+
+	menuContainer.AddChild(titleLabel)
+	menuContainer.AddChild(ui.infoLabel)
+	menuContainer.AddChild(tabContainer)
 
 	rootContainer.AddChild(menuContainer)
 
@@ -78,22 +131,6 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 	)
 
 	img := loadButtonImage()
-
-	titleLabel := widget.NewText(
-		widget.TextOpts.Text("Tiny World", fonts.Title, color.RGBA{R: 255, G: 255, B: 255, A: 255}),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		widget.TextOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
-				Stretch:  true,
-			}),
-		),
-	)
-
-	ui.infoLabel = widget.NewText(
-		widget.TextOpts.Text("   ", fonts.Default, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
 
 	newName := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(
@@ -150,8 +187,6 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		}),
 	)
 
-	menuContainer.AddChild(titleLabel)
-	menuContainer.AddChild(ui.infoLabel)
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(newButton)
 
