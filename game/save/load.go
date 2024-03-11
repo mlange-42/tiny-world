@@ -1,6 +1,8 @@
 package save
 
 import (
+	"strings"
+
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 )
@@ -27,8 +29,21 @@ func ListSaveGames(folder string) ([]string, error) {
 	return listFiles(folder, fileTypeJson)
 }
 
-func LoadMap(folder, name string) (string, error) {
-	return loadMap(folder, name)
+func LoadMap(folder, name string) ([][]rune, error) {
+	mapStr, err := loadMap(folder, name)
+	if err != nil {
+		return nil, err
+	}
+
+	var result [][]rune
+	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
+	for _, s := range lines {
+		if len(s) > 0 {
+			result = append(result, []rune(s))
+		}
+	}
+
+	return result, nil
 }
 
 func ListMaps(folder string) ([]string, error) {
