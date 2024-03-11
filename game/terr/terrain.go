@@ -84,7 +84,8 @@ func (d Terrains) Contains(dir Terrain) bool {
 var Properties []TerrainProps
 
 var idLookup map[string]Terrain
-var mapSymbols map[rune]TerrainPair
+var SymbolToTerrain map[rune]TerrainPair
+var TerrainToSymbol map[TerrainPair]rune
 
 func Prepare(f fs.FS, file string) {
 	propsHelper := props{}
@@ -231,15 +232,22 @@ func Prepare(f fs.FS, file string) {
 	FirstBuilding = toTerrain(idLookup, propsHelper.FirstBuilding)
 	Bulldoze = toTerrain(idLookup, propsHelper.Bulldoze)
 
-	mapSymbols = map[rune]TerrainPair{}
+	SymbolToTerrain = map[rune]TerrainPair{}
+	TerrainToSymbol = map[TerrainPair]rune{}
+
+	SymbolToTerrain['.'] = TerrainPair{Terrain: Air, LandUse: Air}
+	TerrainToSymbol[TerrainPair{Terrain: Air, LandUse: Air}] = '.'
+
 	for i := range props {
 		prop := &props[i]
 		for j, s := range prop.Symbols {
-			if _, ok := mapSymbols[s]; ok {
+			if _, ok := SymbolToTerrain[s]; ok {
 				panic(fmt.Sprintf("duplicate map symbol '%s' in %s", string(s), prop.Name))
 			}
 			if prop.TerrainBits.Contains(IsTerrain) {
-				mapSymbols[s] = TerrainPair{Terrain: Terrain(i), LandUse: Air}
+				t := TerrainPair{Terrain: Terrain(i), LandUse: Air}
+				SymbolToTerrain[s] = t
+				TerrainToSymbol[t] = s
 				continue
 			}
 			terName := propsHelper.Terrains[i].BuildOn[j]
@@ -247,10 +255,11 @@ func Prepare(f fs.FS, file string) {
 			if !ok {
 				panic(fmt.Sprintf("unknown terrain %s in %s", terName, prop.Name))
 			}
-			mapSymbols[s] = TerrainPair{Terrain: ter, LandUse: Terrain(i)}
+			t := TerrainPair{Terrain: ter, LandUse: Terrain(i)}
+			SymbolToTerrain[s] = t
+			TerrainToSymbol[t] = s
 		}
 	}
-	fmt.Printf("%v", mapSymbols)
 
 	Properties = props
 }

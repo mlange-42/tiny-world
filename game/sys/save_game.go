@@ -26,6 +26,15 @@ func (s *SaveGame) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *SaveGame) Update(world *ecs.World) {
+	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyShift) && inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		err := save.SaveMap(world)
+		if err != nil {
+			log.Printf("Error saving map: %s", err.Error())
+			return
+		}
+		return
+	}
+
 	if !((ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyS)) ||
 		s.saveEvent.Get().ShouldSave) {
 		return

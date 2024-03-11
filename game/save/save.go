@@ -1,6 +1,7 @@
 package save
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 func SaveWorld(folder, name string, world *ecs.World) error {
@@ -57,6 +59,28 @@ func DeleteGame(folder, name string) error {
 
 func SaveMap(world *ecs.World) error {
 	b := strings.Builder{}
-	_ = b
+
+	bounds := ecs.GetResource[res.WorldBounds](world)
+	terrain := ecs.GetResource[res.Terrain](world)
+	landUse := ecs.GetResource[res.LandUse](world)
+
+	for x := bounds.Min.X; x <= bounds.Max.X; x++ {
+		for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
+			ter := terrain.Get(x, y)
+			if !terr.Properties[ter].TerrainBits.Contains(terr.CanBuild) {
+				ter = terr.Air
+			}
+			t := terr.TerrainPair{Terrain: ter, LandUse: landUse.Get(x, y)}
+			sym, ok := terr.TerrainToSymbol[t]
+			if !ok {
+				fmt.Printf("symbol not found for %s/%s\n", terr.Properties[t.Terrain].Name, terr.Properties[t.LandUse].Name)
+			}
+			b.WriteRune(sym)
+		}
+		b.WriteString("\n")
+	}
+
+	fmt.Println(b.String())
+
 	return nil
 }
