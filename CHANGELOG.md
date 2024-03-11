@@ -15,6 +15,10 @@
 
 * Adds doc-strings for all resources (#159)
 
+### Other
+
+* Adds precompiled binaries for MacOS/Darwin to release builds (#165 by [Ecostack](https://github.com/Ecostack))
+
 ## [[v0.1.0]](https://github.com/mlange-42/tiny-world/tree/v0.1.0)
 
 First release of Tiny World.
