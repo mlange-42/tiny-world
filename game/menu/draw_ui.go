@@ -8,14 +8,14 @@ import (
 
 // DrawUI is a system to render the user interface.
 type DrawUI struct {
-	screen generic.Resource[res.EbitenImage]
+	screen generic.Resource[res.Screen]
 	ui     generic.Resource[UI]
 }
 
 // InitializeUI the system
 func (s *DrawUI) InitializeUI(world *ecs.World) {
 	s.ui = generic.NewResource[UI](world)
-	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.screen = generic.NewResource[res.Screen](world)
 }
 
 // UpdateUI the system

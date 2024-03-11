@@ -63,8 +63,10 @@ type randomButton struct {
 	Index        int
 }
 
+// UI resource.Represents the complete game UI.
 type UI struct {
-	RandomTerrains []RandomTerrain
+	// Initial random terrains, if any.
+	RandomTerrains []randomTerrain
 
 	ui              *ebitenui.UI
 	sprites         *Sprites
@@ -101,7 +103,7 @@ type UI struct {
 	buttonSize stdimage.Point
 }
 
-type RandomTerrain struct {
+type randomTerrain struct {
 	Terrain     terr.Terrain
 	AllowRemove bool
 }
@@ -387,7 +389,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 func (ui *UI) updateRandomTerrains() {
 	ui.RandomTerrains = ui.RandomTerrains[:0]
 	for _, bt := range ui.randomButtons {
-		ui.RandomTerrains = append(ui.RandomTerrains, RandomTerrain{bt.Terrain, bt.AllowRemove})
+		ui.RandomTerrains = append(ui.RandomTerrains, randomTerrain{bt.Terrain, bt.AllowRemove})
 	}
 }
 

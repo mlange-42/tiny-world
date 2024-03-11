@@ -19,11 +19,17 @@ import (
 const nameUnknown = "unknown"
 const tileSetFile = "tileset.json"
 
+// Sprites holds all tileset data.
 type Sprites struct {
-	TileWidth   int
-	TileHeight  int
-	Background  color.RGBA
-	TextColor   color.RGBA
+	// Tile width for rendering.
+	TileWidth int
+	// Tile height for rendering.
+	TileHeight int
+	// Game background color
+	Background color.RGBA
+	// UI text color
+	TextColor color.RGBA
+
 	atlas       []*ebiten.Image
 	sprites     []*ebiten.Image
 	infos       []util.Sprite
@@ -32,6 +38,7 @@ type Sprites struct {
 	idxUnknown  int
 }
 
+// NewSprites creates a new Sprites resource from the given tileset folder.
 func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 	base := path.Join(dir, tileSet)
 
@@ -133,15 +140,18 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 	}
 }
 
+// GetInfo returns the sprite info for an index.
 func (s *Sprites) GetInfo(idx int) *util.Sprite {
 	return &s.infos[idx]
 }
 
+// Get returns the sprite image for an index.
 func (s *Sprites) Get(idx int) *ebiten.Image {
 	inf := &s.infos[idx]
 	return s.sprites[inf.Index[0]]
 }
 
+// GetRand returns the sprite image for an index, with animation and random variations.
 func (s *Sprites) GetRand(idx int, frame int, rand int) *ebiten.Image {
 	inf := &s.infos[idx]
 
@@ -154,10 +164,12 @@ func (s *Sprites) GetRand(idx int, frame int, rand int) *ebiten.Image {
 	}
 }
 
+// GetSprite returns the sprite image for an index, including sub-index.
 func (s *Sprites) GetSprite(idx int) *ebiten.Image {
 	return s.sprites[idx]
 }
 
+// GetIndex returns the sprite index for a sprite or terrain ID.
 func (s *Sprites) GetIndex(name string) int {
 	if idx, ok := s.indices[name]; ok {
 		return idx
@@ -165,15 +177,18 @@ func (s *Sprites) GetIndex(name string) int {
 	return s.idxUnknown
 }
 
+// GetTerrainIndex returns the sprite index for a terrain ID.
 func (s *Sprites) GetTerrainIndex(t terr.Terrain) int {
 	return s.terrIndices[t]
 }
 
+// GetMultiTileTerrainIndex returns the sprite index for a terrain ID, using multitile.
 func (s *Sprites) GetMultiTileTerrainIndex(t terr.Terrain, dirs terr.Directions, frame int, rand int) int {
 	idx := s.terrIndices[t]
 	return s.GetMultiTileIndex(idx, dirs, frame, rand)
 }
 
+// GetMultiTileTerrainIndex returns the sprite index for an index, using multitile.
 func (s *Sprites) GetMultiTileIndex(idx int, dirs terr.Directions, frame int, rand int) int {
 	inf := &s.infos[idx]
 	if inf.IsMultitile() {

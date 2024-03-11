@@ -18,7 +18,7 @@ type CardAnimation struct {
 	Duration  int
 
 	time    generic.Resource[res.GameTick]
-	screen  generic.Resource[res.EbitenImage]
+	screen  generic.Resource[res.Screen]
 	sprites generic.Resource[res.Sprites]
 	view    generic.Resource[res.View]
 
@@ -30,7 +30,7 @@ type CardAnimation struct {
 // InitializeUI the system
 func (s *CardAnimation) InitializeUI(world *ecs.World) {
 	s.time = generic.NewResource[res.GameTick](world)
-	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.screen = generic.NewResource[res.Screen](world)
 	s.sprites = generic.NewResource[res.Sprites](world)
 	s.view = generic.NewResource[res.View](world)
 

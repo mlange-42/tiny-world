@@ -2,9 +2,12 @@ package res
 
 import "github.com/hajimehoshi/ebiten/v2"
 
-// EbitenImage resource for drawing.
-type EbitenImage struct {
-	Image  *ebiten.Image
-	Width  int
+// Screen resource for drawing.
+type Screen struct {
+	// The screen image.
+	Image *ebiten.Image
+	// Current screen width.
+	Width int
+	// Current screen height.
 	Height int
 }

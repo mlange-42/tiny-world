@@ -12,6 +12,7 @@ import (
 
 const fontFile = "data/fonts/LessRoundBox.ttf"
 
+// Fonts resource for access to UI fonts.
 type Fonts struct {
 	Default font.Face
 	Title   font.Face

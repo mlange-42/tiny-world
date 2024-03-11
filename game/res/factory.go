@@ -10,6 +10,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+// EntityFactory is a helper to create game entities.
 type EntityFactory struct {
 	landUseBuilder    generic.Map4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite]
 	productionBuilder generic.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite]
@@ -31,6 +32,7 @@ type EntityFactory struct {
 	update generic.Resource[UpdateInterval]
 }
 
+// NewEntityFactory creates a new EntityFactory for a given world.
 func NewEntityFactory(world *ecs.World) EntityFactory {
 	return EntityFactory{
 		landUseBuilder:    generic.NewMap4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite](world),
@@ -142,6 +144,7 @@ func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint1
 	return e
 }
 
+// Set creates an entity of the given terrain type, placing it in the world and updating the game grids.
 func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) ecs.Entity {
 	if !terr.Properties[value].TerrainBits.Contains(terr.IsTerrain) {
 		f.landUse.Get().Set(x, y, value)
@@ -185,6 +188,7 @@ func (f *EntityFactory) setNeighbor(t *Terrain, tE *TerrainEntities, x, y int) {
 	}
 }
 
+// RemoveLandUse removes land use from a given position, and updates the game grids.
 func (f *EntityFactory) RemoveLandUse(world *ecs.World, x, y int) {
 	landUse := f.landUse.Get()
 	luHere := landUse.Get(x, y)
@@ -203,6 +207,8 @@ func (f *EntityFactory) RemoveLandUse(world *ecs.World, x, y int) {
 	landUse.Set(x, y, terr.Air)
 }
 
+// SetBuildable updates the build-ability grid.
+// Only used for initialization, not required when using [EntityFactory.Set] or [EntityFactory.RemoveLandUse].
 func (f *EntityFactory) SetBuildable(x, y, r int, build bool) {
 	var add = 1
 	if !build {

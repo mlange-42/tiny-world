@@ -11,7 +11,7 @@ import (
 // UI is a system to render the user interface.
 type CenterView struct {
 	view    generic.Resource[res.View]
-	screen  generic.Resource[res.EbitenImage]
+	screen  generic.Resource[res.Screen]
 	terrain generic.Resource[res.Terrain]
 
 	isInitialized bool
@@ -20,7 +20,7 @@ type CenterView struct {
 // InitializeUI the system
 func (s *CenterView) InitializeUI(world *ecs.World) {
 	s.view = generic.NewResource[res.View](world)
-	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.screen = generic.NewResource[res.Screen](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 }
 

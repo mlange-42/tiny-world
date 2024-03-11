@@ -9,7 +9,7 @@ import (
 // Game container
 type Game struct {
 	Model  *model.Model
-	Screen res.EbitenImage
+	Screen res.Screen
 	Mouse  res.Mouse
 
 	canvasHelper *canvasHelper
@@ -19,7 +19,7 @@ type Game struct {
 func NewGame(mod *model.Model) Game {
 	return Game{
 		Model:        mod,
-		Screen:       res.EbitenImage{Image: nil, Width: 0, Height: 0},
+		Screen:       res.Screen{Image: nil, Width: 0, Height: 0},
 		canvasHelper: newCanvasHelper(),
 	}
 }

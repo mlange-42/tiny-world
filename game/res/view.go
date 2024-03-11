@@ -4,11 +4,16 @@ import (
 	"image"
 )
 
+// View resource, holding the game's view state.
 type View struct {
+	// Tile width and height, for convenient access.
 	TileWidth, TileHeight int
-	X, Y                  int
-	MouseOffset           int
-	Zoom                  float64
+	// Current global coordinates of the top-left corner of the screen, in pixels.
+	X, Y int
+	// Y offset used to determine the mouse position.
+	MouseOffset int
+	// Current zoom factor.
+	Zoom float64
 }
 
 func NewView(tileWidth, tileHeight int) View {

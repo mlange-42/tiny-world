@@ -30,7 +30,7 @@ type Terrain struct {
 	indicatorStorage            int
 	indicatorStorageInactive    int
 
-	screen    generic.Resource[res.EbitenImage]
+	screen    generic.Resource[res.Screen]
 	selection generic.Resource[res.Selection]
 	mouse     generic.Resource[res.Mouse]
 	ui        generic.Resource[res.UI]
@@ -60,7 +60,7 @@ type Terrain struct {
 
 // InitializeUI the system
 func (s *Terrain) InitializeUI(world *ecs.World) {
-	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.screen = generic.NewResource[res.Screen](world)
 	s.selection = generic.NewResource[res.Selection](world)
 	s.mouse = generic.NewResource[res.Mouse](world)
 	s.ui = generic.NewResource[res.UI](world)
