@@ -31,3 +31,22 @@ func deleteGame(folder, name string) error {
 	file := path.Join(folder, name) + ".json"
 	return os.Remove(file)
 }
+
+func saveMapToFile(folder, name string, mapData string) error {
+	file := path.Join(folder, name) + ".asc"
+	dir := filepath.Dir(file)
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	f.WriteString(mapData)
+
+	return nil
+}

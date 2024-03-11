@@ -157,8 +157,9 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	g.Model.AddSystem(&sys.UpdateUI{})
 	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
-		Folder: "save",
-		Name:   name,
+		SaveFolder: "save",
+		MapFolder:  "maps",
+		Name:       name,
 	})
 	g.Model.AddSystem(&sys.GameControls{
 		PauseKey:      ebiten.KeySpace,

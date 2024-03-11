@@ -57,7 +57,7 @@ func DeleteGame(folder, name string) error {
 	return deleteGame(folder, name)
 }
 
-func SaveMap(world *ecs.World) error {
+func SaveMap(folder, name string, world *ecs.World) error {
 	b := strings.Builder{}
 
 	bounds := ecs.GetResource[res.WorldBounds](world)
@@ -73,14 +73,12 @@ func SaveMap(world *ecs.World) error {
 			t := terr.TerrainPair{Terrain: ter, LandUse: landUse.Get(x, y)}
 			sym, ok := terr.TerrainToSymbol[t]
 			if !ok {
-				fmt.Printf("symbol not found for %s/%s\n", terr.Properties[t.Terrain].Name, terr.Properties[t.LandUse].Name)
+				return fmt.Errorf("symbol not found for %s/%s", terr.Properties[t.Terrain].Name, terr.Properties[t.LandUse].Name)
 			}
 			b.WriteRune(sym)
 		}
 		b.WriteString("\n")
 	}
 
-	fmt.Println(b.String())
-
-	return nil
+	return saveMapToFile(folder, name, b.String())
 }
