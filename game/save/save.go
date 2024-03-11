@@ -15,7 +15,7 @@ func SaveWorld(folder, name string, world *ecs.World) error {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
 			generic.T[res.Fonts](),
-			generic.T[res.EbitenImage](),
+			generic.T[res.Screen](),
 			generic.T[res.EntityFactory](),
 			generic.T[res.Sprites](),
 			generic.T[res.Terrain](),

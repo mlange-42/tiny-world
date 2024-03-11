@@ -1,13 +1,21 @@
 package res
 
+// GameSpeed resource.
 type GameSpeed struct {
-	Pause    bool
-	Speed    int8
+	// Is the game paused?
+	Pause bool
+	// Game speed as an exponent for base 2. s = 2^Speed
+	Speed int8
+	// Minimum game speed, as an exponent for base 2.
 	MinSpeed int8
+	// Maximum game speed, as an exponent for base 2.
 	MaxSpeed int8
 }
 
+// GameTick resource.
 type GameTick struct {
-	Tick       int64
+	// Current update tick. Stops when the game is paused.
+	Tick int64
+	// Current render tick. Does not stop when the game is paused.
 	RenderTick int64
 }

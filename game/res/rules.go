@@ -9,17 +9,25 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+// Rules resource, holding game rules read from JSON.
 type Rules struct {
-	WorldSize           int
-	InitialBuildRadius  int
-	InitialPopulation   int
+	// World extent in X and Y direction, in number of tiles.
+	WorldSize int
+	// Initial build radius around the starting position.
+	InitialBuildRadius int
+	// Initial population limit.
+	InitialPopulation int
+	// Number of random terrains/cards.
 	RandomTerrainsCount int
-	RandomTerrains      []terr.Terrain
-
-	InitialResources       []int
+	// List of terrains to draw cards from.
+	RandomTerrains []terr.Terrain
+	// Initial resources of the player.
+	InitialResources []int
+	// Probability of special cards/terrains that can be placed over existing terrain.
 	SpecialCardProbability float64
 }
 
+// NewRules reads rules from the given file.
 func NewRules(f fs.FS, file string) Rules {
 	rulesHelper := rulesJs{}
 	err := util.FromJsonFs(f, file, &rulesHelper)

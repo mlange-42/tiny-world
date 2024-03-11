@@ -29,7 +29,7 @@ type PanAndZoom struct {
 	mouseStart mouse
 
 	view    generic.Resource[res.View]
-	screen  generic.Resource[res.EbitenImage]
+	screen  generic.Resource[res.Screen]
 	bounds  generic.Resource[res.WorldBounds]
 	terrain generic.Resource[res.Terrain]
 	sprites generic.Resource[res.Sprites]
@@ -40,7 +40,7 @@ type PanAndZoom struct {
 // Initialize the system
 func (s *PanAndZoom) Initialize(world *ecs.World) {
 	s.view = generic.NewResource[res.View](world)
-	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.screen = generic.NewResource[res.Screen](world)
 	s.bounds = generic.NewResource[res.WorldBounds](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
 	s.sprites = generic.NewResource[res.Sprites](world)

@@ -12,7 +12,7 @@ import (
 
 // HaulerPaths is a system to render paths.
 type HaulerPaths struct {
-	screen generic.Resource[res.EbitenImage]
+	screen generic.Resource[res.Screen]
 	view   generic.Resource[res.View]
 	update generic.Resource[res.UpdateInterval]
 
@@ -21,7 +21,7 @@ type HaulerPaths struct {
 
 // InitializeUI the system
 func (s *HaulerPaths) InitializeUI(world *ecs.World) {
-	s.screen = generic.NewResource[res.EbitenImage](world)
+	s.screen = generic.NewResource[res.Screen](world)
 	s.view = generic.NewResource[res.View](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 
