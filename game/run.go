@@ -130,7 +130,8 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	if loadGame {
 		g.Model.AddSystem(&sys.InitTerrainLoaded{})
 	} else {
-		g.Model.AddSystem(&sys.InitTerrain{})
+		//g.Model.AddSystem(&sys.InitTerrain{})
+		g.Model.AddSystem(&sys.InitTerrainMap{MapFolder: "maps", MapFile: "test-map"})
 	}
 
 	g.Model.AddSystem(&sys.Tick{})

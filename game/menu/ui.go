@@ -14,6 +14,8 @@ import (
 
 type UI struct {
 	ui *ebitenui.UI
+
+	infoLabel widget.Text
 }
 
 func (ui *UI) UI() *ebitenui.UI {
@@ -126,6 +128,32 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(newButton)
 
+	menuContainer.AddChild(ui.createLoadPanel(folder, games, fonts, start))
+
+	rootContainer.AddChild(menuContainer)
+
+	eui := ebitenui.UI{
+		Container: rootContainer,
+	}
+	ui.ui = &eui
+
+	return ui
+}
+
+func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, start func(string, bool)) *widget.Container {
+	menuContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+			}),
+			widget.WidgetOpts.MinSize(260, 20),
+		),
+	)
+
 	if len(games) > 0 {
 		worldsLabel := widget.NewText(
 			widget.TextOpts.Text("Load world:", fonts.Default, color.White),
@@ -133,6 +161,8 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 		)
 		menuContainer.AddChild(worldsLabel)
 	}
+
+	img := loadButtonImage()
 
 	for _, game := range games {
 		contextMenu := widget.NewContainer(
@@ -181,7 +211,7 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 				if err := deleteGame(folder, game); err != nil {
-					infoLabel.Label = err.Error()
+					ui.infoLabel.Label = err.Error()
 					return
 				}
 				menuContainer.RemoveChild(gameButton)
@@ -191,14 +221,7 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 
 	}
 
-	rootContainer.AddChild(menuContainer)
-
-	eui := ebitenui.UI{
-		Container: rootContainer,
-	}
-	ui.ui = &eui
-
-	return ui
+	return menuContainer
 }
 
 func loadButtonImage() *widget.ButtonImage {
