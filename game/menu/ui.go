@@ -22,7 +22,7 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
+func NewUI(folder, mapsFolder string, fonts *res.Fonts, start func(string, string, save.LoadType)) UI {
 	games, err := save.ListSaveGames(folder)
 	if err != nil {
 		panic(err)
@@ -46,7 +46,7 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 		)),
 	)
-	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
+	newWorldTab.AddChild(ui.createNewWorldPanel(mapsFolder, games, fonts, start))
 
 	loadWorldTab := widget.NewTabBookTab("Load World",
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
@@ -116,7 +116,12 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 	return ui
 }
 
-func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, bool)) *widget.Container {
+func (ui *UI) createNewWorldPanel(mapsFolder string, games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
+	maps, err := save.ListMaps(mapsFolder)
+	if err != nil {
+		panic(err)
+	}
+
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -156,44 +161,47 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 			widget.CaretOpts.Size(fonts.Default, 2),
 		),
 	)
-
-	newButton := widget.NewButton(
-		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
-				Stretch:  true,
-			}),
-		),
-		widget.ButtonOpts.Image(img),
-		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
-			Idle: color.NRGBA{255, 255, 255, 255},
-		}),
-		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			name := newName.GetText()
-			if len(name) == 0 {
-				ui.infoLabel.Label = "Give your world a name!"
-				return
-			}
-			if slices.Contains(games, name) {
-				ui.infoLabel.Label = "World already exists!"
-				return
-			}
-			if !save.IsValidName(name) {
-				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
-				return
-			}
-			start(name, false)
-		}),
-	)
-
 	menuContainer.AddChild(newName)
-	menuContainer.AddChild(newButton)
+
+	for _, m := range maps {
+		newButton := widget.NewButton(
+			widget.ButtonOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				}),
+			),
+			widget.ButtonOpts.Image(img),
+			widget.ButtonOpts.Text(m, fonts.Default, &widget.ButtonTextColor{
+				Idle:     color.NRGBA{255, 255, 255, 255},
+				Disabled: color.NRGBA{180, 180, 180, 255},
+			}),
+			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+				name := newName.GetText()
+				if len(name) == 0 {
+					ui.infoLabel.Label = "Give your world a name!"
+					return
+				}
+				if slices.Contains(games, name) {
+					ui.infoLabel.Label = "World already exists!"
+					return
+				}
+				if !save.IsValidName(name) {
+					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+					return
+				}
+				start(name, m, save.LoadTypeMap)
+			}),
+		)
+		menuContainer.AddChild(newButton)
+
+	}
 
 	return menuContainer
 }
 
-func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, start func(string, bool)) *widget.Container {
+func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -243,7 +251,7 @@ func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, s
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				start(game, true)
+				start(game, "", save.LoadTypeGame)
 			}),
 		)
 		menuContainer.AddChild(gameButton)

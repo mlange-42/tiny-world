@@ -9,6 +9,14 @@ import (
 
 type fileType string
 
+type LoadType uint8
+
+const (
+	LoadTypeNone LoadType = iota
+	LoadTypeGame
+	LoadTypeMap
+)
+
 func LoadWorld(world *ecs.World, folder, name string) error {
 	_ = ecs.ComponentID[comp.Tile](world)
 	_ = ecs.ComponentID[comp.Terrain](world)
