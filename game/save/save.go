@@ -2,6 +2,7 @@ package save
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/mlange-42/arche-model/model"
 	"github.com/mlange-42/arche-model/resource"
@@ -52,4 +53,10 @@ func IsValidName(name string) bool {
 
 func DeleteGame(folder, name string) error {
 	return deleteGame(folder, name)
+}
+
+func SaveMap(world *ecs.World) error {
+	b := strings.Builder{}
+	_ = b
+	return nil
 }

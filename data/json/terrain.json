@@ -24,6 +24,7 @@
             "build_on": ["buildable"],
             "connects_to": ["grass", "water", "desert"],
             "can_build": true,
+            "symbols": "-",
             "description": "A basic land tile"
         },
         {
@@ -33,6 +34,7 @@
             "connects_to": ["water"],
             "terrain_below": "grass",
             "can_build": true,
+            "symbols": "~",
             "description": "A land tile with water. Can be used by fisherman"
         },
         {
@@ -42,6 +44,7 @@
             "connects_to": ["desert"],
             "terrain_below": "grass",
             "can_build": true,
+            "symbols": "+",
             "description": "A desert land tile"
         },
 
@@ -66,6 +69,7 @@
             "build_cost": [
                 {"resource": "wood", "amount": 1}
             ],
+            "symbols": "pP",
             "description": "A path. Required by all buildings"
         },
         {
@@ -86,6 +90,7 @@
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 1}
             ],
+            "symbols": "b",
             "description": "A path over water. Can bridge a single water tile only"
         },
 
@@ -99,6 +104,7 @@
                 {"resource": "wood", "amount": 1},
                 {"resource": "stones", "amount": 1}
             ],
+            "symbols": "f",
             "description": "Can be used by farms to produce food"
         },
 
@@ -106,12 +112,14 @@
             "name": "tree",
             "build_on": ["grass"],
             "can_build": true,
+            "symbols": "t",
             "description": "Can be used by lumberjacks to produce wood"
         },
         {
             "name": "rock",
             "build_on": ["grass", "desert"],
             "can_build": true,
+            "symbols": "rR",
             "description": "Can be used by masons to produce stones"
         },
 
@@ -142,6 +150,7 @@
             "consumption": [
                 {"resource": "food", "amount": 1}
             ],
+            "symbols": "F",
             "description": "Produces 1 food/min per neighboring field"
         },
         {
@@ -170,6 +179,7 @@
             "consumption": [
                 {"resource": "food", "amount": 1}
             ],
+            "symbols": "iI",
             "description": "Produces 1 food/min per neighboring water"
         },
         {
@@ -199,6 +209,7 @@
             "consumption": [
                 {"resource": "food", "amount": 5}
             ],
+            "symbols": "l",
             "description": "Produces 1 wood/min per neighboring tree"
         },
         {
@@ -227,6 +238,7 @@
             "consumption": [
                 {"resource": "food", "amount": 5}
             ],
+            "symbols": "mM",
             "description": "Produces 1 stone/min per neighboring rock"
         },
         {
@@ -258,6 +270,7 @@
                     "tower", "castle", "warehouse"
                 ]
             },
+            "symbols": "wW",
             "description": "Increases the population limit by one per neighboring tile without trees or buildings. Stores some food and is a drop-off point for it"
         },
         {
@@ -286,6 +299,7 @@
                 "required_terrain": "path",
                 "bonus_terrain": ["water"]
             },
+            "symbols": "aA",
             "description": "Increases the population limit by one per neighboring water tile. Stores some food and is a drop-off point for it"
         },
         {
@@ -307,6 +321,7 @@
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}
             ],
+            "symbols": "hH",
             "description": "Stores resources and is a drop-off point for haulers"
         },
         {
@@ -329,6 +344,7 @@
                 {"resource": "wood", "amount": 1},
                 {"resource": "stones", "amount": 1}
             ],
+            "symbols": "oO",
             "description": "Conquers land to colonize"
         },
         {
@@ -351,6 +367,7 @@
                 {"resource": "wood", "amount": 3},
                 {"resource": "stones", "amount": 3}
             ],
+            "symbols": "cC",
             "description": "Conquers land to colonize"
         }
     ]
