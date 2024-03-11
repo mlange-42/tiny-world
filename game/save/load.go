@@ -1,9 +1,12 @@
 package save
 
 import (
+	"fmt"
+	"image"
 	"io/fs"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/mlange-42/arche/ecs"
@@ -40,21 +43,36 @@ func ListSaveGames(folder string) ([]string, error) {
 	return listFiles(folder, fileTypeJson)
 }
 
-func LoadMap(f fs.FS, folder, name string) ([][]rune, error) {
+func LoadMap(f fs.FS, folder, name string) ([][]rune, image.Point, error) {
 	mapStr, err := loadMap(f, folder, name)
 	if err != nil {
-		return nil, err
+		return nil, image.Point{}, err
 	}
 
 	var result [][]rune
 	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
+
+	sizeLine := lines[0]
+	parts := strings.Split(sizeLine, " ")
+	cx, err := strconv.Atoi(parts[0])
+	if err != nil {
+		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[0]))
+	}
+	cy, err := strconv.Atoi(parts[1])
+	if err != nil {
+		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
+	}
+
+	lines = lines[1:]
+
 	for _, s := range lines {
 		if len(s) > 0 {
-			result = append(result, []rune(s))
+			runes := []rune(s)
+			result = append(result, runes)
 		}
 	}
 
-	return result, nil
+	return result, image.Pt(cx, cy), nil
 }
 
 func ListMaps(f fs.FS, folder string) ([]string, error) {

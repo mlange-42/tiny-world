@@ -30,12 +30,12 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 	bounds := ecs.GetResource[res.WorldBounds](world)
 	fac := ecs.GetResource[res.EntityFactory](world)
 
-	mapData, err := save.LoadMap(s.FS, s.MapFolder, s.MapFile)
+	mapData, center, err := save.LoadMap(s.FS, s.MapFolder, s.MapFile)
 	if err != nil {
 		log.Fatal("error reading map file", err.Error())
 	}
 
-	xOff, yOff := (terrain.Width()+1-len(mapData[0]))/2, (terrain.Height()+1-len(mapData))/2
+	xOff, yOff := terrain.Width()/2-center.X, terrain.Height()/2-center.Y
 
 	x, y := terrain.Width()/2, terrain.Height()/2
 	bounds.Min = image.Pt(x-1, y-1)

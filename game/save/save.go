@@ -64,8 +64,11 @@ func SaveMap(folder, name string, world *ecs.World) error {
 	terrain := ecs.GetResource[res.Terrain](world)
 	landUse := ecs.GetResource[res.LandUse](world)
 
-	for x := bounds.Min.X; x <= bounds.Max.X; x++ {
-		for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
+	cx, cy := terrain.Width()/2, terrain.Height()/2
+	b.WriteString(fmt.Sprintf("%d %d\n", cx-bounds.Min.X, cy-bounds.Min.Y))
+
+	for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x <= bounds.Max.X; x++ {
 			ter := terrain.Get(x, y)
 			if !terr.Properties[ter].TerrainBits.Contains(terr.CanBuild) {
 				ter = terr.Air
