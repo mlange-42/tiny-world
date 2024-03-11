@@ -9,6 +9,7 @@
 ### Graphics
 
 * Adds random variants for grass tiles (#158)
+* Tweak info labels to accommodate 3-digit values without size changes (#164)
 
 ### Documentation
 
