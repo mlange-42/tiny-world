@@ -1,7 +1,6 @@
 package sys
 
 import (
-	"fmt"
 	"image"
 
 	"github.com/mlange-42/arche/ecs"
@@ -27,7 +26,6 @@ func (s *InitTerrain) Initialize(world *ecs.World) {
 	x, y := t.Width()/2, t.Height()/2
 	bounds.Min = image.Pt(x-1, y-1)
 	bounds.Max = image.Pt(x+1, y+1)
-	fmt.Println(bounds.Rectangle)
 
 	fac.Set(world, x, y, terr.Default, 0)
 

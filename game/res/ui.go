@@ -562,7 +562,8 @@ func (ui *UI) createInfo() *widget.Container {
 	ui.resourceLabels = make([]*widget.Text, len(resource.Properties))
 	for i := range resource.Properties {
 		cont, lab := ui.createLabel(resource.Properties[i].Short,
-			fmt.Sprintf("%s:\n   +production -consumption\n   (stock / max)", util.Capitalize(resource.Properties[i].Name)), 130, widget.TextPositionStart)
+			fmt.Sprintf("%s:\n   +production -consumption\n   (stock / max)", util.Capitalize(resource.Properties[i].Name)),
+			150, widget.TextPositionStart)
 		infoContainer.AddChild(cont)
 		ui.resourceLabels[i] = lab
 	}
