@@ -63,6 +63,15 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 	for haulerQuery.Next() {
 		haul := haulerQuery.Get()
 
+		// First tile of hauler path - not a path tile.
+		if haul.Index == len(haul.Path)-1 && haul.PathFraction < uint8(update.Interval/2+1) {
+			continue
+		}
+		// Last tile of hauler path - not a path tile.
+		if haul.Index <= 1 && haul.PathFraction >= uint8(update.Interval/2-1) {
+			continue
+		}
+
 		frac := float64(haul.PathFraction) / float64(update.Interval)
 		p1 := haul.Path[haul.Index]
 		p2 := haul.Path[haul.Index-1]
