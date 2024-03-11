@@ -15,7 +15,7 @@ import (
 type UI struct {
 	ui *ebitenui.UI
 
-	infoLabel widget.Text
+	infoLabel *widget.Text
 }
 
 func (ui *UI) UI() *ebitenui.UI {
@@ -50,6 +50,33 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 		),
 	)
 
+	menuContainer.AddChild(ui.createNewWorldPanel(games, fonts, start))
+	menuContainer.AddChild(ui.createLoadPanel(folder, games, fonts, start))
+
+	rootContainer.AddChild(menuContainer)
+
+	eui := ebitenui.UI{
+		Container: rootContainer,
+	}
+	ui.ui = &eui
+
+	return ui
+}
+
+func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, bool)) *widget.Container {
+	menuContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+			}),
+			widget.WidgetOpts.MinSize(260, 20),
+		),
+	)
+
 	img := loadButtonImage()
 
 	titleLabel := widget.NewText(
@@ -63,7 +90,7 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 		),
 	)
 
-	infoLabel := widget.NewText(
+	ui.infoLabel = widget.NewText(
 		widget.TextOpts.Text("   ", fonts.Default, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 	)
@@ -108,15 +135,15 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 			name := newName.GetText()
 			if len(name) == 0 {
-				infoLabel.Label = "Give your world a name!"
+				ui.infoLabel.Label = "Give your world a name!"
 				return
 			}
 			if slices.Contains(games, name) {
-				infoLabel.Label = "World already exists!"
+				ui.infoLabel.Label = "World already exists!"
 				return
 			}
 			if !save.IsValidName(name) {
-				infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
 				return
 			}
 			start(name, false)
@@ -124,20 +151,11 @@ func NewUI(folder string, fonts *res.Fonts, start func(string, bool)) UI {
 	)
 
 	menuContainer.AddChild(titleLabel)
-	menuContainer.AddChild(infoLabel)
+	menuContainer.AddChild(ui.infoLabel)
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(newButton)
 
-	menuContainer.AddChild(ui.createLoadPanel(folder, games, fonts, start))
-
-	rootContainer.AddChild(menuContainer)
-
-	eui := ebitenui.UI{
-		Container: rootContainer,
-	}
-	ui.ui = &eui
-
-	return ui
+	return menuContainer
 }
 
 func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, start func(string, bool)) *widget.Container {
