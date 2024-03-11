@@ -2,6 +2,10 @@
 
 ## [[unpublished]](https://github.com/mlange-42/tiny-world/compare/v0.1.0...main)
 
+### Game rules
+
+* Haulers stay in buildings for a second before continuing (#163)
+
 ### Graphics
 
 * Adds random variants for grass tiles (#158)

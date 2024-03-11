@@ -93,7 +93,7 @@ func (s *Haul) Update(world *ecs.World) {
 		tile, haul := query.Get()
 
 		haul.PathFraction++
-		if haul.Index <= 1 && haul.PathFraction >= uint8(update.Interval/2-1) {
+		if haul.Index <= 1 && haul.PathFraction >= uint8(update.Interval-1) {
 			s.arrived = append(s.arrived, query.Entity())
 			continue
 		}
@@ -106,10 +106,6 @@ func (s *Haul) Update(world *ecs.World) {
 		haul.Index--
 		last := haul.Path[haul.Index]
 		tile.X, tile.Y = last.X, last.Y
-
-		if haul.Index <= 0 || (haul.Index <= 1 && haul.PathFraction >= uint8(update.Interval/2-1)) {
-			s.arrived = append(s.arrived, query.Entity())
-		}
 	}
 
 	if len(s.toCreate) > 0 {
@@ -150,7 +146,7 @@ func (s *Haul) Update(world *ecs.World) {
 				Hauls:        entry.Resource,
 				Home:         entry.Home,
 				Path:         bestPath,
-				PathFraction: uint8(update.Interval/2) + 1,
+				PathFraction: 0,
 				Index:        len(bestPath) - 1,
 			},
 			&comp.HaulerSprite{
