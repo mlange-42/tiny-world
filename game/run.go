@@ -18,7 +18,7 @@ import (
 
 const TPS = 60
 const saveFolder = "save"
-const mapsFolder = "maps"
+const mapsFolder = "data/maps"
 
 var gameData embed.FS
 
@@ -41,7 +41,7 @@ func runMenu() {
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(saveFolder, mapsFolder, &fonts, func(name, mapName string, load save.LoadType) {
+	ui := menu.NewUI(gameData, saveFolder, mapsFolder, &fonts, func(name, mapName string, load save.LoadType) {
 		run(&g, name, mapName, load)
 	})
 
@@ -137,7 +137,11 @@ func runGame(g *Game, load save.LoadType, name, mapName, tileSet string) error {
 	if load == save.LoadTypeGame {
 		g.Model.AddSystem(&sys.InitTerrainLoaded{})
 	} else if load == save.LoadTypeMap {
-		g.Model.AddSystem(&sys.InitTerrainMap{MapFolder: "maps", MapFile: mapName})
+		g.Model.AddSystem(&sys.InitTerrainMap{
+			FS:        gameData,
+			MapFolder: "data/maps",
+			MapFile:   mapName,
+		})
 	} else {
 		g.Model.AddSystem(&sys.InitTerrain{})
 	}

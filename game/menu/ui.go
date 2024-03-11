@@ -3,6 +3,7 @@ package menu
 import (
 	"fmt"
 	"image/color"
+	"io/fs"
 	"slices"
 
 	"github.com/ebitenui/ebitenui"
@@ -13,6 +14,10 @@ import (
 )
 
 type UI struct {
+	fs         fs.FS
+	saveFolder string
+	mapsFolder string
+
 	ui *ebitenui.UI
 
 	infoLabel *widget.Text
@@ -22,13 +27,18 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func NewUI(folder, mapsFolder string, fonts *res.Fonts, start func(string, string, save.LoadType)) UI {
+func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(string, string, save.LoadType)) UI {
+	ui := UI{
+		fs:         f,
+		saveFolder: folder,
+		mapsFolder: mapsFolder,
+	}
+
 	games, err := save.ListSaveGames(folder)
 	if err != nil {
 		panic(err)
 	}
 
-	ui := UI{}
 	ui.infoLabel = widget.NewText(
 		widget.TextOpts.Text("   ", fonts.Default, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
@@ -46,7 +56,7 @@ func NewUI(folder, mapsFolder string, fonts *res.Fonts, start func(string, strin
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 		)),
 	)
-	newWorldTab.AddChild(ui.createNewWorldPanel(mapsFolder, games, fonts, start))
+	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
 
 	loadWorldTab := widget.NewTabBookTab("Load World",
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
@@ -54,7 +64,7 @@ func NewUI(folder, mapsFolder string, fonts *res.Fonts, start func(string, strin
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 		)),
 	)
-	loadWorldTab.AddChild(ui.createLoadPanel(folder, games, fonts, start))
+	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start))
 
 	img := loadButtonImage()
 	tabContainer := widget.NewTabBook(
@@ -116,8 +126,8 @@ func NewUI(folder, mapsFolder string, fonts *res.Fonts, start func(string, strin
 	return ui
 }
 
-func (ui *UI) createNewWorldPanel(mapsFolder string, games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
-	maps, err := save.ListMaps(mapsFolder)
+func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
+	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
 	if err != nil {
 		panic(err)
 	}
@@ -207,7 +217,7 @@ func (ui *UI) createNewWorldPanel(mapsFolder string, games []string, fonts *res.
 	return menuContainer
 }
 
-func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
+func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -277,7 +287,7 @@ func (ui *UI) createLoadPanel(folder string, games []string, fonts *res.Fonts, s
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				if err := deleteGame(folder, game); err != nil {
+				if err := deleteGame(ui.saveFolder, game); err != nil {
 					ui.infoLabel.Label = err.Error()
 					return
 				}

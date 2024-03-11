@@ -1,6 +1,9 @@
 package save
 
 import (
+	"io/fs"
+	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/mlange-42/arche/ecs"
@@ -37,8 +40,8 @@ func ListSaveGames(folder string) ([]string, error) {
 	return listFiles(folder, fileTypeJson)
 }
 
-func LoadMap(folder, name string) ([][]rune, error) {
-	mapStr, err := loadMap(folder, name)
+func LoadMap(f fs.FS, folder, name string) ([][]rune, error) {
+	mapStr, err := loadMap(f, folder, name)
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +57,36 @@ func LoadMap(folder, name string) ([][]rune, error) {
 	return result, nil
 }
 
-func ListMaps(folder string) ([]string, error) {
-	return listFiles(folder, fileTypeAscii)
+func ListMaps(f fs.FS, folder string) ([]string, error) {
+	return listFilesFS(f, folder, fileTypeAscii)
+}
+
+func loadMap(f fs.FS, folder, name string) (string, error) {
+	mapData, err := fs.ReadFile(f, path.Join(folder, name)+".asc")
+	if err != nil {
+		return "", err
+	}
+
+	return string(mapData), nil
+}
+
+func listFilesFS(f fs.FS, folder string, ft fileType) ([]string, error) {
+	games := []string{}
+
+	files, err := fs.ReadDir(f, folder)
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		ext := filepath.Ext(file.Name())
+		if ext == string(ft) {
+			base := strings.TrimSuffix(file.Name(), string(ft))
+			games = append(games, base)
+		}
+	}
+	return games, nil
 }

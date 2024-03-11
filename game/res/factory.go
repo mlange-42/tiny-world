@@ -174,8 +174,10 @@ func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, rand
 	f.setNeighbor(t, tE, x, y-1)
 	f.setNeighbor(t, tE, x, y+1)
 
-	bounds := f.bounds.Get()
-	bounds.AddPoint(image.Pt(x, y))
+	if value != terr.Air && value != terr.Buildable {
+		bounds := f.bounds.Get()
+		bounds.AddPoint(image.Pt(x, y))
+	}
 
 	return e
 }

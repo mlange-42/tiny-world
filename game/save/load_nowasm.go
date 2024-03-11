@@ -46,12 +46,3 @@ func listFiles(folder string, ft fileType) ([]string, error) {
 	}
 	return games, nil
 }
-
-func loadMap(folder, name string) (string, error) {
-	mapData, err := os.ReadFile(path.Join(folder, name) + ".asc")
-	if err != nil {
-		return "", err
-	}
-
-	return string(mapData), nil
-}

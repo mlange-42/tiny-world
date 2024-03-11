@@ -2,6 +2,8 @@ package sys
 
 import (
 	"fmt"
+	"image"
+	"io/fs"
 	"log"
 	"math"
 	"math/rand"
@@ -16,6 +18,7 @@ import (
 
 // InitTerrainMap system.
 type InitTerrainMap struct {
+	FS        fs.FS
 	MapFolder string
 	MapFile   string
 }
@@ -24,14 +27,19 @@ type InitTerrainMap struct {
 func (s *InitTerrainMap) Initialize(world *ecs.World) {
 	rules := ecs.GetResource[res.Rules](world)
 	terrain := ecs.GetResource[res.Terrain](world)
+	bounds := ecs.GetResource[res.WorldBounds](world)
 	fac := ecs.GetResource[res.EntityFactory](world)
 
-	mapData, err := save.LoadMap(s.MapFolder, s.MapFile)
+	mapData, err := save.LoadMap(s.FS, s.MapFolder, s.MapFile)
 	if err != nil {
 		log.Fatal("error reading map file", err.Error())
 	}
 
-	xOff, yOff := (terrain.Width()-len(mapData[0]))/2, (terrain.Height()-len(mapData))/2
+	xOff, yOff := (terrain.Width()+1-len(mapData[0]))/2, (terrain.Height()+1-len(mapData))/2
+
+	x, y := terrain.Width()/2, terrain.Height()/2
+	bounds.Min = image.Pt(x-1, y-1)
+	bounds.Max = image.Pt(x+1, y+1)
 
 	for y := 0; y < len(mapData); y++ {
 		line := mapData[y]
@@ -52,7 +60,6 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 		}
 	}
 
-	x, y := terrain.Width()/2, terrain.Height()/2
 	fac.SetBuildable(x, y, rules.InitialBuildRadius, true)
 
 	radFilter := generic.NewFilter2[comp.Tile, comp.BuildRadius]()

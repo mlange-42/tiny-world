@@ -40,12 +40,3 @@ func listFiles(folder string, ft fileType) ([]string, error) {
 
 	return games, nil
 }
-
-func loadMap(folder, name string) (string, error) {
-	_ = folder
-
-	storage := js.Global().Get("localStorage")
-	mapData := storage.Call("getItem", saveMapPrefix+name)
-
-	return mapData.String(), nil
-}
