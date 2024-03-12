@@ -54,14 +54,25 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
 		)),
 	)
 	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
+
+	scenariosTab := widget.NewTabBookTab("Scenarios",
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
+		)),
+	)
+	scenariosTab.AddChild(ui.createScenariosPanel(games, fonts, start))
 
 	loadWorldTab := widget.NewTabBookTab("Load World",
 		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
 		)),
 	)
 	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start))
@@ -77,14 +88,18 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 					HorizontalPosition: widget.AnchorLayoutPositionCenter,
 					VerticalPosition:   widget.AnchorLayoutPositionCenter,
 				}),
-				widget.WidgetOpts.MinSize(260, 20),
+				widget.WidgetOpts.MinSize(360, 20),
 			),
 		),
 		widget.TabBookOpts.TabButtonOpts(
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(98, 0)),
 		),
-		widget.TabBookOpts.Tabs(newWorldTab, loadWorldTab),
+		widget.TabBookOpts.Tabs(
+			newWorldTab,
+			scenariosTab,
+			loadWorldTab,
+		),
 	)
 
 	menuContainer := widget.NewContainer(
@@ -97,7 +112,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
 				VerticalPosition:   widget.AnchorLayoutPositionCenter,
 			}),
-			widget.WidgetOpts.MinSize(260, 360),
+			widget.WidgetOpts.MinSize(360, 360),
 		),
 	)
 
@@ -127,11 +142,6 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 }
 
 func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
-	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
-	if err != nil {
-		panic(err)
-	}
-
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -141,7 +151,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
 			}),
-			widget.WidgetOpts.MinSize(260, 20),
+			widget.WidgetOpts.MinSize(360, 20),
 		),
 	)
 
@@ -172,47 +182,39 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		),
 	)
 
-	mapsLabel := widget.NewText(
-		widget.TextOpts.Text("Maps:", fonts.Default, color.White),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
 	menuContainer.AddChild(newName)
-	menuContainer.AddChild(mapsLabel)
 
-	for _, m := range maps {
-		newButton := widget.NewButton(
-			widget.ButtonOpts.WidgetOpts(
-				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-					Position: widget.RowLayoutPositionCenter,
-					Stretch:  true,
-				}),
-			),
-			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(m, fonts.Default, &widget.ButtonTextColor{
-				Idle:     color.NRGBA{255, 255, 255, 255},
-				Disabled: color.NRGBA{180, 180, 180, 255},
+	newButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+				Stretch:  true,
 			}),
-			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				name := newName.GetText()
-				if len(name) == 0 {
-					ui.infoLabel.Label = "Give your world a name!"
-					return
-				}
-				if slices.Contains(games, name) {
-					ui.infoLabel.Label = "World already exists!"
-					return
-				}
-				if !save.IsValidName(name) {
-					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
-					return
-				}
-				start(name, m, save.LoadTypeMap)
-			}),
-		)
-		menuContainer.AddChild(newButton)
-
-	}
+		),
+		widget.ButtonOpts.Image(img),
+		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
+			Idle:     color.NRGBA{255, 255, 255, 255},
+			Disabled: color.NRGBA{180, 180, 180, 255},
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			name := newName.GetText()
+			if len(name) == 0 {
+				ui.infoLabel.Label = "Give your world a name!"
+				return
+			}
+			if slices.Contains(games, name) {
+				ui.infoLabel.Label = "World already exists!"
+				return
+			}
+			if !save.IsValidName(name) {
+				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+				return
+			}
+			start(name, "", save.LoadTypeNone)
+		}),
+	)
+	menuContainer.AddChild(newButton)
 
 	return menuContainer
 }
@@ -227,7 +229,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts, start func(strin
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
 			}),
-			widget.WidgetOpts.MinSize(260, 20),
+			widget.WidgetOpts.MinSize(360, 20),
 		),
 	)
 
@@ -295,6 +297,97 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts, start func(strin
 			}),
 		)
 		contextMenu.AddChild(deleteButton)
+
+	}
+
+	return menuContainer
+}
+
+func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(string, string, save.LoadType)) *widget.Container {
+	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
+	if err != nil {
+		panic(err)
+	}
+
+	menuContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+			}),
+			widget.WidgetOpts.MinSize(360, 20),
+		),
+	)
+
+	img := loadButtonImage()
+
+	newName := widget.NewTextInput(
+		widget.TextInputOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+				Stretch:  true,
+			}),
+		),
+		widget.TextInputOpts.Placeholder("World name"),
+		widget.TextInputOpts.Face(fonts.Default),
+		widget.TextInputOpts.Image(&widget.TextInputImage{
+			Idle:     image.NewNineSliceColor(color.NRGBA{R: 40, G: 40, B: 40, A: 255}),
+			Disabled: image.NewNineSliceColor(color.NRGBA{R: 80, G: 80, B: 80, A: 255}),
+		}),
+		widget.TextInputOpts.Color(&widget.TextInputColor{
+			Idle:          color.NRGBA{254, 255, 255, 255},
+			Disabled:      color.NRGBA{R: 200, G: 200, B: 200, A: 255},
+			Caret:         color.NRGBA{254, 255, 255, 255},
+			DisabledCaret: color.NRGBA{R: 200, G: 200, B: 200, A: 255},
+		}),
+		widget.TextInputOpts.Padding(widget.NewInsetsSimple(5)),
+		widget.TextInputOpts.CaretOpts(
+			widget.CaretOpts.Size(fonts.Default, 2),
+		),
+	)
+
+	mapsLabel := widget.NewText(
+		widget.TextOpts.Text("Scenarios:", fonts.Default, color.White),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	menuContainer.AddChild(newName)
+	menuContainer.AddChild(mapsLabel)
+
+	for _, m := range maps {
+		newButton := widget.NewButton(
+			widget.ButtonOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				}),
+			),
+			widget.ButtonOpts.Image(img),
+			widget.ButtonOpts.Text(m, fonts.Default, &widget.ButtonTextColor{
+				Idle:     color.NRGBA{255, 255, 255, 255},
+				Disabled: color.NRGBA{180, 180, 180, 255},
+			}),
+			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+				name := newName.GetText()
+				if len(name) == 0 {
+					ui.infoLabel.Label = "Give your world a name!"
+					return
+				}
+				if slices.Contains(games, name) {
+					ui.infoLabel.Label = "World already exists!"
+					return
+				}
+				if !save.IsValidName(name) {
+					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+					return
+				}
+				start(name, m, save.LoadTypeMap)
+			}),
+		)
+		menuContainer.AddChild(newButton)
 
 	}
 
