@@ -32,7 +32,7 @@ func NewFonts(fSys fs.FS) Fonts {
 	if err != nil {
 		log.Fatal(err)
 	}
-	titleFace, err := makeSize(tt, 32)
+	titleFace, err := makeSize(tt, 48)
 	if err != nil {
 		log.Fatal(err)
 	}
