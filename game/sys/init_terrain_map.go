@@ -20,7 +20,7 @@ import (
 type InitTerrainMap struct {
 	FS        fs.FS
 	MapFolder string
-	MapFile   string
+	Map       save.MapLocation
 }
 
 // Initialize the system
@@ -30,9 +30,9 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 	bounds := ecs.GetResource[res.WorldBounds](world)
 	fac := ecs.GetResource[res.EntityFactory](world)
 
-	mapData, ter, center, err := save.LoadMap(s.FS, s.MapFolder, s.MapFile)
+	mapData, ter, center, err := save.LoadMap(s.FS, s.MapFolder, s.Map)
 	if err != nil {
-		log.Fatal("error reading map file", err.Error())
+		log.Fatal("error reading map file: ", err.Error())
 	}
 
 	terrains := []terr.Terrain{}

@@ -15,6 +15,11 @@ import (
 
 type LoadType uint8
 
+type MapLocation struct {
+	Name       string
+	IsEmbedded bool
+}
+
 const (
 	LoadTypeNone LoadType = iota
 	LoadTypeGame
@@ -41,8 +46,8 @@ func ListSaveGames(folder string) ([]string, error) {
 	return listGames(folder)
 }
 
-func LoadMap(f fs.FS, folder, name string) ([][]rune, []rune, image.Point, error) {
-	mapStr, err := loadMap(f, folder, name)
+func LoadMap(f fs.FS, folder string, mapLoc MapLocation) ([][]rune, []rune, image.Point, error) {
+	mapStr, err := loadMap(f, folder, mapLoc)
 	if err != nil {
 		return nil, nil, image.Point{}, err
 	}
@@ -75,23 +80,35 @@ func LoadMap(f fs.FS, folder, name string) ([][]rune, []rune, image.Point, error
 	return result, terrains, image.Pt(cx, cy), nil
 }
 
-func ListMaps(f fs.FS, folder string) ([]string, error) {
-	return listFilesFS(f, folder)
+func ListMaps(f fs.FS, folder string) ([]MapLocation, error) {
+	lst, err := listMapsEmbed(f, folder)
+	if err != nil {
+		return nil, err
+	}
+	lst2, err := listMapsLocal(folder)
+	if err != nil {
+		return nil, err
+	}
+	return append(lst, lst2...), nil
 }
 
-func loadMap(f fs.FS, folder, name string) (string, error) {
-	mapData, err := fs.ReadFile(f, path.Join(folder, name)+".asc")
-	if err != nil {
-		return "", err
+func loadMap(f fs.FS, folder string, mapLoc MapLocation) (string, error) {
+	if mapLoc.IsEmbedded {
+		mapData, err := fs.ReadFile(f, path.Join("data", folder, mapLoc.Name)+".asc")
+		if err != nil {
+			return "", err
+		}
+
+		return string(mapData), nil
 	}
 
-	return string(mapData), nil
+	return loadMapLocal(folder, mapLoc.Name)
 }
 
-func listFilesFS(f fs.FS, folder string) ([]string, error) {
-	games := []string{}
+func listMapsEmbed(f fs.FS, folder string) ([]MapLocation, error) {
+	maps := []MapLocation{}
 
-	files, err := fs.ReadDir(f, folder)
+	files, err := fs.ReadDir(f, path.Join("data", folder))
 	if err != nil {
 		return nil, nil
 	}
@@ -103,8 +120,8 @@ func listFilesFS(f fs.FS, folder string) ([]string, error) {
 		ext := filepath.Ext(file.Name())
 		if ext == ".asc" {
 			base := strings.TrimSuffix(file.Name(), ".asc")
-			games = append(games, base)
+			maps = append(maps, MapLocation{Name: base, IsEmbedded: true})
 		}
 	}
-	return games, nil
+	return maps, nil
 }
