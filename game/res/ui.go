@@ -85,7 +85,7 @@ type UI struct {
 	randomButtonsContainer *widget.Container
 	randomContainers       []*widget.Container
 	randomButtons          map[int]randomButton
-	mouseBlockers          []*widget.Container
+	mouseBlockers          []*widget.Widget
 
 	specialCardSprite    int
 	buttonIdleSprite     int
@@ -140,9 +140,7 @@ func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
 func (ui *UI) MouseInside(x, y int) bool {
 	pt := stdimage.Pt(x, y)
 	for _, w := range ui.mouseBlockers {
-		ww := w.GetWidget()
-
-		if ww.Visibility == widget.Visibility_Show && pt.In(ww.Rect) {
+		if w.Visibility == widget.Visibility_Show && pt.In(w.Rect) {
 			return true
 		}
 	}
@@ -354,7 +352,7 @@ func (ui *UI) createUI() *widget.Container {
 	innerContainer.AddChild(ui.randomButtonsContainer)
 
 	anchor.AddChild(innerContainer)
-	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer)
+	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer.GetWidget())
 
 	return anchor
 }
@@ -443,7 +441,7 @@ func (ui *UI) createHUD() *widget.Container {
 
 	anchor.AddChild(topBar)
 
-	ui.mouseBlockers = append(ui.mouseBlockers, info, menu)
+	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget(), menu.GetWidget())
 
 	return anchor
 }
@@ -481,7 +479,7 @@ func (ui *UI) createMenu() *widget.Container {
 	menuTooltipContainer.AddChild(menuLabel)
 
 	mainMenu := ui.createMainMenu()
-	ui.mouseBlockers = append(ui.mouseBlockers, mainMenu)
+	ui.mouseBlockers = append(ui.mouseBlockers, mainMenu.GetWidget())
 
 	menuButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
