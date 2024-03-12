@@ -51,7 +51,6 @@ const helpText = "Tiny World Help" +
 
 const helpTooltipWidth = 800
 
-const menuTooltipText = "The game menu.\nRight-click to open."
 const saveTooltipText = "Save game to disk or local browser storage."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
@@ -466,21 +465,6 @@ func (ui *UI) createMenu() *widget.Container {
 		),
 	)
 
-	menuTooltipContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
-		)),
-		widget.ContainerOpts.AutoDisableChildren(),
-		widget.ContainerOpts.BackgroundImage(ui.background),
-	)
-	menuLabel := widget.NewText(
-		widget.TextOpts.Text(menuTooltipText, ui.fonts.Default, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(360),
-	)
-	menuTooltipContainer.AddChild(menuLabel)
-
 	mainMenu := ui.createMainMenu()
 
 	menuButton := widget.NewButton(
@@ -489,12 +473,6 @@ func (ui *UI) createMenu() *widget.Container {
 				Position: widget.RowLayoutPositionStart,
 				Stretch:  false,
 			}),
-			widget.WidgetOpts.ToolTip(widget.NewToolTip(
-				widget.ToolTipOpts.Content(menuTooltipContainer),
-				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
-				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
-				widget.ToolTipOpts.Delay(time.Millisecond*300),
-			)),
 			widget.WidgetOpts.ContextMenu(mainMenu),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
@@ -502,7 +480,14 @@ func (ui *UI) createMenu() *widget.Container {
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			if args.Button.GetWidget().ContextMenu != nil {
+				cx, cy := ebiten.CursorPosition()
+				args.Button.GetWidget().FireContextMenuEvent(nil, stdimage.Pt(cx, cy))
+			}
+		}),
 	)
+
 	ui.mouseBlockers = append(ui.mouseBlockers, menuButton.GetWidget())
 
 	helpTooltipContainer := widget.NewContainer(
@@ -535,9 +520,6 @@ func (ui *UI) createMenu() *widget.Container {
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-
-		}),
 	)
 
 	menuContainer.AddChild(menuButton)
