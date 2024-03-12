@@ -51,6 +51,7 @@ const helpText = "Tiny World Help" +
 
 const helpTooltipWidth = 800
 
+const menuTooltipText = "The game menu. Right-click to open"
 const saveTooltipText = "Save game to disk or local browser storage."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
@@ -139,7 +140,9 @@ func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
 func (ui *UI) MouseInside(x, y int) bool {
 	pt := stdimage.Pt(x, y)
 	for _, w := range ui.mouseBlockers {
-		if pt.In(w.GetWidget().Rect) {
+		ww := w.GetWidget()
+
+		if ww.Visibility == widget.Visibility_Show && pt.In(ww.Rect) {
 			return true
 		}
 	}
@@ -462,7 +465,7 @@ func (ui *UI) createMenu() *widget.Container {
 		),
 	)
 
-	saveTooltipContainer := widget.NewContainer(
+	menuTooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
@@ -470,34 +473,35 @@ func (ui *UI) createMenu() *widget.Container {
 		widget.ContainerOpts.AutoDisableChildren(),
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
-	saveLabel := widget.NewText(
-		widget.TextOpts.Text(saveTooltipText, ui.fonts.Default, ui.sprites.TextColor),
+	menuLabel := widget.NewText(
+		widget.TextOpts.Text(menuTooltipText, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
-	saveTooltipContainer.AddChild(saveLabel)
+	menuTooltipContainer.AddChild(menuLabel)
 
-	saveButton := widget.NewButton(
+	mainMenu := ui.createMainMenu()
+	ui.mouseBlockers = append(ui.mouseBlockers, mainMenu)
+
+	menuButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
 				Stretch:  false,
 			}),
 			widget.WidgetOpts.ToolTip(widget.NewToolTip(
-				widget.ToolTipOpts.Content(saveTooltipContainer),
+				widget.ToolTipOpts.Content(menuTooltipContainer),
 				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
 				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
 				widget.ToolTipOpts.Delay(time.Millisecond*300),
 			)),
+			widget.WidgetOpts.ContextMenu(mainMenu),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Menu", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.saveEvent.ShouldSave = true
-		}),
 	)
 
 	helpTooltipContainer := widget.NewContainer(
@@ -535,10 +539,62 @@ func (ui *UI) createMenu() *widget.Container {
 		}),
 	)
 
-	menuContainer.AddChild(saveButton)
+	menuContainer.AddChild(menuButton)
 	menuContainer.AddChild(helpButton)
 	return menuContainer
 }
+
+func (ui *UI) createMainMenu() *widget.Container {
+	contextMenu := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+		)),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+
+	saveTooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	saveLabel := widget.NewText(
+		widget.TextOpts.Text(saveTooltipText, ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(360),
+	)
+	saveTooltipContainer.AddChild(saveLabel)
+
+	saveButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  false,
+			}),
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(saveTooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSave = true
+		}),
+	)
+	contextMenu.AddChild(saveButton)
+
+	return contextMenu
+}
+
 func (ui *UI) createInfo() *widget.Container {
 	infoContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
