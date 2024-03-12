@@ -4,13 +4,17 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
+	"math/rand"
 	"slices"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/save"
+	"github.com/mlange-42/tiny-world/game/sprites"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 type UI struct {
@@ -20,23 +24,41 @@ type UI struct {
 
 	ui *ebitenui.UI
 
+	sprites      *res.Sprites
 	infoLabel    *widget.Text
 	tabContainer *widget.TabBook
 	tabs         []*widget.TabBookTab
+
+	background        *image.NineSlice
+	backgroundHover   *image.NineSlice
+	backgroundPressed *image.NineSlice
 }
 
 func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, fonts *res.Fonts,
+func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprites, fonts *res.Fonts,
 	start func(string, save.MapLocation, save.LoadType),
 	restart func(tab int)) UI {
 	ui := UI{
 		fs:         f,
 		saveFolder: folder,
 		mapsFolder: mapsFolder,
+		sprites:    sprts,
 	}
+
+	sp := ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanel))
+	w := sp.Bounds().Dx()
+	ui.background = image.NewNineSliceSimple(sp, w/4, w/2)
+
+	sp = ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanelHover))
+	w = sp.Bounds().Dx()
+	ui.backgroundHover = image.NewNineSliceSimple(sp, w/4, w/2)
+
+	sp = ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanelPressed))
+	w = sp.Bounds().Dx()
+	ui.backgroundPressed = image.NewNineSliceSimple(sp, w/4, w/2)
 
 	games, err := save.ListSaveGames(folder)
 	if err != nil {
@@ -44,61 +66,77 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, fonts *res.Fonts
 	}
 
 	ui.infoLabel = widget.NewText(
-		widget.TextOpts.Text("   ", fonts.Default, color.RGBA{R: 255, G: 255, B: 150, A: 255}),
+		widget.TextOpts.Text("   ", fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+
+	rootGrid := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(3),
+			widget.GridLayoutOpts.Stretch([]bool{true, false, true}, []bool{true}),
+			widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+			widget.GridLayoutOpts.Spacing(84, 84),
+		)),
 	)
 
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
 			widget.AnchorLayoutOpts.Padding(widget.NewInsetsSimple(12)),
 		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+				MaxWidth:           460,
+			}),
+			widget.WidgetOpts.MinSize(460, 20),
+		),
 	)
 
 	newWorldTab := widget.NewTabBookTab("New World",
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
 		)),
 	)
 	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
 
 	scenariosTab := widget.NewTabBookTab("Scenarios",
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
 		)),
 	)
 	scenariosTab.AddChild(ui.createScenariosPanel(games, fonts, start))
 
 	loadWorldTab := widget.NewTabBookTab("Load World",
-		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 0, 0, 255})),
+		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
 		)),
 	)
 	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start, restart))
 	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab)
 
-	img := loadButtonImage()
+	img := ui.defaultButtonImage()
 	ui.tabContainer = widget.NewTabBook(
 		widget.TabBookOpts.TabButtonImage(img),
-		widget.TabBookOpts.TabButtonText(fonts.Default, &widget.ButtonTextColor{Idle: color.White, Disabled: color.White}),
+		widget.TabBookOpts.TabButtonText(fonts.Default, &widget.ButtonTextColor{Idle: ui.sprites.TextColor, Disabled: ui.sprites.TextColor}),
 		widget.TabBookOpts.TabButtonSpacing(0),
 		widget.TabBookOpts.ContainerOpts(
 			widget.ContainerOpts.WidgetOpts(
-				widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-					HorizontalPosition: widget.AnchorLayoutPositionCenter,
-					VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
 				}),
 				widget.WidgetOpts.MinSize(360, 20),
 			),
 		),
 		widget.TabBookOpts.TabButtonOpts(
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(98, 0)),
+			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(60, 0)),
 		),
 		widget.TabBookOpts.Tabs(
 			newWorldTab,
@@ -123,7 +161,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, fonts *res.Fonts
 	)
 
 	titleLabel := widget.NewText(
-		widget.TextOpts.Text("Tiny World", fonts.Title, color.RGBA{R: 255, G: 255, B: 255, A: 255}),
+		widget.TextOpts.Text("Tiny World", fonts.Title, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -139,12 +177,37 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, fonts *res.Fonts
 
 	rootContainer.AddChild(menuContainer)
 
+	t1, t2 := ui.drawRandomSprites()
+
+	rootGrid.AddChild(ui.createIconContainer(t1, widget.AnchorLayoutPositionEnd))
+	rootGrid.AddChild(rootContainer)
+	rootGrid.AddChild(ui.createIconContainer(t2, widget.AnchorLayoutPositionStart))
+
 	eui := ebitenui.UI{
-		Container: rootContainer,
+		Container: rootGrid,
 	}
 	ui.ui = &eui
 
 	return ui
+}
+
+func (ui *UI) createIconContainer(t terr.Terrain, align widget.AnchorLayoutPosition) *widget.Container {
+	container := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
+			widget.AnchorLayoutOpts.Padding(widget.NewInsetsSimple(24)),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
+	graphic := ui.createTerrainGraphic(t, align)
+	container.AddChild(graphic)
+
+	return container
 }
 
 func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
@@ -161,7 +224,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		),
 	)
 
-	img := loadButtonImage()
+	img := ui.defaultButtonImage()
 
 	newName := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(
@@ -173,14 +236,14 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		widget.TextInputOpts.Placeholder("World name"),
 		widget.TextInputOpts.Face(fonts.Default),
 		widget.TextInputOpts.Image(&widget.TextInputImage{
-			Idle:     image.NewNineSliceColor(color.NRGBA{R: 40, G: 40, B: 40, A: 255}),
-			Disabled: image.NewNineSliceColor(color.NRGBA{R: 80, G: 80, B: 80, A: 255}),
+			Idle:     ui.background,
+			Disabled: ui.backgroundHover,
 		}),
 		widget.TextInputOpts.Color(&widget.TextInputColor{
-			Idle:          color.NRGBA{254, 255, 255, 255},
-			Disabled:      color.NRGBA{R: 200, G: 200, B: 200, A: 255},
-			Caret:         color.NRGBA{254, 255, 255, 255},
-			DisabledCaret: color.NRGBA{R: 200, G: 200, B: 200, A: 255},
+			Idle:          ui.sprites.TextColor,
+			Disabled:      ui.sprites.TextColor,
+			Caret:         ui.sprites.TextColor,
+			DisabledCaret: ui.sprites.TextColor,
 		}),
 		widget.TextInputOpts.Padding(widget.NewInsetsSimple(5)),
 		widget.TextInputOpts.CaretOpts(
@@ -199,8 +262,8 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		),
 		widget.ButtonOpts.Image(img),
 		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
-			Idle:     color.NRGBA{255, 255, 255, 255},
-			Disabled: color.NRGBA{180, 180, 180, 255},
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
@@ -243,13 +306,13 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 
 	if len(games) > 0 {
 		worldsLabel := widget.NewText(
-			widget.TextOpts.Text("Load world:", fonts.Default, color.White),
+			widget.TextOpts.Text("Load world:", fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		)
 		menuContainer.AddChild(worldsLabel)
 	}
 
-	img := loadButtonImage()
+	img := ui.defaultButtonImage()
 
 	for _, game := range games {
 		contextMenu := widget.NewContainer(
@@ -257,9 +320,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
 			)),
-			widget.ContainerOpts.BackgroundImage(
-				image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255}),
-			),
+			widget.ContainerOpts.BackgroundImage(ui.background),
 		)
 
 		gameButton := widget.NewButton(
@@ -272,8 +333,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 			),
 			widget.ButtonOpts.Image(img),
 			widget.ButtonOpts.Text(game, fonts.Default, &widget.ButtonTextColor{
-				Idle:     color.NRGBA{255, 255, 255, 255},
-				Disabled: color.NRGBA{180, 180, 180, 255},
+				Idle:     ui.sprites.TextColor,
+				Disabled: ui.sprites.TextColor,
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
@@ -292,8 +353,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 			),
 			widget.ButtonOpts.Image(img),
 			widget.ButtonOpts.Text(fmt.Sprintf("Delete '%s'", game), fonts.Default, &widget.ButtonTextColor{
-				Idle:     color.NRGBA{255, 255, 255, 255},
-				Disabled: color.NRGBA{180, 180, 180, 255},
+				Idle:     ui.sprites.TextColor,
+				Disabled: ui.sprites.TextColor,
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
@@ -334,7 +395,7 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 		),
 	)
 
-	img := loadButtonImage()
+	img := ui.defaultButtonImage()
 
 	newName := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(
@@ -346,14 +407,14 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 		widget.TextInputOpts.Placeholder("World name"),
 		widget.TextInputOpts.Face(fonts.Default),
 		widget.TextInputOpts.Image(&widget.TextInputImage{
-			Idle:     image.NewNineSliceColor(color.NRGBA{R: 40, G: 40, B: 40, A: 255}),
-			Disabled: image.NewNineSliceColor(color.NRGBA{R: 80, G: 80, B: 80, A: 255}),
+			Idle:     ui.background,
+			Disabled: ui.background,
 		}),
 		widget.TextInputOpts.Color(&widget.TextInputColor{
-			Idle:          color.NRGBA{254, 255, 255, 255},
-			Disabled:      color.NRGBA{R: 200, G: 200, B: 200, A: 255},
-			Caret:         color.NRGBA{254, 255, 255, 255},
-			DisabledCaret: color.NRGBA{R: 200, G: 200, B: 200, A: 255},
+			Idle:          ui.sprites.TextColor,
+			Disabled:      ui.sprites.TextColor,
+			Caret:         ui.sprites.TextColor,
+			DisabledCaret: ui.sprites.TextColor,
 		}),
 		widget.TextInputOpts.Padding(widget.NewInsetsSimple(5)),
 		widget.TextInputOpts.CaretOpts(
@@ -362,7 +423,7 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 	)
 
 	mapsLabel := widget.NewText(
-		widget.TextOpts.Text("Scenarios:", fonts.Default, color.White),
+		widget.TextOpts.Text("Scenarios:", fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 	)
 	menuContainer.AddChild(newName)
@@ -378,7 +439,7 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 			),
 			widget.ButtonOpts.Image(img),
 			widget.ButtonOpts.Text(m.Name, fonts.Default, &widget.ButtonTextColor{
-				Idle:     color.NRGBA{255, 255, 255, 255},
+				Idle:     ui.sprites.TextColor,
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -406,20 +467,75 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 	return menuContainer
 }
 
-func loadButtonImage() *widget.ButtonImage {
-	idle := image.NewNineSliceColor(color.NRGBA{60, 60, 60, 255})
+func deleteGame(folder, game string) error {
+	return save.DeleteGame(folder, game)
+}
 
-	hover := image.NewNineSliceColor(color.NRGBA{40, 40, 40, 255})
-
-	pressed := image.NewNineSliceColor(color.NRGBA{20, 20, 20, 255})
-
+func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	return &widget.ButtonImage{
-		Idle:    idle,
-		Hover:   hover,
-		Pressed: pressed,
+		Idle:    ui.background,
+		Hover:   ui.backgroundHover,
+		Pressed: ui.backgroundPressed,
 	}
 }
 
-func deleteGame(folder, game string) error {
-	return save.DeleteGame(folder, game)
+func (ui *UI) createTerrainGraphic(terrain terr.Terrain, align widget.AnchorLayoutPosition) *widget.Graphic {
+	img := ui.createTerrainImage(terrain)
+
+	button := widget.NewGraphic(
+		widget.GraphicOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: align,
+				VerticalPosition:   widget.AnchorLayoutPositionCenter,
+			}),
+			widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
+		),
+		widget.GraphicOpts.Image(img),
+	)
+
+	return button
+}
+
+func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
+	scale := 3
+
+	props := &terr.Properties[t]
+
+	img := ebiten.NewImage(ui.sprites.TileWidth*scale, ui.sprites.TileWidth*scale)
+	idx := ui.sprites.GetTerrainIndex(t)
+
+	height := 0
+
+	if props.TerrainBelow != terr.Air {
+		idx2 := ui.sprites.GetTerrainIndex(props.TerrainBelow)
+		info2 := ui.sprites.GetInfo(idx2)
+
+		sp2 := ui.sprites.Get(idx2)
+		op := ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp2.Bounds().Dy()))
+		op.GeoM.Scale(float64(scale), float64(scale))
+		img.DrawImage(sp2, &op)
+
+		height = info2.Height
+	}
+
+	sp1 := ui.sprites.GetRand(idx, 0, 0)
+	op := ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp1.Bounds().Dy()-height))
+	op.GeoM.Scale(float64(scale), float64(scale))
+	img.DrawImage(sp1, &op)
+
+	return img
+}
+
+func (ui *UI) drawRandomSprites() (terr.Terrain, terr.Terrain) {
+	candidates := []terr.Terrain{}
+
+	for i := range terr.Properties {
+		prop := &terr.Properties[i]
+		if prop.TerrainBits.Contains(terr.CanBuy) && !prop.TerrainBits.Contains(terr.IsPath) {
+			candidates = append(candidates, terr.Terrain(i))
+		}
+	}
+	return candidates[rand.Intn(len(candidates))], candidates[rand.Intn(len(candidates))]
 }

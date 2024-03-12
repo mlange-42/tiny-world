@@ -25,6 +25,9 @@ var gameData embed.FS
 func Run(data embed.FS) {
 	gameData = data
 
+	resource.Prepare(gameData, "data/json/resources.json")
+	terr.Prepare(gameData, "data/json/terrain.json")
+
 	game := NewGame(nil)
 	runMenu(&game, 0)
 
@@ -46,8 +49,11 @@ func runMenu(g *Game, tab int) {
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
+	sprites := res.NewSprites(gameData, "data/gfx", "paper")
+	ecs.AddResource(&g.Model.World, &sprites)
+
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &fonts,
+	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &sprites, &fonts,
 		func(name string, mapLoc save.MapLocation, load save.LoadType) {
 			run(g, name, mapLoc, load)
 		},
@@ -68,9 +74,6 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	ebiten.SetVsyncEnabled(true)
 
 	g.Model = model.New()
-
-	resource.Prepare(gameData, "data/json/resources.json")
-	terr.Prepare(gameData, "data/json/terrain.json")
 
 	// =========== Resources ===========
 
