@@ -13,8 +13,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/comp"
 )
 
-type fileType string
-
 type LoadType uint8
 
 const (
@@ -40,7 +38,7 @@ func LoadWorld(world *ecs.World, folder, name string) error {
 }
 
 func ListSaveGames(folder string) ([]string, error) {
-	return listFiles(folder, fileTypeJson)
+	return listGames(folder)
 }
 
 func LoadMap(f fs.FS, folder, name string) ([][]rune, []rune, image.Point, error) {
@@ -78,7 +76,7 @@ func LoadMap(f fs.FS, folder, name string) ([][]rune, []rune, image.Point, error
 }
 
 func ListMaps(f fs.FS, folder string) ([]string, error) {
-	return listFilesFS(f, folder, fileTypeAscii)
+	return listFilesFS(f, folder)
 }
 
 func loadMap(f fs.FS, folder, name string) (string, error) {
@@ -90,7 +88,7 @@ func loadMap(f fs.FS, folder, name string) (string, error) {
 	return string(mapData), nil
 }
 
-func listFilesFS(f fs.FS, folder string, ft fileType) ([]string, error) {
+func listFilesFS(f fs.FS, folder string) ([]string, error) {
 	games := []string{}
 
 	files, err := fs.ReadDir(f, folder)
@@ -103,8 +101,8 @@ func listFilesFS(f fs.FS, folder string, ft fileType) ([]string, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name())
-		if ext == string(ft) {
-			base := strings.TrimSuffix(file.Name(), string(ft))
+		if ext == ".asc" {
+			base := strings.TrimSuffix(file.Name(), ".asc")
 			games = append(games, base)
 		}
 	}
