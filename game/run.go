@@ -25,7 +25,13 @@ var gameData embed.FS
 func Run(data embed.FS) {
 	gameData = data
 
-	runMenu()
+	game := NewGame(nil)
+	runMenu(&game, 0)
+
+	game.Initialize()
+	if err := game.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType) {
@@ -34,26 +40,28 @@ func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType) {
 	}
 }
 
-func runMenu() {
+func runMenu(g *Game, tab int) {
 	ebiten.SetVsyncEnabled(true)
-	g := NewGame(model.New())
+	g.Model = model.New()
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(gameData, saveFolder, mapsFolder, &fonts, func(name string, mapLoc save.MapLocation, load save.LoadType) {
-		run(&g, name, mapLoc, load)
-	})
+	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &fonts,
+		func(name string, mapLoc save.MapLocation, load save.LoadType) {
+			run(g, name, mapLoc, load)
+		},
+		func(tab int) {
+			runMenu(g, tab)
+		},
+	)
 
 	ecs.AddResource(&g.Model.World, &ui)
 
 	g.Model.AddSystem(&menu.UpdateUI{})
 	g.Model.AddUISystem(&menu.DrawUI{})
 
-	g.Initialize()
-	if err := g.Run(); err != nil {
-		log.Fatal(err)
-	}
+	g.Model.Initialize()
 }
 
 func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string) error {

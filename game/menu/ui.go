@@ -20,14 +20,18 @@ type UI struct {
 
 	ui *ebitenui.UI
 
-	infoLabel *widget.Text
+	infoLabel    *widget.Text
+	tabContainer *widget.TabBook
+	tabs         []*widget.TabBookTab
 }
 
 func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) UI {
+func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, fonts *res.Fonts,
+	start func(string, save.MapLocation, save.LoadType),
+	restart func(tab int)) UI {
 	ui := UI{
 		fs:         f,
 		saveFolder: folder,
@@ -75,10 +79,11 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 			widget.RowLayoutOpts.Padding(widget.Insets{Top: 16}),
 		)),
 	)
-	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start))
+	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start, restart))
+	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab)
 
 	img := loadButtonImage()
-	tabContainer := widget.NewTabBook(
+	ui.tabContainer = widget.NewTabBook(
 		widget.TabBookOpts.TabButtonImage(img),
 		widget.TabBookOpts.TabButtonText(fonts.Default, &widget.ButtonTextColor{Idle: color.White, Disabled: color.White}),
 		widget.TabBookOpts.TabButtonSpacing(0),
@@ -100,6 +105,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 			scenariosTab,
 			loadWorldTab,
 		),
+		widget.TabBookOpts.InitialTab(ui.tabs[selectedTab]),
 	)
 
 	menuContainer := widget.NewContainer(
@@ -129,7 +135,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, fonts *res.Fonts, start func(stri
 
 	menuContainer.AddChild(titleLabel)
 	menuContainer.AddChild(ui.infoLabel)
-	menuContainer.AddChild(tabContainer)
+	menuContainer.AddChild(ui.tabContainer)
 
 	rootContainer.AddChild(menuContainer)
 
@@ -219,7 +225,9 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 	return menuContainer
 }
 
-func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
+func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
+	start func(string, save.MapLocation, save.LoadType),
+	restart func(tab int)) *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -294,6 +302,10 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts, start func(strin
 					return
 				}
 				menuContainer.RemoveChild(gameButton)
+
+				currTab := ui.tabContainer.Tab()
+				idx := slices.Index(ui.tabs, currTab)
+				restart(idx)
 			}),
 		)
 		contextMenu.AddChild(deleteButton)
