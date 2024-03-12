@@ -51,7 +51,7 @@ const helpText = "Tiny World Help" +
 
 const helpTooltipWidth = 800
 
-const menuTooltipText = "The game menu. Right-click to open"
+const menuTooltipText = "The game menu.\nRight-click to open."
 const saveTooltipText = "Save game to disk or local browser storage."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
@@ -551,6 +551,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
 		)),
+		widget.ContainerOpts.WidgetOpts(widget.WidgetOpts.MinSize(250, 0)),
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
 
@@ -573,7 +574,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
-				Stretch:  false,
+				Stretch:  true,
 			}),
 			widget.WidgetOpts.ToolTip(widget.NewToolTip(
 				widget.ToolTipOpts.Content(saveTooltipContainer),
@@ -583,7 +584,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 			)),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Save game", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -591,7 +592,45 @@ func (ui *UI) createMainMenu() *widget.Container {
 			ui.saveEvent.ShouldSave = true
 		}),
 	)
+
+	saveAndQuitButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save and quit", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSave = true
+			ui.saveEvent.ShouldQuit = true
+		}),
+	)
+
+	quitButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Quit without saving", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldQuit = true
+		}),
+	)
+
 	contextMenu.AddChild(saveButton)
+	contextMenu.AddChild(saveAndQuitButton)
+	contextMenu.AddChild(quitButton)
 
 	return contextMenu
 }
