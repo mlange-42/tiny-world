@@ -143,8 +143,11 @@ func (ui *UI) MouseInside(x, y int) bool {
 		if w.Visibility == widget.Visibility_Show && pt.In(w.Rect) {
 			return true
 		}
+		if w.ContextMenu != nil && w.ContextMenuWindow != nil &&
+			ui.ui.IsWindowOpen(w.ContextMenuWindow) && pt.In(w.ContextMenu.GetWidget().Rect) {
+			return true
+		}
 	}
-
 	return false
 }
 
@@ -479,7 +482,6 @@ func (ui *UI) createMenu() *widget.Container {
 	menuTooltipContainer.AddChild(menuLabel)
 
 	mainMenu := ui.createMainMenu()
-	ui.mouseBlockers = append(ui.mouseBlockers, mainMenu.GetWidget())
 
 	menuButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
@@ -501,6 +503,7 @@ func (ui *UI) createMenu() *widget.Container {
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 	)
+	ui.mouseBlockers = append(ui.mouseBlockers, menuButton.GetWidget())
 
 	helpTooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
