@@ -12,7 +12,8 @@ Made with [Ebitengine](https://github.com/hajimehoshi/ebiten) and the [Arche](ht
 
 ### Play in browser
 
-You can play Tiny World in a web browser [here](https://mlange-42.github.io/tiny-world/) or [on itch.io](https://mlange-42.itch.io/tiny-world).
+You can play Tiny World [on itch.io](https://mlange-42.itch.io/tiny-world),
+or the development version [here](https://mlange-42.github.io/tiny-world/).
 
 ### Precompiled binaries
 
