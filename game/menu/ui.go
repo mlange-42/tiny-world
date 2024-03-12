@@ -68,6 +68,12 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	ui.infoLabel = widget.NewText(
 		widget.TextOpts.Text("   ", fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Stretch: true,
+			}),
+			widget.WidgetOpts.MinSize(10, 32),
+		),
 	)
 
 	rootGrid := widget.NewContainer(
