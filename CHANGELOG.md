@@ -2,6 +2,10 @@
 
 ## [[unpublished]](https://github.com/mlange-42/tiny-world/compare/v0.1.0...main)
 
+### Features
+
+* The game can be played on pre-defined maps /scenarios (#168)
+
 ### Game rules
 
 * Haulers stay in buildings for a second before continuing (#163)

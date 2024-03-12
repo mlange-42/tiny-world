@@ -18,6 +18,7 @@ import (
 
 const TPS = 60
 const saveFolder = "save"
+const mapsFolder = "data/maps"
 
 var gameData embed.FS
 
@@ -27,6 +28,12 @@ func Run(data embed.FS) {
 	runMenu()
 }
 
+func run(g *Game, name, mapName string, load save.LoadType) {
+	if err := runGame(g, load, name, mapName, "paper"); err != nil {
+		panic(err)
+	}
+}
+
 func runMenu() {
 	ebiten.SetVsyncEnabled(true)
 	g := NewGame(model.New())
@@ -34,8 +41,8 @@ func runMenu() {
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(saveFolder, &fonts, func(name string, load bool) {
-		run(&g, name, load)
+	ui := menu.NewUI(gameData, saveFolder, mapsFolder, &fonts, func(name, mapName string, load save.LoadType) {
+		run(&g, name, mapName, load)
 	})
 
 	ecs.AddResource(&g.Model.World, &ui)
@@ -49,7 +56,7 @@ func runMenu() {
 	}
 }
 
-func runGame(g *Game, loadGame bool, name, tileSet string) error {
+func runGame(g *Game, load save.LoadType, name, mapName, tileSet string) error {
 	ebiten.SetVsyncEnabled(true)
 
 	g.Model = model.New()
@@ -127,8 +134,14 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 
 	// =========== Systems ===========
 
-	if loadGame {
+	if load == save.LoadTypeGame {
 		g.Model.AddSystem(&sys.InitTerrainLoaded{})
+	} else if load == save.LoadTypeMap {
+		g.Model.AddSystem(&sys.InitTerrainMap{
+			FS:        gameData,
+			MapFolder: "data/maps",
+			MapFile:   mapName,
+		})
 	} else {
 		g.Model.AddSystem(&sys.InitTerrain{})
 	}
@@ -157,8 +170,9 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	g.Model.AddSystem(&sys.UpdateUI{})
 	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
-		Folder: "save",
-		Name:   name,
+		SaveFolder: "save",
+		MapFolder:  "maps",
+		Name:       name,
 	})
 	g.Model.AddSystem(&sys.GameControls{
 		PauseKey:      ebiten.KeySpace,
@@ -183,7 +197,7 @@ func runGame(g *Game, loadGame bool, name, tileSet string) error {
 	})
 
 	// =========== Load game ===========
-	if loadGame {
+	if load == save.LoadTypeGame {
 		err := save.LoadWorld(&g.Model.World, saveFolder, name)
 		if err != nil {
 			return err

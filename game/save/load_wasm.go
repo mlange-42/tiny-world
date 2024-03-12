@@ -19,7 +19,7 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize([]byte(jsData.String()), world)
 }
 
-func listSaveGames(folder string) ([]string, error) {
+func listGames(folder string) ([]string, error) {
 	_ = folder
 	games := []string{}
 

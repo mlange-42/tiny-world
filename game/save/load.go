@@ -1,8 +1,24 @@
 package save
 
 import (
+	"fmt"
+	"image"
+	"io/fs"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
+)
+
+type LoadType uint8
+
+const (
+	LoadTypeNone LoadType = iota
+	LoadTypeGame
+	LoadTypeMap
 )
 
 func LoadWorld(world *ecs.World, folder, name string) error {
@@ -22,5 +38,73 @@ func LoadWorld(world *ecs.World, folder, name string) error {
 }
 
 func ListSaveGames(folder string) ([]string, error) {
-	return listSaveGames(folder)
+	return listGames(folder)
+}
+
+func LoadMap(f fs.FS, folder, name string) ([][]rune, []rune, image.Point, error) {
+	mapStr, err := loadMap(f, folder, name)
+	if err != nil {
+		return nil, nil, image.Point{}, err
+	}
+
+	var result [][]rune
+	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
+
+	terrains := []rune(lines[0])
+
+	sizeLine := lines[1]
+	parts := strings.Split(sizeLine, " ")
+	cx, err := strconv.Atoi(parts[0])
+	if err != nil {
+		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[0]))
+	}
+	cy, err := strconv.Atoi(parts[1])
+	if err != nil {
+		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
+	}
+
+	lines = lines[2:]
+
+	for _, s := range lines {
+		if len(s) > 0 {
+			runes := []rune(s)
+			result = append(result, runes)
+		}
+	}
+
+	return result, terrains, image.Pt(cx, cy), nil
+}
+
+func ListMaps(f fs.FS, folder string) ([]string, error) {
+	return listFilesFS(f, folder)
+}
+
+func loadMap(f fs.FS, folder, name string) (string, error) {
+	mapData, err := fs.ReadFile(f, path.Join(folder, name)+".asc")
+	if err != nil {
+		return "", err
+	}
+
+	return string(mapData), nil
+}
+
+func listFilesFS(f fs.FS, folder string) ([]string, error) {
+	games := []string{}
+
+	files, err := fs.ReadDir(f, folder)
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		ext := filepath.Ext(file.Name())
+		if ext == ".asc" {
+			base := strings.TrimSuffix(file.Name(), ".asc")
+			games = append(games, base)
+		}
+	}
+	return games, nil
 }

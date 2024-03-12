@@ -21,7 +21,7 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize(jsData, world)
 }
 
-func listSaveGames(folder string) ([]string, error) {
+func listGames(folder string) ([]string, error) {
 	games := []string{}
 
 	files, err := os.ReadDir(folder)
@@ -34,9 +34,8 @@ func listSaveGames(folder string) ([]string, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name())
-		if ext == ".json" || ext == ".JSON" {
+		if ext == ".json" {
 			base := strings.TrimSuffix(file.Name(), ".json")
-			base = strings.TrimSuffix(base, ".JSON")
 			games = append(games, base)
 		}
 	}

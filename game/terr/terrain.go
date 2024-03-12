@@ -21,6 +21,11 @@ const (
 	RequiresRange
 )
 
+type TerrainPair struct {
+	Terrain Terrain
+	LandUse Terrain
+}
+
 type TerrainBits uint16
 
 func NewTerrainBits(bits ...TerrainBit) TerrainBits {
@@ -79,6 +84,8 @@ func (d Terrains) Contains(dir Terrain) bool {
 var Properties []TerrainProps
 
 var idLookup map[string]Terrain
+var SymbolToTerrain map[rune]TerrainPair
+var TerrainToSymbol map[TerrainPair]rune
 
 func Prepare(f fs.FS, file string) {
 	propsHelper := props{}
@@ -135,7 +142,7 @@ func Prepare(f fs.FS, file string) {
 		for _, entry := range t.Storage {
 			res, ok := resource.ResourceID(entry.Resource)
 			if !ok {
-				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
+				panic(fmt.Sprintf("unknown resource %s in %s", entry.Resource, t.Name))
 			}
 			storage[res] = uint8(entry.Amount)
 		}
@@ -143,9 +150,14 @@ func Prepare(f fs.FS, file string) {
 		for _, entry := range t.Consumption {
 			res, ok := resource.ResourceID(entry.Resource)
 			if !ok {
-				panic(fmt.Sprintf("unknown resource %s", entry.Resource))
+				panic(fmt.Sprintf("unknown resource %s in %s", entry.Resource, t.Name))
 			}
 			consumption[res] = uint8(entry.Amount)
+		}
+
+		symbols := []rune(t.Symbols)
+		if len(symbols) != len(t.BuildOn) {
+			panic(fmt.Sprintf("length of `symbols` not equal to length of `build_on` in %s", t.Name))
 		}
 
 		bits := TerrainBits(0)
@@ -182,6 +194,7 @@ func Prepare(f fs.FS, file string) {
 			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
 			BuildRadius:  t.BuildRadius,
 			Population:   t.Population,
+			Symbols:      symbols,
 			Description:  t.Description,
 			BuildCost:    cost,
 			Storage:      storage,
@@ -219,6 +232,39 @@ func Prepare(f fs.FS, file string) {
 	FirstBuilding = toTerrain(idLookup, propsHelper.FirstBuilding)
 	Bulldoze = toTerrain(idLookup, propsHelper.Bulldoze)
 
+	SymbolToTerrain = map[rune]TerrainPair{}
+	TerrainToSymbol = map[TerrainPair]rune{}
+
+	SymbolToTerrain['.'] = TerrainPair{Terrain: Air, LandUse: Air}
+	TerrainToSymbol[TerrainPair{Terrain: Air, LandUse: Air}] = '.'
+
+	for i := range props {
+		prop := &props[i]
+		for j, s := range prop.Symbols {
+			if _, ok := SymbolToTerrain[s]; ok {
+				panic(fmt.Sprintf("duplicate map symbol '%s' in %s", string(s), prop.Name))
+			}
+			if prop.TerrainBits.Contains(IsTerrain) {
+				t := TerrainPair{Terrain: Terrain(i), LandUse: Air}
+				SymbolToTerrain[s] = t
+				TerrainToSymbol[t] = s
+				continue
+			}
+			terName := propsHelper.Terrains[i].BuildOn[j]
+			ter, ok := idLookup[terName]
+			if !ok {
+				panic(fmt.Sprintf("unknown terrain %s in %s", terName, prop.Name))
+			}
+			t := TerrainPair{Terrain: ter, LandUse: Terrain(i)}
+			SymbolToTerrain[s] = t
+			TerrainToSymbol[t] = s
+			if j == 0 {
+				tAir := TerrainPair{Terrain: Air, LandUse: Terrain(i)}
+				TerrainToSymbol[tAir] = s
+			}
+		}
+	}
+
 	Properties = props
 }
 
@@ -236,6 +282,7 @@ type TerrainProps struct {
 	BuildRadius       uint8
 	Population        uint8
 	Description       string
+	Symbols           []rune
 	BuildCost         []ResourceAmount
 	Storage           []uint8
 	Consumption       []uint8
@@ -262,6 +309,7 @@ type terrainPropsJs struct {
 	Consumption       []resourceAmountJs  `json:"consumption,omitempty"`
 	BuildCost         []resourceAmountJs  `json:"build_cost,omitempty"`
 	Storage           []resourceAmountJs  `json:"storage,omitempty"`
+	Symbols           string              `json:"symbols"`
 	Description       string              `json:"description"`
 	PopulationSupport populationSupportJs `json:"population_support"`
 }
