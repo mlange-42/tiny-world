@@ -68,14 +68,20 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	ui.infoLabel = widget.NewText(
 		widget.TextOpts.Text("   ", fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Stretch: true,
+			}),
+			widget.WidgetOpts.MinSize(10, 32),
+		),
 	)
 
 	rootGrid := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewGridLayout(
 			widget.GridLayoutOpts.Columns(3),
 			widget.GridLayoutOpts.Stretch([]bool{true, false, true}, []bool{true}),
-			widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-			widget.GridLayoutOpts.Spacing(84, 84),
+			widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(6)),
+			widget.GridLayoutOpts.Spacing(6, 6),
 		)),
 	)
 
@@ -87,9 +93,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
 				HorizontalPosition: widget.GridLayoutPositionCenter,
 				VerticalPosition:   widget.GridLayoutPositionStart,
-				MaxWidth:           460,
 			}),
-			widget.WidgetOpts.MinSize(460, 20),
 		),
 	)
 
@@ -179,9 +183,9 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 
 	t1, t2 := ui.drawRandomSprites()
 
-	rootGrid.AddChild(ui.createIconContainer(t1, widget.AnchorLayoutPositionEnd))
+	rootGrid.AddChild(ui.createIconContainer(t1))
 	rootGrid.AddChild(rootContainer)
-	rootGrid.AddChild(ui.createIconContainer(t2, widget.AnchorLayoutPositionStart))
+	rootGrid.AddChild(ui.createIconContainer(t2))
 
 	eui := ebitenui.UI{
 		Container: rootGrid,
@@ -191,7 +195,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	return ui
 }
 
-func (ui *UI) createIconContainer(t terr.Terrain, align widget.AnchorLayoutPosition) *widget.Container {
+func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	container := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
 			widget.AnchorLayoutOpts.Padding(widget.NewInsetsSimple(24)),
@@ -204,7 +208,7 @@ func (ui *UI) createIconContainer(t terr.Terrain, align widget.AnchorLayoutPosit
 		),
 	)
 
-	graphic := ui.createTerrainGraphic(t, align)
+	graphic := ui.createTerrainGraphic(t)
 	container.AddChild(graphic)
 
 	return container
@@ -479,13 +483,13 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	}
 }
 
-func (ui *UI) createTerrainGraphic(terrain terr.Terrain, align widget.AnchorLayoutPosition) *widget.Graphic {
+func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
 	img := ui.createTerrainImage(terrain)
 
 	button := widget.NewGraphic(
 		widget.GraphicOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: align,
+				HorizontalPosition: widget.AnchorLayoutPositionCenter,
 				VerticalPosition:   widget.AnchorLayoutPositionCenter,
 			}),
 			widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
@@ -501,9 +505,11 @@ func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
 
 	props := &terr.Properties[t]
 
-	img := ebiten.NewImage(ui.sprites.TileWidth*scale, ui.sprites.TileWidth*scale)
-	idx := ui.sprites.GetTerrainIndex(t)
+	bx, by := ui.sprites.TileWidth, ui.sprites.TileWidth
 
+	img := ebiten.NewImage(bx*scale, by*scale)
+
+	idx := ui.sprites.GetTerrainIndex(t)
 	height := 0
 
 	if props.TerrainBelow != terr.Air {
