@@ -4,7 +4,8 @@
 
 ### Features
 
-* The game can be played on pre-defined maps /scenarios (#168)
+* The game can be played on pre-defined, embedded maps/scenarios (#168)
+* The game can be played on user-created maps/scenarios (#171)
 
 ### Game rules
 
