@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
+	"math/rand"
 	"slices"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/save"
 	"github.com/mlange-42/tiny-world/game/sprites"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 type UI struct {
@@ -67,10 +70,27 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 	)
 
+	rootGrid := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(3),
+			widget.GridLayoutOpts.Stretch([]bool{true, false, true}, []bool{true}),
+			widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+			widget.GridLayoutOpts.Spacing(84, 84),
+		)),
+	)
+
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
 			widget.AnchorLayoutOpts.Padding(widget.NewInsetsSimple(12)),
 		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+				MaxWidth:           460,
+			}),
+			widget.WidgetOpts.MinSize(460, 20),
+		),
 	)
 
 	newWorldTab := widget.NewTabBookTab("New World",
@@ -108,16 +128,15 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		widget.TabBookOpts.TabButtonSpacing(0),
 		widget.TabBookOpts.ContainerOpts(
 			widget.ContainerOpts.WidgetOpts(
-				widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-					HorizontalPosition: widget.AnchorLayoutPositionCenter,
-					VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
 				}),
 				widget.WidgetOpts.MinSize(360, 20),
 			),
 		),
 		widget.TabBookOpts.TabButtonOpts(
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(98, 0)),
+			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(60, 0)),
 		),
 		widget.TabBookOpts.Tabs(
 			newWorldTab,
@@ -158,12 +177,37 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 
 	rootContainer.AddChild(menuContainer)
 
+	t1, t2 := ui.drawRandomSprites()
+
+	rootGrid.AddChild(ui.createIconContainer(t1, widget.AnchorLayoutPositionEnd))
+	rootGrid.AddChild(rootContainer)
+	rootGrid.AddChild(ui.createIconContainer(t2, widget.AnchorLayoutPositionStart))
+
 	eui := ebitenui.UI{
-		Container: rootContainer,
+		Container: rootGrid,
 	}
 	ui.ui = &eui
 
 	return ui
+}
+
+func (ui *UI) createIconContainer(t terr.Terrain, align widget.AnchorLayoutPosition) *widget.Container {
+	container := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
+			widget.AnchorLayoutOpts.Padding(widget.NewInsetsSimple(24)),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionCenter,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+	)
+
+	graphic := ui.createTerrainGraphic(t, align)
+	container.AddChild(graphic)
+
+	return container
 }
 
 func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
@@ -433,4 +477,65 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 		Hover:   ui.backgroundHover,
 		Pressed: ui.backgroundPressed,
 	}
+}
+
+func (ui *UI) createTerrainGraphic(terrain terr.Terrain, align widget.AnchorLayoutPosition) *widget.Graphic {
+	img := ui.createTerrainImage(terrain)
+
+	button := widget.NewGraphic(
+		widget.GraphicOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: align,
+				VerticalPosition:   widget.AnchorLayoutPositionCenter,
+			}),
+			widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
+		),
+		widget.GraphicOpts.Image(img),
+	)
+
+	return button
+}
+
+func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
+	scale := 3
+
+	props := &terr.Properties[t]
+
+	img := ebiten.NewImage(ui.sprites.TileWidth*scale, ui.sprites.TileWidth*scale)
+	idx := ui.sprites.GetTerrainIndex(t)
+
+	height := 0
+
+	if props.TerrainBelow != terr.Air {
+		idx2 := ui.sprites.GetTerrainIndex(props.TerrainBelow)
+		info2 := ui.sprites.GetInfo(idx2)
+
+		sp2 := ui.sprites.Get(idx2)
+		op := ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp2.Bounds().Dy()))
+		op.GeoM.Scale(float64(scale), float64(scale))
+		img.DrawImage(sp2, &op)
+
+		height = info2.Height
+	}
+
+	sp1 := ui.sprites.GetRand(idx, 0, 0)
+	op := ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp1.Bounds().Dy()-height))
+	op.GeoM.Scale(float64(scale), float64(scale))
+	img.DrawImage(sp1, &op)
+
+	return img
+}
+
+func (ui *UI) drawRandomSprites() (terr.Terrain, terr.Terrain) {
+	candidates := []terr.Terrain{}
+
+	for i := range terr.Properties {
+		prop := &terr.Properties[i]
+		if prop.TerrainBits.Contains(terr.CanBuy) && !prop.TerrainBits.Contains(terr.IsPath) {
+			candidates = append(candidates, terr.Terrain(i))
+		}
+	}
+	return candidates[rand.Intn(len(candidates))], candidates[rand.Intn(len(candidates))]
 }
