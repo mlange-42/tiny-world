@@ -501,13 +501,21 @@ func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
 }
 
 func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
-	scale := 3
+	scale := 2
 
 	props := &terr.Properties[t]
 
-	img := ebiten.NewImage(ui.sprites.TileWidth*scale, ui.sprites.TileWidth*scale)
-	idx := ui.sprites.GetTerrainIndex(t)
+	bx, by := ui.sprites.TileWidth+4, ui.sprites.TileWidth+4
 
+	xOff := (bx - ui.sprites.TileWidth) / 2
+	yOff := (by - ui.sprites.TileWidth) / 2
+	img := ebiten.NewImage(bx*scale, by*scale)
+
+	ui.background.Draw(img, bx, by, func(opts *ebiten.DrawImageOptions) {
+		opts.GeoM.Scale(float64(scale), float64(scale))
+	})
+
+	idx := ui.sprites.GetTerrainIndex(t)
 	height := 0
 
 	if props.TerrainBelow != terr.Air {
@@ -516,7 +524,7 @@ func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
 
 		sp2 := ui.sprites.Get(idx2)
 		op := ebiten.DrawImageOptions{}
-		op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp2.Bounds().Dy()))
+		op.GeoM.Translate(float64(xOff), float64(ui.sprites.TileWidth+yOff-sp2.Bounds().Dy()))
 		op.GeoM.Scale(float64(scale), float64(scale))
 		img.DrawImage(sp2, &op)
 
@@ -525,7 +533,7 @@ func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
 
 	sp1 := ui.sprites.GetRand(idx, 0, 0)
 	op := ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp1.Bounds().Dy()-height))
+	op.GeoM.Translate(float64(xOff), float64(ui.sprites.TileWidth+yOff-sp1.Bounds().Dy()-height))
 	op.GeoM.Scale(float64(scale), float64(scale))
 	img.DrawImage(sp1, &op)
 
