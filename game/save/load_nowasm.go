@@ -41,3 +41,33 @@ func listGames(folder string) ([]string, error) {
 	}
 	return games, nil
 }
+
+func listMapsLocal(folder string) ([]MapLocation, error) {
+	maps := []MapLocation{}
+
+	files, err := os.ReadDir(folder)
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		ext := filepath.Ext(file.Name())
+		if ext == ".asc" {
+			base := strings.TrimSuffix(file.Name(), ".asc")
+			maps = append(maps, MapLocation{Name: base, IsEmbedded: false})
+		}
+	}
+	return maps, nil
+}
+
+func loadMapLocal(folder string, name string) (string, error) {
+	mapData, err := os.ReadFile(path.Join(folder, name) + ".asc")
+	if err != nil {
+		return "", err
+	}
+
+	return string(mapData), nil
+}

@@ -35,3 +35,28 @@ func listGames(folder string) ([]string, error) {
 
 	return games, nil
 }
+
+func listMapsLocal(folder string) ([]MapLocation, error) {
+	_ = folder
+	maps := []MapLocation{}
+
+	storage := js.Global().Get("localStorage")
+
+	cnt := storage.Get("length").Int()
+	for i := 0; i < cnt; i++ {
+		key := storage.Call("key", i).String()
+		if strings.HasPrefix(key, saveMapPrefix) {
+			maps = append(maps, MapLocation{Name: strings.TrimPrefix(key, saveMapPrefix), IsEmbedded: false})
+		}
+	}
+
+	return maps, nil
+}
+
+func loadMapLocal(folder string, name string) (string, error) {
+	_ = folder
+	storage := js.Global().Get("localStorage")
+	mapData := storage.Call("getItem", saveMapPrefix+name)
+
+	return mapData.String(), nil
+}

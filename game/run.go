@@ -18,7 +18,7 @@ import (
 
 const TPS = 60
 const saveFolder = "save"
-const mapsFolder = "data/maps"
+const mapsFolder = "maps"
 
 var gameData embed.FS
 
@@ -28,8 +28,8 @@ func Run(data embed.FS) {
 	runMenu()
 }
 
-func run(g *Game, name, mapName string, load save.LoadType) {
-	if err := runGame(g, load, name, mapName, "paper"); err != nil {
+func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType) {
+	if err := runGame(g, load, name, mapLoc, "paper"); err != nil {
 		panic(err)
 	}
 }
@@ -41,8 +41,8 @@ func runMenu() {
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(gameData, saveFolder, mapsFolder, &fonts, func(name, mapName string, load save.LoadType) {
-		run(&g, name, mapName, load)
+	ui := menu.NewUI(gameData, saveFolder, mapsFolder, &fonts, func(name string, mapLoc save.MapLocation, load save.LoadType) {
+		run(&g, name, mapLoc, load)
 	})
 
 	ecs.AddResource(&g.Model.World, &ui)
@@ -56,7 +56,7 @@ func runMenu() {
 	}
 }
 
-func runGame(g *Game, load save.LoadType, name, mapName, tileSet string) error {
+func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string) error {
 	ebiten.SetVsyncEnabled(true)
 
 	g.Model = model.New()
@@ -139,8 +139,8 @@ func runGame(g *Game, load save.LoadType, name, mapName, tileSet string) error {
 	} else if load == save.LoadTypeMap {
 		g.Model.AddSystem(&sys.InitTerrainMap{
 			FS:        gameData,
-			MapFolder: "data/maps",
-			MapFile:   mapName,
+			MapFolder: mapsFolder,
+			Map:       mapLoc,
 		})
 	} else {
 		g.Model.AddSystem(&sys.InitTerrain{})
