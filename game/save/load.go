@@ -43,16 +43,18 @@ func ListSaveGames(folder string) ([]string, error) {
 	return listFiles(folder, fileTypeJson)
 }
 
-func LoadMap(f fs.FS, folder, name string) ([][]rune, image.Point, error) {
+func LoadMap(f fs.FS, folder, name string) ([][]rune, []rune, image.Point, error) {
 	mapStr, err := loadMap(f, folder, name)
 	if err != nil {
-		return nil, image.Point{}, err
+		return nil, nil, image.Point{}, err
 	}
 
 	var result [][]rune
 	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
 
-	sizeLine := lines[0]
+	terrains := []rune(lines[0])
+
+	sizeLine := lines[1]
 	parts := strings.Split(sizeLine, " ")
 	cx, err := strconv.Atoi(parts[0])
 	if err != nil {
@@ -63,7 +65,7 @@ func LoadMap(f fs.FS, folder, name string) ([][]rune, image.Point, error) {
 		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
 	}
 
-	lines = lines[1:]
+	lines = lines[2:]
 
 	for _, s := range lines {
 		if len(s) > 0 {
@@ -72,7 +74,7 @@ func LoadMap(f fs.FS, folder, name string) ([][]rune, image.Point, error) {
 		}
 	}
 
-	return result, image.Pt(cx, cy), nil
+	return result, terrains, image.Pt(cx, cy), nil
 }
 
 func ListMaps(f fs.FS, folder string) ([]string, error) {

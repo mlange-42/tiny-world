@@ -258,6 +258,10 @@ func Prepare(f fs.FS, file string) {
 			t := TerrainPair{Terrain: ter, LandUse: Terrain(i)}
 			SymbolToTerrain[s] = t
 			TerrainToSymbol[t] = s
+			if j == 0 {
+				tAir := TerrainPair{Terrain: Air, LandUse: Terrain(i)}
+				TerrainToSymbol[tAir] = s
+			}
 		}
 	}
 

@@ -30,10 +30,24 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 	bounds := ecs.GetResource[res.WorldBounds](world)
 	fac := ecs.GetResource[res.EntityFactory](world)
 
-	mapData, center, err := save.LoadMap(s.FS, s.MapFolder, s.MapFile)
+	mapData, ter, center, err := save.LoadMap(s.FS, s.MapFolder, s.MapFile)
 	if err != nil {
 		log.Fatal("error reading map file", err.Error())
 	}
+
+	terrains := []terr.Terrain{}
+	for _, rn := range ter {
+		t, ok := terr.SymbolToTerrain[rn]
+		if !ok {
+			panic(fmt.Sprintf("unknown map symbol '%s'", string(rn)))
+		}
+		if t.LandUse != terr.Air {
+			terrains = append(terrains, t.LandUse)
+		} else {
+			terrains = append(terrains, t.Terrain)
+		}
+	}
+	rules.RandomTerrains = terrains
 
 	xOff, yOff := terrain.Width()/2-center.X, terrain.Height()/2-center.Y
 
