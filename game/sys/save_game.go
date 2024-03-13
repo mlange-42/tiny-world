@@ -29,7 +29,11 @@ func (s *SaveGame) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *SaveGame) Update(world *ecs.World) {
-	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyShift) && inpututil.IsKeyJustPressed(ebiten.KeyS) {
+	evt := s.saveEvent.Get()
+
+	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyShift) && inpututil.IsKeyJustPressed(ebiten.KeyS) ||
+		evt.ShouldSaveMap {
+		evt.ShouldSaveMap = false
 		print("Saving map... ")
 		err := save.SaveMap(s.MapFolder, s.Name, world)
 		if err != nil {
@@ -37,10 +41,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 			return
 		}
 		println("done.")
-		return
 	}
-
-	evt := s.saveEvent.Get()
 
 	if (ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyS)) ||
 		evt.ShouldSave {

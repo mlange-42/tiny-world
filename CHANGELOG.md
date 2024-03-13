@@ -17,6 +17,7 @@
 * Shows the build radius around the cursor when building a castle or tower (#183)
 * Show information on why something can't be built in button tooltips (#185)
 * Highlight resources with negative net production in the info bar (#186)
+* Adds a "Save map" button to the in-game menu (#190)
 
 ### Graphics
 
