@@ -78,16 +78,23 @@ jobs:
           go-version: '1.21.x'
       - name: Build
         run: GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 go build .
+      - name: Build APP Bundle
+        run: |
+          mkdir -p tiny-world.app
+          cp -r .github/tiny-world.app/Contents tiny-world.app/Contents
+          mkdir -p tiny-world.app/Contents/MacOS
+          mv tiny-world tiny-world.app/Contents/MacOS/tiny-world
+        shell: bash
       - name: Compress binaries
         run: |
-          tar -czf tiny-world.tar.gz tiny-world
+          zip -r tiny-world.zip tiny-world.app
         shell: bash
       - name: Upload binaries
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: tiny-world.tar.gz
-          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-macos-arm64.tar.gz
+          file: tiny-world.zip
+          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-macos-arm64.zip
           tag: ${{ github.ref }}
 
   build-macos-amd64:
@@ -104,14 +111,20 @@ jobs:
           go-version: '1.21.x'
       - name: Build
         run: GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build .
+      - name: Build APP Bundle
+        run: |
+          mkdir -p tiny-world.app
+          cp -r .github/tiny-world.app/Contents tiny-world.app/Contents
+          mkdir -p tiny-world.app/Contents/MacOS
+          mv tiny-world tiny-world.app/Contents/MacOS/tiny-world
       - name: Compress binaries
         run: |
-          tar -czf tiny-world.tar.gz tiny-world
+          zip -r tiny-world.zip tiny-world.app
         shell: bash
       - name: Upload binaries
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: tiny-world.tar.gz
-          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-macos-amd64.tar.gz
+          file: tiny-world.zip
+          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-macos-amd64.zip
           tag: ${{ github.ref }}

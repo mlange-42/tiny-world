@@ -3,3 +3,8 @@
 *.wasm
 /save/
 /maps/
+
+# macOS binary
+./tiny-world
+
+.idea
