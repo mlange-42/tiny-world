@@ -117,12 +117,23 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func (ui *UI) SetResourceLabel(id resource.Resource, text string) {
-	ui.resourceLabels[id].Label = text
+func (ui *UI) SetResourceLabel(id resource.Resource, text string, warning bool) {
+	label := ui.resourceLabels[id]
+	label.Label = text
+	if warning {
+		label.Color = ui.sprites.TextHighlightColor
+	} else {
+		label.Color = ui.sprites.TextColor
+	}
 }
 
-func (ui *UI) SetPopulationLabel(text string) {
+func (ui *UI) SetPopulationLabel(text string, warning bool) {
 	ui.populationLabel.Label = text
+	if warning {
+		ui.populationLabel.Color = ui.sprites.TextHighlightColor
+	} else {
+		ui.populationLabel.Color = ui.sprites.TextColor
+	}
 }
 
 func (ui *UI) SetTimerLabel(text string) {
@@ -141,7 +152,7 @@ func (ui *UI) EnableButton(id terr.Terrain) {
 	w := button.Button.GetWidget()
 	if w.Disabled {
 		w.Disabled = false
-		button.Tooltip.Label = ui.buttonTooltip[id]
+		button.Tooltip.Label = ""
 	}
 }
 
@@ -152,7 +163,7 @@ func (ui *UI) DisableButton(id terr.Terrain, message string) {
 	}
 	w := button.Button.GetWidget()
 	w.Disabled = true
-	button.Tooltip.Label = fmt.Sprintf("%s\n[color=BB0000]%s[/color]", ui.buttonTooltip[id], message)
+	button.Tooltip.Label = "\n" + message
 }
 
 func (ui *UI) MouseInside(x, y int) bool {
@@ -886,10 +897,15 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	label := widget.NewText(
 		widget.TextOpts.Text(text, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.ProcessBBCode(true),
+		widget.TextOpts.MaxWidth(360),
+	)
+	warningLabel := widget.NewText(
+		widget.TextOpts.Text("", ui.fonts.Default, ui.sprites.TextHighlightColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
 	tooltipContainer.AddChild(label)
+	tooltipContainer.AddChild(warningLabel)
 
 	bImage := ui.buttonImages[terrain]
 	var randSpriteVal uint16 = 0
@@ -920,7 +936,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		}),
 	)
 
-	return button, label, id
+	return button, warningLabel, id
 }
 
 func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, allowRemove bool) {
