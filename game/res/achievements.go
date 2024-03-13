@@ -15,6 +15,7 @@ type Achievement struct {
 	Name        string
 	Description string
 	Conditions  []Condition
+	Completed   bool
 }
 
 type Condition struct {
@@ -31,7 +32,7 @@ type Achievements struct {
 	production    *Production
 
 	checks       map[string]func(uint32, int) bool
-	achievements []Achievement
+	Achievements []Achievement
 }
 
 func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
@@ -78,7 +79,7 @@ func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
 			)
 		}
 
-		a.achievements = append(a.achievements,
+		a.Achievements = append(a.Achievements,
 			Achievement{
 				Name:        achieve.Name,
 				Description: achieve.Description,
@@ -88,6 +89,21 @@ func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
 	}
 
 	return &a
+}
+
+func (a *Achievements) Check(ach *Achievement) {
+	if ach.Completed {
+		return
+	}
+
+	for i := range ach.Conditions {
+		cond := &ach.Conditions[i]
+		if !a.checks[cond.Type](cond.IDs, cond.Number) {
+			return
+		}
+	}
+
+	ach.Completed = true
 }
 
 func (a *Achievements) checkTerrain(ids uint32, num int) bool {

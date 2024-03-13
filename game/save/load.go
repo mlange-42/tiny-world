@@ -42,6 +42,10 @@ func LoadWorld(world *ecs.World, folder, name string) error {
 	return loadWorld(world, folder, name)
 }
 
+func LoadAchievements(file string, completed *[]string) error {
+	return loadAchievements(file, completed)
+}
+
 func ListSaveGames(folder string) ([]string, error) {
 	return listGames(folder)
 }

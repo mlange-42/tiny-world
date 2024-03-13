@@ -45,6 +45,10 @@ func SaveWorld(folder, name string, world *ecs.World) error {
 	return saveToFile(folder, name, js)
 }
 
+func SaveAchievements(file string, completed []string) error {
+	return saveAchievements(file, completed)
+}
+
 func IsValidName(name string) bool {
 	re := `^[a-zA-Z0-9][a-zA-Z0-9 \-_]*$`
 	matched, err := regexp.Match(re, []byte(name))

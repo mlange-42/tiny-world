@@ -3,6 +3,7 @@
 package save
 
 import (
+	"encoding/json"
 	"strings"
 	"syscall/js"
 
@@ -17,6 +18,15 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	jsData := storage.Call("getItem", saveGamePrefix+name)
 
 	return serde.Deserialize([]byte(jsData.String()), world)
+}
+
+func loadAchievements(file string, completed *[]string) error {
+	_ = file
+
+	storage := js.Global().Get("localStorage")
+	jsData := storage.Call("getItem", achievementsKey)
+
+	return json.Unmarshal([]byte(jsData.String()), completed)
 }
 
 func listGames(folder string) ([]string, error) {
