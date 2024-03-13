@@ -50,7 +50,8 @@ const helpText = "Tiny World Help" +
 	" - Game speed: PageUp / PageDown\n" +
 	" - Toggle fullscreen: F11"
 
-const helpTooltipWidth = 800
+const helpPanelWidth = 680
+const helpPanelHeight = 460
 
 const saveTooltipText = "Save game to disk or local browser storage."
 
@@ -495,13 +496,13 @@ func (ui *UI) createMenu() *widget.Container {
 
 	ui.mouseBlockers = append(ui.mouseBlockers, menuButton.GetWidget())
 
-	scroll, helpTooltipContainer := ui.createScrollPanel(460)
+	scroll, helpTooltipContainer := ui.createScrollPanel(helpPanelHeight)
 
 	helpLabel := widget.NewText(
 		widget.TextOpts.ProcessBBCode(true),
 		widget.TextOpts.Text(helpText, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(helpTooltipWidth),
+		widget.TextOpts.MaxWidth(helpPanelWidth),
 	)
 	helpTooltipContainer.AddChild(helpLabel)
 
@@ -988,6 +989,7 @@ func (ui *UI) createScrollPanel(height int) (*widget.Container, *widget.Containe
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Spacing(5),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(12)),
 		)),
 	)
 
