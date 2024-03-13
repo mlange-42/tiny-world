@@ -53,8 +53,10 @@ func runMenu(g *Game, tab int) {
 	sprites := res.NewSprites(gameData, "data/gfx", "paper")
 	ecs.AddResource(&g.Model.World, &sprites)
 
+	achievements := achievements.New(&g.Model.World, gameData, "data/json/achievements.json", "user/achievements.json")
+
 	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &sprites, &fonts,
+	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &sprites, &fonts, achievements,
 		func(name string, mapLoc save.MapLocation, load save.LoadType) {
 			run(g, name, mapLoc, load)
 		},

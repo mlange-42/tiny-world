@@ -43,11 +43,23 @@ type Achievements struct {
 }
 
 func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievements {
+	var stock *res.Stock
+	var prod *res.Production
+
+	sRes := generic.NewResource[res.Stock](world)
+	pRes := generic.NewResource[res.Production](world)
+	if sRes.Has() {
+		stock = sRes.Get()
+	}
+	if pRes.Has() {
+		prod = pRes.Get()
+	}
+
 	a := Achievements{
 		world:         world,
 		terrainFilter: *generic.NewFilter1[comp.Terrain](),
-		stock:         ecs.GetResource[res.Stock](world),
-		production:    ecs.GetResource[res.Production](world),
+		stock:         stock,
+		production:    prod,
 	}
 
 	a.checks = map[string]func(uint32, int) bool{
