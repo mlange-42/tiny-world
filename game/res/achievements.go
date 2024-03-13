@@ -7,6 +7,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/comp"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -26,8 +27,10 @@ type Achievements struct {
 	world *ecs.World
 
 	terrainFilter generic.Filter1[comp.Terrain]
+	stock         *Stock
+	production    *Production
 
-	checks       map[string]func([]int, int) bool
+	checks       map[string]func(uint32, int) bool
 	achievements []Achievement
 }
 
@@ -35,13 +38,17 @@ func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
 	a := Achievements{
 		world:         world,
 		terrainFilter: *generic.NewFilter1[comp.Terrain](),
+		stock:         ecs.GetResource[Stock](world),
+		production:    ecs.GetResource[Production](world),
 	}
 
-	a.checks = map[string]func([]int, int) bool{
-		"terrain": a.checkTerrain,
+	a.checks = map[string]func(uint32, int) bool{
+		"terrain":    a.checkTerrain,
+		"production": a.checkProduction,
 	}
 	parse := map[string]func(...string) uint32{
-		"terrain": a.parseTerrains,
+		"terrain":    a.parseTerrains,
+		"production": a.parseResources,
 	}
 
 	ach := []achievementJs{}
@@ -75,13 +82,42 @@ func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
 	return &a
 }
 
-func (a *Achievements) checkTerrain(ids []int, num int) bool {
+func (a *Achievements) checkTerrain(ids uint32, num int) bool {
+	cnt := 0
+	query := a.terrainFilter.Query(a.world)
+	for query.Next() {
+		t := query.Get()
+		bits := uint32(1) << t.Terrain
+		if (bits & ids) == bits {
+			cnt++
+			if cnt >= num {
+				return true
+			}
+		}
+	}
+	return false
+}
 
+func (a *Achievements) checkProduction(ids uint32, num int) bool {
+	cnt := 0
+	for i := range resource.Properties {
+		bits := uint32(1) << i
+		if (bits & ids) == bits {
+			cnt += a.production.Prod[i]
+			if cnt >= num {
+				return true
+			}
+		}
+	}
 	return false
 }
 
 func (a *Achievements) parseTerrains(ids ...string) uint32 {
 	return uint32(terr.ToTerrains(ids...))
+}
+
+func (a *Achievements) parseResources(ids ...string) uint32 {
+	return uint32(resource.ToResources(ids...))
 }
 
 type achievementJs struct {

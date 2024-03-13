@@ -30,6 +30,7 @@ func SaveWorld(folder, name string, world *ecs.World) error {
 			generic.T[res.UpdateInterval](),
 			generic.T[res.GameSpeed](),
 			generic.T[res.Selection](),
+			generic.T[res.Achievements](),
 			generic.T[res.Mouse](),
 			generic.T[res.View](),
 			generic.T[resource.Termination](),

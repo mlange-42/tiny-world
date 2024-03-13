@@ -75,7 +75,7 @@ func (d *Terrains) Unset(dir Terrain) {
 	*d &= ^(1 << dir)
 }
 
-// Contains checks whether all the argument's bits are contained in this Subscription.
+// Contains checks whether all the argument's bits are contained in this mask.
 func (d Terrains) Contains(dir Terrain) bool {
 	bits := Terrains(1 << dir)
 	return (bits & d) == bits

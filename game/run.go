@@ -80,9 +80,6 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	rules := res.NewRules(gameData, "data/json/rules.json")
 	ecs.AddResource(&g.Model.World, &rules)
 
-	achievements := res.NewAchievements(&g.Model.World, gameData, "data/json/achievements.json")
-	ecs.AddResource(&g.Model.World, achievements)
-
 	gameSpeed := res.GameSpeed{
 		MinSpeed: -2,
 		MaxSpeed: 3,
@@ -145,6 +142,9 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	factory := res.NewEntityFactory(&g.Model.World)
 	ecs.AddResource(&g.Model.World, &factory)
+
+	achievements := res.NewAchievements(&g.Model.World, gameData, "data/json/achievements.json")
+	ecs.AddResource(&g.Model.World, achievements)
 
 	// =========== Systems ===========
 
