@@ -26,8 +26,9 @@ func NewStock(initial []int) Stock {
 		panic("initial resources don't match number of actual resources")
 	}
 	return Stock{
-		Cap: make([]int, len(resource.Properties)),
-		Res: initial,
+		Cap:   make([]int, len(resource.Properties)),
+		Res:   initial,
+		Total: make([]int, len(resource.Properties)),
 	}
 }
 
