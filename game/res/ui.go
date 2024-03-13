@@ -84,7 +84,7 @@ type UI struct {
 	randomButtonsContainer *widget.Container
 	randomContainers       []*widget.Container
 	randomButtons          map[int]randomButton
-	mouseBlockers          []*widget.Container
+	mouseBlockers          []*widget.Widget
 
 	specialCardSprite    int
 	buttonIdleSprite     int
@@ -139,11 +139,14 @@ func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
 func (ui *UI) MouseInside(x, y int) bool {
 	pt := stdimage.Pt(x, y)
 	for _, w := range ui.mouseBlockers {
-		if pt.In(w.GetWidget().Rect) {
+		if w.Visibility == widget.Visibility_Show && pt.In(w.Rect) {
+			return true
+		}
+		if w.ContextMenu != nil && w.ContextMenuWindow != nil &&
+			ui.ui.IsWindowOpen(w.ContextMenuWindow) && pt.In(w.ContextMenu.GetWidget().Rect) {
 			return true
 		}
 	}
-
 	return false
 }
 
@@ -351,7 +354,7 @@ func (ui *UI) createUI() *widget.Container {
 	innerContainer.AddChild(ui.randomButtonsContainer)
 
 	anchor.AddChild(innerContainer)
-	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer)
+	ui.mouseBlockers = append(ui.mouseBlockers, innerContainer.GetWidget())
 
 	return anchor
 }
@@ -440,7 +443,7 @@ func (ui *UI) createHUD() *widget.Container {
 
 	anchor.AddChild(topBar)
 
-	ui.mouseBlockers = append(ui.mouseBlockers, info, menu)
+	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget(), menu.GetWidget())
 
 	return anchor
 }
@@ -462,43 +465,30 @@ func (ui *UI) createMenu() *widget.Container {
 		),
 	)
 
-	saveTooltipContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
-		)),
-		widget.ContainerOpts.AutoDisableChildren(),
-		widget.ContainerOpts.BackgroundImage(ui.background),
-	)
-	saveLabel := widget.NewText(
-		widget.TextOpts.Text(saveTooltipText, ui.fonts.Default, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(360),
-	)
-	saveTooltipContainer.AddChild(saveLabel)
+	mainMenu := ui.createMainMenu()
 
-	saveButton := widget.NewButton(
+	menuButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
 				Stretch:  false,
 			}),
-			widget.WidgetOpts.ToolTip(widget.NewToolTip(
-				widget.ToolTipOpts.Content(saveTooltipContainer),
-				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
-				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
-				widget.ToolTipOpts.Delay(time.Millisecond*300),
-			)),
+			widget.WidgetOpts.ContextMenu(mainMenu),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Menu", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.saveEvent.ShouldSave = true
+			if args.Button.GetWidget().ContextMenu != nil {
+				cx, cy := ebiten.CursorPosition()
+				args.Button.GetWidget().FireContextMenuEvent(nil, stdimage.Pt(cx, cy))
+			}
 		}),
 	)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, menuButton.GetWidget())
 
 	helpTooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
@@ -530,15 +520,103 @@ func (ui *UI) createMenu() *widget.Container {
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-
-		}),
 	)
 
-	menuContainer.AddChild(saveButton)
+	menuContainer.AddChild(menuButton)
 	menuContainer.AddChild(helpButton)
 	return menuContainer
 }
+
+func (ui *UI) createMainMenu() *widget.Container {
+	contextMenu := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
+		)),
+		widget.ContainerOpts.WidgetOpts(widget.WidgetOpts.MinSize(250, 0)),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+
+	saveTooltipContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		)),
+		widget.ContainerOpts.AutoDisableChildren(),
+		widget.ContainerOpts.BackgroundImage(ui.background),
+	)
+	saveLabel := widget.NewText(
+		widget.TextOpts.Text(saveTooltipText, ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(360),
+	)
+	saveTooltipContainer.AddChild(saveLabel)
+
+	saveButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+			widget.WidgetOpts.ToolTip(widget.NewToolTip(
+				widget.ToolTipOpts.Content(saveTooltipContainer),
+				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+				widget.ToolTipOpts.Delay(time.Millisecond*300),
+			)),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save game", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSave = true
+		}),
+	)
+
+	saveAndQuitButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save and quit", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSave = true
+			ui.saveEvent.ShouldQuit = true
+		}),
+	)
+
+	quitButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Quit without saving", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldQuit = true
+		}),
+	)
+
+	contextMenu.AddChild(saveButton)
+	contextMenu.AddChild(saveAndQuitButton)
+	contextMenu.AddChild(quitButton)
+
+	return contextMenu
+}
+
 func (ui *UI) createInfo() *widget.Container {
 	infoContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),

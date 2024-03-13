@@ -4,4 +4,6 @@ package res
 type SaveEvent struct {
 	// Whether the save button was clicked in this tick.
 	ShouldSave bool
+	// Whether the game should quit and show the main menu.
+	ShouldQuit bool
 }

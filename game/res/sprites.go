@@ -81,7 +81,6 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 		}
 		atlas = append(atlas, img)
 
-		fmt.Printf("%s -- %d sprites, %d images\n", baseName, len(sheet.Sprites), sheet.TotalSprites)
 		for _, inf := range sheet.Sprites {
 			if _, ok := indices[inf.Id]; ok {
 				log.Fatalf("duplicate sprite name: %s", inf.Id)

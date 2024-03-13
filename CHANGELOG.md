@@ -6,6 +6,7 @@
 
 * The game can be played on pre-defined, embedded maps/scenarios (#168)
 * The game can be played on user-created maps/scenarios (#171)
+* Adds a menu to save/quit to main menu from in the game (#179)
 
 ### Game rules
 

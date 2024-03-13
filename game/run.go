@@ -181,9 +181,10 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	g.Model.AddSystem(&sys.UpdateUI{})
 	g.Model.AddSystem(&sys.Cheats{})
 	g.Model.AddSystem(&sys.SaveGame{
-		SaveFolder: "save",
-		MapFolder:  "maps",
-		Name:       name,
+		SaveFolder:   "save",
+		MapFolder:    "maps",
+		Name:         name,
+		MainMenuFunc: func() { runMenu(g, 0) },
 	})
 	g.Model.AddSystem(&sys.GameControls{
 		PauseKey:      ebiten.KeySpace,

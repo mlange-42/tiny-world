@@ -17,6 +17,8 @@ type SaveGame struct {
 	MapFolder  string
 	Name       string
 
+	MainMenuFunc func()
+
 	saveEvent generic.Resource[res.SaveEvent]
 }
 
@@ -38,9 +40,11 @@ func (s *SaveGame) Update(world *ecs.World) {
 		return
 	}
 
+	evt := s.saveEvent.Get()
+
 	if (ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyS)) ||
-		s.saveEvent.Get().ShouldSave {
-		s.saveEvent.Get().ShouldSave = false
+		evt.ShouldSave {
+		evt.ShouldSave = false
 		print("Saving game... ")
 
 		err := save.SaveWorld(s.SaveFolder, s.Name, world)
@@ -49,6 +53,10 @@ func (s *SaveGame) Update(world *ecs.World) {
 			return
 		}
 		println("done.")
+	}
+
+	if evt.ShouldQuit {
+		s.MainMenuFunc()
 	}
 }
 
