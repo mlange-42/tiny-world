@@ -75,7 +75,7 @@ type UI struct {
 	populationLabel *widget.Text
 	timerLabel      *widget.Text
 	speedLabel      *widget.Text
-	terrainButtons  []*widget.Button
+	terrainButtons  []terrainButton
 
 	animMapper generic.Map1[comp.CardAnimation]
 
@@ -108,6 +108,11 @@ type randomTerrain struct {
 	AllowRemove bool
 }
 
+type terrainButton struct {
+	Button  *widget.Button
+	Tooltip *widget.Text
+}
+
 func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
@@ -128,12 +133,26 @@ func (ui *UI) SetSpeedLabel(text string) {
 	ui.speedLabel.Label = text
 }
 
-func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
+func (ui *UI) EnableButton(id terr.Terrain) {
 	button := ui.terrainButtons[id]
-	if button == nil {
+	if button.Button == nil {
 		return
 	}
-	button.GetWidget().Disabled = !enabled
+	w := button.Button.GetWidget()
+	if w.Disabled {
+		w.Disabled = false
+		button.Tooltip.Label = ui.buttonTooltip[id]
+	}
+}
+
+func (ui *UI) DisableButton(id terr.Terrain, message string) {
+	button := ui.terrainButtons[id]
+	if button.Button == nil {
+		return
+	}
+	w := button.Button.GetWidget()
+	w.Disabled = true
+	button.Tooltip.Label = fmt.Sprintf("%s\n[color=BB0000]%s[/color]", ui.buttonTooltip[id], message)
 }
 
 func (ui *UI) MouseInside(x, y int) bool {
@@ -211,7 +230,7 @@ func (ui *UI) createRandomButton(rules *Rules, index int) {
 	allowRemove := terr.Properties[t].TerrainBits.Contains(terr.IsTerrain) &&
 		rand.Float64() < rules.SpecialCardProbability
 
-	button, id := ui.createButton(t, allowRemove, randSprite)
+	button, _, id := ui.createButton(t, allowRemove, randSprite)
 	ui.randomContainers[index].AddChild(button)
 	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button, index}
 }
@@ -321,14 +340,14 @@ func (ui *UI) createUI() *widget.Container {
 		),
 	)
 
-	ui.terrainButtons = make([]*widget.Button, len(terr.Properties))
+	ui.terrainButtons = make([]terrainButton, len(terr.Properties))
 	for i := range terr.Properties {
 		canBuy := terr.Properties[i].TerrainBits.Contains(terr.CanBuy)
 		if !canBuy && i != int(terr.Bulldoze) {
 			continue
 		}
-		button, _ := ui.createButton(terr.Terrain(i), false)
-		ui.terrainButtons[i] = button
+		button, tooltip, _ := ui.createButton(terr.Terrain(i), false)
+		ui.terrainButtons[i] = terrainButton{Button: button, Tooltip: tooltip}
 		buildButtonsContainer.AddChild(button)
 	}
 	innerContainer.AddChild(buildButtonsContainer)
@@ -364,7 +383,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, id := ui.createButton(terr.Default, false, randSprite)
+			button, _, id := ui.createButton(terr.Default, false, randSprite)
 
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
@@ -377,7 +396,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	} else {
 		for i, t := range ui.RandomTerrains {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, id := ui.createButton(t.Terrain, t.AllowRemove, randSprite)
+			button, _, id := ui.createButton(t.Terrain, t.AllowRemove, randSprite)
 
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
@@ -848,7 +867,7 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 	}
 }
 
-func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ...uint16) (*widget.Button, int) {
+func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ...uint16) (*widget.Button, *widget.Text, int) {
 	id := ui.idPool.Get()
 
 	tooltipContainer := widget.NewContainer(
@@ -867,6 +886,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	label := widget.NewText(
 		widget.TextOpts.Text(text, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.ProcessBBCode(true),
 		widget.TextOpts.MaxWidth(360),
 	)
 	tooltipContainer.AddChild(label)
@@ -900,13 +920,13 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		}),
 	)
 
-	return button, id
+	return button, label, id
 }
 
 func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, allowRemove bool) {
 	for _, bt := range ui.terrainButtons {
-		if bt != nil {
-			bt.SetState(widget.WidgetUnchecked)
+		if bt.Button != nil {
+			bt.Button.SetState(widget.WidgetUnchecked)
 		}
 	}
 	for _, bt := range ui.randomButtons {
@@ -919,8 +939,8 @@ func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int,
 
 func (ui *UI) ClearSelection() {
 	for _, bt := range ui.terrainButtons {
-		if bt != nil {
-			bt.SetState(widget.WidgetUnchecked)
+		if bt.Button != nil {
+			bt.Button.SetState(widget.WidgetUnchecked)
 		}
 	}
 	for _, bt := range ui.randomButtons {

@@ -120,14 +120,45 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	}
 	ui.SetSpeedLabel(speedStr)
 
+	if tick%interval != 0 {
+		return
+	}
+
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
 		if !props.TerrainBits.Contains(terr.CanBuy) {
 			continue
 		}
-		canBuild := stock.CanPay(props.BuildCost) &&
-			(props.Population == 0 || stock.Population+int(props.Population) <= stock.MaxPopulation)
-		ui.SetButtonEnabled(terr.Terrain(i), canBuild)
+
+		canBuild := true
+		message := ""
+		if !stock.CanPay(props.BuildCost) {
+			message = "Not enough "
+			cnt := 0
+			for _, cost := range props.BuildCost {
+				if stock.Res[cost.Resource] < int(cost.Amount) {
+					if cnt > 0 {
+						message += ", "
+					}
+					message += resource.Properties[cost.Resource].Name
+					cnt++
+				}
+			}
+			message += "."
+			canBuild = false
+		}
+		if props.Population > 0 && stock.Population+int(props.Population) > stock.MaxPopulation {
+			if len(message) > 0 {
+				message += "\n"
+			}
+			message += "Population limit reached."
+			canBuild = false
+		}
+		if canBuild {
+			ui.EnableButton(terr.Terrain(i))
+		} else {
+			ui.DisableButton(terr.Terrain(i), message)
+		}
 	}
 }
 
