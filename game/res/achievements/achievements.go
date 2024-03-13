@@ -33,6 +33,7 @@ type Condition struct {
 type Achievements struct {
 	Achievements []Achievement
 	Completed    []string
+	IdMap        map[string]*Achievement
 
 	world *ecs.World
 
@@ -86,9 +87,14 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 		panic(err)
 	}
 
+	a.IdMap = map[string]*Achievement{}
+
 	for _, achieve := range ach {
 		if strings.Contains(achieve.Name, " ") {
 			log.Fatalf("disallowed spaces in achievement name '%s'", achieve.Name)
+		}
+		if _, ok := a.IdMap[achieve.Name]; ok {
+			log.Fatalf("duplicate achievement name '%s'", achieve.Name)
 		}
 
 		conditions := []Condition{}
@@ -110,6 +116,8 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 				Conditions:  conditions,
 			},
 		)
+
+		a.IdMap[achieve.Name] = &a.Achievements[len(a.Achievements)-1]
 	}
 
 	err = save.LoadAchievements(playerFile, &a.Completed)

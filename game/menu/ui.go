@@ -5,6 +5,7 @@ import (
 	stdimage "image"
 	"image/color"
 	"io/fs"
+	"log"
 	"math"
 	"math/rand"
 	"slices"
@@ -124,7 +125,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
 		)),
 	)
-	scenariosTab.AddChild(ui.createScenariosPanel(games, fonts, start))
+	scenariosTab.AddChild(ui.createScenariosPanel(games, achievements, fonts, start))
 
 	loadWorldTab := widget.NewTabBookTab("Load World",
 		widget.ContainerOpts.BackgroundImage(ui.background),
@@ -403,7 +404,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	return menuContainer
 }
 
-func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
+func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Achievements, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
 	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
 	if err != nil {
 		panic(err)
@@ -459,6 +460,24 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 	scroll, content := ui.createScrollPanel(panelHeight - 110)
 
 	for _, m := range maps {
+		ach, err := save.LoadMapAchievements(ui.fs, ui.mapsFolder, m)
+		if err != nil {
+			log.Fatalf("error loading achievements for map %s: %s", m.Name, err.Error())
+		}
+
+		enabled := true
+		for _, a := range ach {
+			a2, ok := achievements.IdMap[a]
+			if !ok {
+				log.Printf("WARNING: Achievement '%s' in map '%s' not found", a, m.Name)
+				continue
+			}
+			if !a2.Completed {
+				enabled = false
+				break
+			}
+		}
+
 		newButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -489,6 +508,7 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 				start(name, m, save.LoadTypeMap)
 			}),
 		)
+		newButton.GetWidget().Disabled = !enabled
 		content.AddChild(newButton)
 
 	}

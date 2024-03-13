@@ -93,6 +93,25 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) (maps.Map, error) {
 	return maps.Map{Data: result, Terrains: terrains, Center: image.Pt(cx, cy), Achievements: achievements}, nil
 }
 
+func LoadMapAchievements(f fs.FS, folder string, mapLoc MapLocation) ([]string, error) {
+	mapStr, err := loadMap(f, folder, mapLoc)
+	if err != nil {
+		return nil, err
+	}
+
+	lines := strings.SplitN(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n", 3)
+
+	ach := strings.Split(lines[1], " ")
+	achievements := []string{}
+	for _, a := range ach {
+		if a != "" {
+			achievements = append(achievements, a)
+		}
+	}
+
+	return achievements, nil
+}
+
 func ListMaps(f fs.FS, folder string) ([]MapLocation, error) {
 	lst, err := listMapsEmbed(f, folder)
 	if err != nil {
