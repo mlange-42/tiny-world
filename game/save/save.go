@@ -65,6 +65,9 @@ func SaveMap(folder, name string, world *ecs.World) error {
 	}
 	b.WriteString("\n")
 
+	// Space for required achievements
+	b.WriteString("\n")
+
 	cx, cy := terrain.Width()/2, terrain.Height()/2
 	b.WriteString(fmt.Sprintf("%d %d\n", cx-bounds.Min.X, cy-bounds.Min.Y))
 

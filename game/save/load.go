@@ -11,6 +11,7 @@ import (
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
+	"github.com/mlange-42/tiny-world/game/maps"
 )
 
 type LoadType uint8
@@ -50,10 +51,10 @@ func ListSaveGames(folder string) ([]string, error) {
 	return listGames(folder)
 }
 
-func LoadMap(f fs.FS, folder string, mapLoc MapLocation) ([][]rune, []rune, image.Point, error) {
+func LoadMap(f fs.FS, folder string, mapLoc MapLocation) (maps.Map, error) {
 	mapStr, err := loadMap(f, folder, mapLoc)
 	if err != nil {
-		return nil, nil, image.Point{}, err
+		return maps.Map{}, err
 	}
 
 	var result [][]rune
@@ -61,7 +62,15 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) ([][]rune, []rune, imag
 
 	terrains := []rune(lines[0])
 
-	sizeLine := lines[1]
+	ach := strings.Split(lines[1], " ")
+	achievements := []string{}
+	for _, a := range ach {
+		if a != "" {
+			achievements = append(achievements, a)
+		}
+	}
+
+	sizeLine := lines[2]
 	parts := strings.Split(sizeLine, " ")
 	cx, err := strconv.Atoi(parts[0])
 	if err != nil {
@@ -72,7 +81,7 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) ([][]rune, []rune, imag
 		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
 	}
 
-	lines = lines[2:]
+	lines = lines[3:]
 
 	for _, s := range lines {
 		if len(s) > 0 {
@@ -81,7 +90,7 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) ([][]rune, []rune, imag
 		}
 	}
 
-	return result, terrains, image.Pt(cx, cy), nil
+	return maps.Map{Data: result, Terrains: terrains, Center: image.Pt(cx, cy), Achievements: achievements}, nil
 }
 
 func ListMaps(f fs.FS, folder string) ([]MapLocation, error) {

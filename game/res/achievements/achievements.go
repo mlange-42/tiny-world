@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -86,6 +87,10 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 	}
 
 	for _, achieve := range ach {
+		if strings.Contains(achieve.Name, " ") {
+			log.Fatalf("disallowed spaces in achievement name '%s'", achieve.Name)
+		}
+
 		conditions := []Condition{}
 
 		for _, c := range achieve.Conditions {
