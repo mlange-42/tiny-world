@@ -18,6 +18,8 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+const panelHeight = 400
+
 type UI struct {
 	fs         fs.FS
 	saveFolder string
@@ -140,7 +142,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 					Position: widget.RowLayoutPositionStart,
 					Stretch:  true,
 				}),
-				widget.WidgetOpts.MinSize(480, 480),
+				widget.WidgetOpts.MinSize(480, panelHeight),
 			),
 		),
 		widget.TabBookOpts.TabButtonOpts(
@@ -159,7 +161,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Spacing(5),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 96}),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 24}),
 		)),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
@@ -324,7 +326,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 
 	img := ui.defaultButtonImage()
 
-	scroll, content := ui.createScrollPanel(408)
+	scroll, content := ui.createScrollPanel(panelHeight - 72)
 
 	for _, game := range games {
 		contextMenu := widget.NewContainer(
@@ -443,7 +445,7 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(mapsLabel)
 
-	scroll, content := ui.createScrollPanel(370)
+	scroll, content := ui.createScrollPanel(panelHeight - 110)
 
 	for _, m := range maps {
 		newButton := widget.NewButton(
