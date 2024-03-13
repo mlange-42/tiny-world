@@ -10,6 +10,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/menu"
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/res/achievements"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/save"
 	"github.com/mlange-42/tiny-world/game/sys"
@@ -143,7 +144,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	factory := res.NewEntityFactory(&g.Model.World)
 	ecs.AddResource(&g.Model.World, &factory)
 
-	achievements := res.NewAchievements(&g.Model.World, gameData, "data/json/achievements.json")
+	achievements := achievements.New(&g.Model.World, gameData, "data/json/achievements.json", "user/achievements.json")
 	ecs.AddResource(&g.Model.World, achievements)
 
 	// =========== Systems ===========
