@@ -215,10 +215,7 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 	ui.prepareButtons()
 
 	rootContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewGridLayout(
-			widget.GridLayoutOpts.Columns(2),
-			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
-		)),
+		widget.ContainerOpts.Layout(widget.NewStackedLayout()),
 	)
 
 	hudContainer := ui.createHUD()
@@ -226,6 +223,9 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 
 	uiContainer := ui.createUI()
 	rootContainer.AddChild(uiContainer)
+
+	menu := ui.createMenu()
+	rootContainer.AddChild(menu)
 
 	eui := ebitenui.UI{
 		Container: rootContainer,
@@ -304,11 +304,11 @@ func (ui *UI) ReplaceAllButtons(rules *Rules) {
 
 func (ui *UI) createUI() *widget.Container {
 	anchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
+			widget.AnchorLayoutOpts.Padding(widget.Insets{Top: 48}),
+		)),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionEnd,
-			}),
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
 		),
 	)
 
@@ -430,55 +430,26 @@ func (ui *UI) createHUD() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
-		),
-	)
-
-	topBar := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewGridLayout(
-			widget.GridLayoutOpts.Columns(2),
-			widget.GridLayoutOpts.Stretch([]bool{false, true}, []bool{true}),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionCenter,
-				VerticalPosition:   widget.AnchorLayoutPositionStart,
-				StretchHorizontal:  true,
-				StretchVertical:    false,
-			}),
-			widget.WidgetOpts.MinSize(30, 30),
-		),
-	)
-
-	menu := ui.createMenu()
-
-	innerAnchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
 		),
 	)
 
 	info := ui.createInfo()
-	innerAnchor.AddChild(info)
+	anchor.AddChild(info)
 
-	topBar.AddChild(menu)
-	topBar.AddChild(innerAnchor)
-
-	anchor.AddChild(topBar)
-
-	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget(), menu.GetWidget())
+	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget())
 
 	return anchor
 }
 
 func (ui *UI) createMenu() *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
+		),
+	)
+
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -488,9 +459,9 @@ func (ui *UI) createMenu() *widget.Container {
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionStart,
-				VerticalPosition:   widget.GridLayoutPositionStart,
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionStart,
+				VerticalPosition:   widget.AnchorLayoutPositionStart,
 			}),
 		),
 	)
@@ -554,7 +525,11 @@ func (ui *UI) createMenu() *widget.Container {
 
 	menuContainer.AddChild(menuButton)
 	menuContainer.AddChild(helpButton)
-	return menuContainer
+
+	anchor.AddChild(menuContainer)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, menuContainer.GetWidget())
+	return anchor
 }
 
 func (ui *UI) createMainMenu() *widget.Container {
