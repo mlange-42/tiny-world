@@ -9,6 +9,7 @@ import (
 	"math"
 	"math/rand"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/ebitenui/ebitenui"
@@ -478,12 +479,38 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 			}
 		}
 
+		tooltipContainer := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			)),
+			widget.ContainerOpts.AutoDisableChildren(),
+			widget.ContainerOpts.BackgroundImage(ui.background),
+		)
+
+		achieve := "none"
+		if len(ach) > 0 {
+			achieve = strings.Join(ach, ", ")
+		}
+		label := widget.NewText(
+			widget.TextOpts.Text(fmt.Sprintf("%s\n\nRequired achievements:\n%s", m.Name, achieve), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+			widget.TextOpts.MaxWidth(360),
+		)
+		tooltipContainer.AddChild(label)
+
 		newButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 					Position: widget.RowLayoutPositionCenter,
 					Stretch:  true,
 				}),
+				widget.WidgetOpts.ToolTip(widget.NewToolTip(
+					widget.ToolTipOpts.Content(tooltipContainer),
+					widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+					widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+					widget.ToolTipOpts.Delay(time.Millisecond*300),
+				)),
 			),
 			widget.ButtonOpts.Image(img),
 			widget.ButtonOpts.Text(m.Name, fonts.Default, &widget.ButtonTextColor{
