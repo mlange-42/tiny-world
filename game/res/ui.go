@@ -3,6 +3,7 @@ package res
 import (
 	"fmt"
 	stdimage "image"
+	"image/color"
 	"math"
 	"math/rand"
 	"time"
@@ -49,7 +50,8 @@ const helpText = "Tiny World Help" +
 	" - Game speed: PageUp / PageDown\n" +
 	" - Toggle fullscreen: F11"
 
-const helpTooltipWidth = 800
+const helpPanelWidth = 680
+const helpPanelHeight = 460
 
 const saveTooltipText = "Save game to disk or local browser storage."
 
@@ -92,6 +94,7 @@ type UI struct {
 	buttonPressedSprite  int
 	buttonDisabledSprite int
 
+	empty             *image.NineSlice
 	background        *image.NineSlice
 	backgroundHover   *image.NineSlice
 	backgroundPressed *image.NineSlice
@@ -212,13 +215,12 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 	w = sp.Bounds().Dx()
 	ui.backgroundPressed = image.NewNineSliceSimple(sp, w/4, w/2)
 
+	ui.empty = image.NewNineSliceColor(color.Transparent)
+
 	ui.prepareButtons()
 
 	rootContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewGridLayout(
-			widget.GridLayoutOpts.Columns(2),
-			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
-		)),
+		widget.ContainerOpts.Layout(widget.NewStackedLayout()),
 	)
 
 	hudContainer := ui.createHUD()
@@ -226,6 +228,9 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 
 	uiContainer := ui.createUI()
 	rootContainer.AddChild(uiContainer)
+
+	menu := ui.createMenu()
+	rootContainer.AddChild(menu)
 
 	eui := ebitenui.UI{
 		Container: rootContainer,
@@ -304,11 +309,11 @@ func (ui *UI) ReplaceAllButtons(rules *Rules) {
 
 func (ui *UI) createUI() *widget.Container {
 	anchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
+			widget.AnchorLayoutOpts.Padding(widget.Insets{Top: 48}),
+		)),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionEnd,
-			}),
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
 		),
 	)
 
@@ -430,55 +435,26 @@ func (ui *UI) createHUD() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
-		),
-	)
-
-	topBar := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewGridLayout(
-			widget.GridLayoutOpts.Columns(2),
-			widget.GridLayoutOpts.Stretch([]bool{false, true}, []bool{true}),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionCenter,
-				VerticalPosition:   widget.AnchorLayoutPositionStart,
-				StretchHorizontal:  true,
-				StretchVertical:    false,
-			}),
-			widget.WidgetOpts.MinSize(30, 30),
-		),
-	)
-
-	menu := ui.createMenu()
-
-	innerAnchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
 		),
 	)
 
 	info := ui.createInfo()
-	innerAnchor.AddChild(info)
+	anchor.AddChild(info)
 
-	topBar.AddChild(menu)
-	topBar.AddChild(innerAnchor)
-
-	anchor.AddChild(topBar)
-
-	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget(), menu.GetWidget())
+	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget())
 
 	return anchor
 }
 
 func (ui *UI) createMenu() *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
+		),
+	)
+
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -488,9 +464,9 @@ func (ui *UI) createMenu() *widget.Container {
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionStart,
-				VerticalPosition:   widget.GridLayoutPositionStart,
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionStart,
+				VerticalPosition:   widget.AnchorLayoutPositionStart,
 			}),
 		),
 	)
@@ -520,41 +496,42 @@ func (ui *UI) createMenu() *widget.Container {
 
 	ui.mouseBlockers = append(ui.mouseBlockers, menuButton.GetWidget())
 
-	helpTooltipContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
-		)),
-		widget.ContainerOpts.AutoDisableChildren(),
-		widget.ContainerOpts.BackgroundImage(ui.background),
-	)
+	scroll, helpTooltipContainer := ui.createScrollPanel(helpPanelHeight)
+
 	helpLabel := widget.NewText(
 		widget.TextOpts.ProcessBBCode(true),
 		widget.TextOpts.Text(helpText, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(helpTooltipWidth),
+		widget.TextOpts.MaxWidth(helpPanelWidth),
 	)
 	helpTooltipContainer.AddChild(helpLabel)
 
 	helpButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.ToolTip(widget.NewToolTip(
-				widget.ToolTipOpts.Content(helpTooltipContainer),
-				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
-				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
-				widget.ToolTipOpts.Delay(time.Millisecond*300),
-			)),
+			widget.WidgetOpts.ContextMenu(scroll),
+			widget.WidgetOpts.ContextMenuCloseMode(widget.CLICK_OUT),
 		),
-		widget.ButtonOpts.Image(ui.nonButtonImage()),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
 		widget.ButtonOpts.Text("?", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			if args.Button.GetWidget().ContextMenu != nil {
+				cx, cy := ebiten.CursorPosition()
+				args.Button.GetWidget().FireContextMenuEvent(nil, stdimage.Pt(cx, cy))
+			}
+		}),
 	)
+	ui.mouseBlockers = append(ui.mouseBlockers, helpButton.GetWidget())
 
 	menuContainer.AddChild(menuButton)
 	menuContainer.AddChild(helpButton)
-	return menuContainer
+
+	anchor.AddChild(menuContainer)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, menuContainer.GetWidget())
+	return anchor
 }
 
 func (ui *UI) createMainMenu() *widget.Container {
@@ -991,10 +968,82 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	}
 }
 
-func (ui *UI) nonButtonImage() *widget.ButtonImage {
-	return &widget.ButtonImage{
-		Idle:    ui.background,
-		Hover:   ui.background,
-		Pressed: ui.background,
+func (ui *UI) createScrollPanel(height int) (*widget.Container, *widget.Container) {
+	rootContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(ui.background),
+		// the container will use an grid layout to layout its ScrollableContainer and Slider
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(2),
+			widget.GridLayoutOpts.Spacing(2, 0),
+			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+	)
+
+	content := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(12)),
+		)),
+	)
+
+	scrollContainer := widget.NewScrollContainer(
+		widget.ScrollContainerOpts.Content(content),
+		widget.ScrollContainerOpts.StretchContentWidth(),
+		widget.ScrollContainerOpts.Padding(widget.NewInsetsSimple(2)),
+		widget.ScrollContainerOpts.Image(&widget.ScrollContainerImage{
+			Idle: ui.background,
+			Mask: ui.background,
+		}),
+		widget.ScrollContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				MaxHeight: height,
+			}),
+		),
+	)
+	rootContainer.AddChild(scrollContainer)
+
+	//Create a function to return the page size used by the slider
+	pageSizeFunc := func() int {
+		return int(math.Round(float64(scrollContainer.ViewRect().Dy()) / float64(content.GetWidget().Rect.Dy()) * 1000))
 	}
+
+	vSlider := widget.NewSlider(
+		widget.SliderOpts.Direction(widget.DirectionVertical),
+		widget.SliderOpts.MinMax(0, 1000),
+		widget.SliderOpts.PageSizeFunc(pageSizeFunc),
+		widget.SliderOpts.ChangedHandler(func(args *widget.SliderChangedEventArgs) {
+			scrollContainer.ScrollTop = float64(args.Slider.Current) / 1000
+		}),
+		widget.SliderOpts.Images(
+			&widget.SliderTrackImage{
+				Idle:  ui.empty,
+				Hover: ui.empty,
+			},
+			&widget.ButtonImage{
+				Idle:    ui.backgroundPressed,
+				Hover:   ui.backgroundPressed,
+				Pressed: ui.backgroundPressed,
+			},
+		),
+	)
+	//Set the slider's position if the scrollContainer is scrolled by other means than the slider
+	scrollContainer.GetWidget().ScrolledEvent.AddHandler(func(args interface{}) {
+		a := args.(*widget.WidgetScrolledEventArgs)
+		p := pageSizeFunc() / 3
+		if p < 1 {
+			p = 1
+		}
+		vSlider.Current -= int(math.Round(a.Y * float64(p)))
+	})
+
+	rootContainer.AddChild(vSlider)
+
+	return rootContainer, content
 }

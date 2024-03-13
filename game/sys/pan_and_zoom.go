@@ -32,7 +32,8 @@ type PanAndZoom struct {
 	screen  generic.Resource[res.Screen]
 	bounds  generic.Resource[res.WorldBounds]
 	terrain generic.Resource[res.Terrain]
-	sprites generic.Resource[res.Sprites]
+	mouse   generic.Resource[res.Mouse]
+	ui      generic.Resource[res.UI]
 
 	inputChars []rune
 }
@@ -43,22 +44,26 @@ func (s *PanAndZoom) Initialize(world *ecs.World) {
 	s.screen = generic.NewResource[res.Screen](world)
 	s.bounds = generic.NewResource[res.WorldBounds](world)
 	s.terrain = generic.NewResource[res.Terrain](world)
-	s.sprites = generic.NewResource[res.Sprites](world)
+	s.mouse = generic.NewResource[res.Mouse](world)
+	s.ui = generic.NewResource[res.UI](world)
 }
 
 // Update the system
 func (s *PanAndZoom) Update(world *ecs.World) {
+	x, y := ebiten.CursorPosition()
+	mouseInside := s.mouse.Get().IsInside
+	mouseInside = mouseInside && !s.ui.Get().MouseInside(x, y)
+
 	view := s.view.Get()
 	screen := s.screen.Get()
 	bounds := s.bounds.Get()
 
-	if inpututil.IsMouseButtonJustPressed(s.PanButton) {
+	if mouseInside && inpututil.IsMouseButtonJustPressed(s.PanButton) {
 		s.mouseStart.X, s.mouseStart.Y = ebiten.CursorPosition()
 		return
 	}
 
-	if ebiten.IsMouseButtonPressed(s.PanButton) {
-		x, y := ebiten.CursorPosition()
+	if mouseInside && ebiten.IsMouseButtonPressed(s.PanButton) {
 		view.X -= int(float64(x-s.mouseStart.X) / view.Zoom)
 		view.Y -= int(float64(y-s.mouseStart.Y) / view.Zoom)
 
@@ -81,20 +86,20 @@ func (s *PanAndZoom) Update(world *ecs.World) {
 	}
 
 	_, dy := ebiten.Wheel()
-	x, y := ebiten.CursorPosition()
 	mx, my := view.ScreenToGlobal(x, y)
 
 	s.inputChars = ebiten.AppendInputChars(s.inputChars)
-	if (dy > 0 || slices.Contains(s.inputChars, '+')) && view.Zoom < s.MaxZoom {
+	if ((mouseInside && dy > 0) || slices.Contains(s.inputChars, '+')) && view.Zoom < s.MaxZoom {
 		view.Zoom *= 2
 		view.X += (mx - view.X) / 2
 		view.Y += (my - view.Y) / 2
 	}
-	if (dy < 0 || slices.Contains(s.inputChars, '-')) && view.Zoom > s.MinZoom {
+	if ((mouseInside && dy < 0) || slices.Contains(s.inputChars, '-')) && view.Zoom > s.MinZoom {
 		view.Zoom /= 2
 		view.X -= (mx - view.X)
 		view.Y -= (my - view.Y)
 	}
+
 	s.inputChars = s.inputChars[:0]
 
 	glBounds := view.BoundsToGlobal(bounds)
