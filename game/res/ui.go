@@ -605,6 +605,23 @@ func (ui *UI) createMainMenu() *widget.Container {
 		}),
 	)
 
+	saveMapButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save map", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSaveMap = true
+		}),
+	)
+
 	saveAndQuitButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -641,6 +658,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 	)
 
 	contextMenu.AddChild(saveButton)
+	contextMenu.AddChild(saveMapButton)
 	contextMenu.AddChild(saveAndQuitButton)
 	contextMenu.AddChild(quitButton)
 
