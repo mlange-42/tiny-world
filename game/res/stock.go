@@ -11,6 +11,8 @@ type Stock struct {
 	Cap []int
 	// Total storage, indexed by [resource.Resource].
 	Res []int
+	// Total production ever delivered to storage, indexed by [resource.Resource].
+	Total []int
 
 	// Total population.
 	Population int
@@ -24,9 +26,15 @@ func NewStock(initial []int) Stock {
 		panic("initial resources don't match number of actual resources")
 	}
 	return Stock{
-		Cap: make([]int, len(resource.Properties)),
-		Res: initial,
+		Cap:   make([]int, len(resource.Properties)),
+		Res:   initial,
+		Total: make([]int, len(resource.Properties)),
 	}
+}
+
+func (s *Stock) AddResources(res resource.Resource, amount int) {
+	s.Res[res] += amount
+	s.Total[res] += amount
 }
 
 // CanPay checks whether there are sufficient resources in the stock to pay the given amounts.

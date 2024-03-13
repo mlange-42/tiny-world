@@ -143,6 +143,9 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	factory := res.NewEntityFactory(&g.Model.World)
 	ecs.AddResource(&g.Model.World, &factory)
 
+	achievements := res.NewAchievements(&g.Model.World, gameData, "data/json/achievements.json")
+	ecs.AddResource(&g.Model.World, achievements)
+
 	// =========== Systems ===========
 
 	if load == save.LoadTypeGame {
@@ -170,6 +173,9 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	g.Model.AddSystem(&sys.Build{})
 	g.Model.AddSystem(&sys.AssignHaulers{})
+	g.Model.AddSystem(&sys.Achievements{
+		PlayerFile: "user/achievements.json",
+	})
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton:        ebiten.MouseButton1,

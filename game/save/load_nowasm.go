@@ -3,6 +3,7 @@
 package save
 
 import (
+	"encoding/json"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,6 +20,14 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	}
 
 	return serde.Deserialize(jsData, world)
+}
+
+func loadAchievements(file string, completed *[]string) error {
+	jsData, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsData, completed)
 }
 
 func listGames(folder string) ([]string, error) {

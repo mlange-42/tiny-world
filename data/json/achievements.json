@@ -1,0 +1,24 @@
+[
+    {
+        "name": "lumberjack",
+        "description": "build 5 lumberjacks",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["lumberjack"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "name": "producer",
+        "description": "produce 100 resources per minute",
+        "conditions": [
+            {
+                "type": "production",
+                "ids": ["food", "wood", "stones"],
+                "number": 100
+            }
+        ]
+    }
+]
