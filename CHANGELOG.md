@@ -18,6 +18,8 @@
 * Show information on why something can't be built in button tooltips (#185)
 * Highlight resources with negative net production in the info bar (#186)
 * Adds a "Save map" button to the in-game menu (#190)
+* Adds scroll containers for main menu lists (#191)
+* Fixes the in-game UI layout for small screens (#193)
 
 ### Graphics
 
