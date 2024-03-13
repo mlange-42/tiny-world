@@ -1,0 +1,13 @@
+[
+    {
+        "name": "lumberjack",
+        "description": "build 5 lumberjacks",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["lumberjack"],
+                "number": 5
+            }
+        ]
+    }
+]
