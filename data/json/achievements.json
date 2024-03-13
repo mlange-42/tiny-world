@@ -1,7 +1,7 @@
 [
     {
         "name": "lumberjack",
-        "description": "build 5 lumberjacks",
+        "description": "Build 5 lumberjacks",
         "conditions": [
             {
                 "type": "terrain",
@@ -12,7 +12,7 @@
     },
     {
         "name": "producer",
-        "description": "produce 100 resources per minute",
+        "description": "Produce 100 resources per minute",
         "conditions": [
             {
                 "type": "production",

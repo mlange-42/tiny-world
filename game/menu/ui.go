@@ -2,11 +2,13 @@ package menu
 
 import (
 	"fmt"
+	stdimage "image"
 	"image/color"
 	"io/fs"
 	"math"
 	"math/rand"
 	"slices"
+	"time"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
@@ -17,6 +19,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/save"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 const panelHeight = 400
@@ -521,6 +524,22 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 
 	for i := range achievements.Achievements {
 		ach := achievements.Achievements[i]
+		name := util.Capitalize(ach.Name)
+
+		tooltipContainer := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			)),
+			widget.ContainerOpts.AutoDisableChildren(),
+			widget.ContainerOpts.BackgroundImage(ui.background),
+		)
+		label := widget.NewText(
+			widget.TextOpts.Text(fmt.Sprintf("%s\n\n%s", name, ach.Description), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+			widget.TextOpts.MaxWidth(360),
+		)
+		tooltipContainer.AddChild(label)
 
 		achButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
@@ -528,11 +547,17 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 					Position: widget.RowLayoutPositionCenter,
 					Stretch:  true,
 				}),
+				widget.WidgetOpts.ToolTip(widget.NewToolTip(
+					widget.ToolTipOpts.Content(tooltipContainer),
+					widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+					widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+					widget.ToolTipOpts.Delay(time.Millisecond*300),
+				)),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(ach.Name, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(name, fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
-				Disabled: color.NRGBA{180, 180, 180, 255},
+				Disabled: color.NRGBA{120, 120, 120, 255},
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		)
