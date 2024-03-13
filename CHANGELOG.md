@@ -2,16 +2,20 @@
 
 ## [[unpublished]](https://github.com/mlange-42/tiny-world/compare/v0.1.0...main)
 
-### Features
+### Game features
 
 * The game can be played on pre-defined, embedded maps/scenarios (#168)
 * The game can be played on user-created maps/scenarios (#171)
-* Adds a menu to save/quit to main menu from in the game (#179)
-* Shows the build radius around the cursor when building a castle or tower (#183)
 
 ### Game rules
 
 * Haulers stay in buildings for a second before continuing (#163)
+
+### Usability
+
+* Adds a menu to save/quit to main menu from in the game (#179)
+* Shows the build radius around the cursor when building a castle or tower (#183)
+* Show information on why something can't be built in button tooltips (#185)
 
 ### Graphics
 
