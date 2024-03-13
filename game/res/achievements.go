@@ -43,12 +43,20 @@ func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
 	}
 
 	a.checks = map[string]func(uint32, int) bool{
-		"terrain":    a.checkTerrain,
-		"production": a.checkProduction,
+		"terrain":          a.checkTerrain,
+		"stock":            a.checkStock,
+		"production":       a.checkProduction,
+		"consumption":      a.checkConsumption,
+		"total_production": a.checkTotalProduction,
+		"net_production":   a.checkNetProduction,
 	}
 	parse := map[string]func(...string) uint32{
-		"terrain":    a.parseTerrains,
-		"production": a.parseResources,
+		"terrain":          a.parseTerrains,
+		"stock":            a.parseResources,
+		"production":       a.parseResources,
+		"consumption":      a.parseResources,
+		"total_production": a.parseResources,
+		"net_production":   a.parseResources,
 	}
 
 	ach := []achievementJs{}
@@ -104,6 +112,62 @@ func (a *Achievements) checkProduction(ids uint32, num int) bool {
 		bits := uint32(1) << i
 		if (bits & ids) == bits {
 			cnt += a.production.Prod[i]
+			if cnt >= num {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (a *Achievements) checkConsumption(ids uint32, num int) bool {
+	cnt := 0
+	for i := range resource.Properties {
+		bits := uint32(1) << i
+		if (bits & ids) == bits {
+			cnt += a.production.Cons[i]
+			if cnt >= num {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (a *Achievements) checkStock(ids uint32, num int) bool {
+	cnt := 0
+	for i := range resource.Properties {
+		bits := uint32(1) << i
+		if (bits & ids) == bits {
+			cnt += a.stock.Res[i]
+			if cnt >= num {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (a *Achievements) checkNetProduction(ids uint32, num int) bool {
+	cnt := 0
+	for i := range resource.Properties {
+		bits := uint32(1) << i
+		if (bits & ids) == bits {
+			cnt += a.production.Prod[i] - a.production.Cons[i]
+			if cnt >= num {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (a *Achievements) checkTotalProduction(ids uint32, num int) bool {
+	cnt := 0
+	for i := range resource.Properties {
+		bits := uint32(1) << i
+		if (bits & ids) == bits {
+			cnt += a.stock.Total[i]
 			if cnt >= num {
 				return true
 			}
