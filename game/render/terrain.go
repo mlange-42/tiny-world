@@ -148,18 +148,19 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 					randTile, terr.Properties[t].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
 
 				if showBuildable {
-					buildHere := s.buildable.Get(i, j) > 0 || s.inRadius(cursor.X, cursor.Y, i, j, int(buildRadius))
+					buildHere := s.buildable.Get(i, j) > 0
 					buildMask, notBuildMask := s.buildable.NeighborsMask(i, j)
-					in, out := s.radiusMask(cursor.X, cursor.Y, i, j, int(buildRadius))
 
-					buildMask = buildMask | in
-					notBuildMask = notBuildMask & out
-					if (buildHere && notBuildMask > 0) || (!buildHere && buildMask > 0) {
-						if buildHere {
-							_ = s.drawBorderSprite(img, s.borderInner, buildMask, &point, height, &off)
-						} else {
-							_ = s.drawBorderSprite(img, s.borderOuter, notBuildMask, &point, height, &off)
-						}
+					if buildRadius > 0 {
+						buildHere = buildHere || s.inRadius(cursor.X, cursor.Y, i, j, int(buildRadius))
+						in, out := s.radiusMask(cursor.X, cursor.Y, i, j, int(buildRadius))
+						buildMask = buildMask | in
+						notBuildMask = notBuildMask & out
+					}
+					if buildHere && notBuildMask > 0 {
+						_ = s.drawBorderSprite(img, s.borderInner, buildMask, &point, height, &off)
+					} else if !buildHere && buildMask > 0 {
+						_ = s.drawBorderSprite(img, s.borderOuter, notBuildMask, &point, height, &off)
 					}
 				}
 			}
