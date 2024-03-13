@@ -29,6 +29,8 @@ type Sprites struct {
 	Background color.RGBA
 	// UI text color
 	TextColor color.RGBA
+	// UI text color for highlight/warning
+	TextHighlightColor color.RGBA
 
 	atlas       []*ebiten.Image
 	sprites     []*ebiten.Image
@@ -126,16 +128,17 @@ func NewSprites(fSys fs.FS, dir, tileSet string) Sprites {
 	}
 
 	return Sprites{
-		TileWidth:   tilesetJs.TileWidth,
-		TileHeight:  tilesetJs.TileHeight,
-		Background:  tilesetJs.BackgroundColor,
-		TextColor:   tilesetJs.TextColor,
-		atlas:       atlas,
-		sprites:     sprites,
-		infos:       infos,
-		indices:     indices,
-		idxUnknown:  indices[nameUnknown],
-		terrIndices: terrIndices,
+		TileWidth:          tilesetJs.TileWidth,
+		TileHeight:         tilesetJs.TileHeight,
+		Background:         tilesetJs.BackgroundColor,
+		TextColor:          tilesetJs.TextColor,
+		TextHighlightColor: tilesetJs.TextHighlightColor,
+		atlas:              atlas,
+		sprites:            sprites,
+		infos:              infos,
+		indices:            indices,
+		idxUnknown:         indices[nameUnknown],
+		terrIndices:        terrIndices,
 	}
 }
 

@@ -2,5 +2,6 @@
     "tile_width": 48,
     "tile_height": 24,
     "background_color": {"R": 189, "G": 181, "B": 161, "A": 255},
-    "text_color": {"R": 70, "G": 65, "B": 50, "A": 255} 
+    "text_color": {"R": 70, "G": 65, "B": 50, "A": 255},
+    "text_highlight_color": {"R": 188, "G": 10, "B": 10, "A": 255}
 }
