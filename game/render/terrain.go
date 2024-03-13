@@ -130,6 +130,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 	showBuildable := sel.BuildType != terr.Air ||
 		(s.landUse.Contains(cursor.X, cursor.Y) && terr.Properties[s.landUse.Get(cursor.X, cursor.Y)].BuildRadius > 0)
+	buildRadius := terr.Properties[sel.BuildType].BuildRadius
 
 	for i := mapBounds.Min.X; i < mapBounds.Max.X; i++ {
 		for j := mapBounds.Min.Y; j < mapBounds.Max.Y; j++ {
@@ -154,6 +155,12 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 							_ = s.drawBorderSprite(img, s.borderInner, buildMask, &point, height, &off)
 						} else {
 							_ = s.drawBorderSprite(img, s.borderOuter, notBuildMask, &point, height, &off)
+						}
+					}
+					if s.inRadius(cursor.X, cursor.Y, i, j, int(buildRadius)) {
+						in, out := s.radiusMask(cursor.X, cursor.Y, i, j, int(buildRadius))
+						if out != 0 {
+							_ = s.drawBorderSprite(img, s.borderOuter, in, &point, height, &off)
 						}
 					}
 				}
@@ -185,6 +192,38 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 		}
 	}
+}
+
+func (s *Terrain) inRadius(x1, y1, x2, y2, rad int) bool {
+	dx, dy := x1-x2, y1-y2
+	return dx*dx+dy*dy <= rad*rad
+}
+
+func (s *Terrain) radiusMask(x1, y1, x2, y2, rad int) (terr.Directions, terr.Directions) {
+	positive := terr.Directions(0)
+	negative := terr.Directions(0)
+
+	if s.inRadius(x1, y1, x2, y2-1, rad) {
+		positive.Set(terr.N)
+	} else {
+		negative.Set(terr.N)
+	}
+	if s.inRadius(x1, y1, x2+1, y2, rad) {
+		positive.Set(terr.E)
+	} else {
+		negative.Set(terr.E)
+	}
+	if s.inRadius(x1, y1, x2, y2+1, rad) {
+		positive.Set(terr.S)
+	} else {
+		negative.Set(terr.S)
+	}
+	if s.inRadius(x1, y1, x2-1, y2, rad) {
+		positive.Set(terr.W)
+	} else {
+		negative.Set(terr.W)
+	}
+	return positive, negative
 }
 
 // PostUpdateUI the system
