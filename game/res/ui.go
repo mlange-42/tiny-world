@@ -117,12 +117,23 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func (ui *UI) SetResourceLabel(id resource.Resource, text string) {
-	ui.resourceLabels[id].Label = text
+func (ui *UI) SetResourceLabel(id resource.Resource, text string, warning bool) {
+	label := ui.resourceLabels[id]
+	label.Label = text
+	if warning {
+		label.Color = ui.sprites.TextHighlightColor
+	} else {
+		label.Color = ui.sprites.TextColor
+	}
 }
 
-func (ui *UI) SetPopulationLabel(text string) {
+func (ui *UI) SetPopulationLabel(text string, warning bool) {
 	ui.populationLabel.Label = text
+	if warning {
+		ui.populationLabel.Color = ui.sprites.TextHighlightColor
+	} else {
+		ui.populationLabel.Color = ui.sprites.TextColor
+	}
 }
 
 func (ui *UI) SetTimerLabel(text string) {

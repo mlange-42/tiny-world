@@ -100,12 +100,17 @@ func (s *UpdateStats) Update(world *ecs.World) {
 			stock.Res[i] = stock.Cap[i]
 		}
 		if production.Cons[i] > 0 {
-			ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]))
+			ui.SetResourceLabel(resource.Resource(i),
+				fmt.Sprintf("+%d-%d (%d/%d)", production.Prod[i], production.Cons[i], stock.Res[i], stock.Cap[i]),
+				production.Cons[i] >= production.Prod[i],
+			)
 		} else {
-			ui.SetResourceLabel(resource.Resource(i), fmt.Sprintf("+%d (%d/%d)", production.Prod[i], stock.Res[i], stock.Cap[i]))
+			ui.SetResourceLabel(resource.Resource(i),
+				fmt.Sprintf("+%d (%d/%d)", production.Prod[i], stock.Res[i], stock.Cap[i]),
+				false)
 		}
 	}
-	ui.SetPopulationLabel(fmt.Sprintf("%d/%d", stock.Population, stock.MaxPopulation))
+	ui.SetPopulationLabel(fmt.Sprintf("%d/%d", stock.Population, stock.MaxPopulation), stock.Population >= stock.MaxPopulation)
 
 	secs := tick / interval
 	duration := time.Duration(secs) * time.Second
