@@ -16,12 +16,14 @@
 * Adds a menu to save/quit to main menu from in the game (#179)
 * Shows the build radius around the cursor when building a castle or tower (#183)
 * Show information on why something can't be built in button tooltips (#185)
+* Highlight resources with negative net production in the info bar (#186)
 
 ### Graphics
 
 * Adds random variants for grass tiles (#158)
 * Tweak info labels to accommodate 3-digit values without size changes (#164)
 * Complete rework and themed styling of the main menu (#176, #177)
+* Text highlight color is a tileset property (#186)
 
 ### Documentation
 
