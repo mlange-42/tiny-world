@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mlange-42/arche-model/model"
-	"github.com/mlange-42/arche-model/resource"
 	as "github.com/mlange-42/arche-serde"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -14,28 +12,10 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
-func SaveWorld(folder, name string, world *ecs.World) error {
+func SaveWorld(folder, name string, world *ecs.World, skip []generic.Comp) error {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
-			generic.T[res.Fonts](),
-			generic.T[res.Screen](),
-			generic.T[res.EntityFactory](),
-			generic.T[res.Sprites](),
-			generic.T[res.Terrain](),
-			generic.T[res.TerrainEntities](),
-			generic.T[res.LandUse](),
-			generic.T[res.LandUseEntities](),
-			generic.T[res.Buildable](),
-			generic.T[res.SaveEvent](),
-			generic.T[res.UpdateInterval](),
-			generic.T[res.GameSpeed](),
-			generic.T[res.Selection](),
-			generic.T[res.Achievements](),
-			generic.T[res.Mouse](),
-			generic.T[res.View](),
-			generic.T[resource.Termination](),
-			generic.T[resource.Rand](),
-			generic.T[model.Systems](),
+			skip...,
 		),
 	)
 	if err != nil {

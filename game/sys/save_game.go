@@ -5,9 +5,12 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/mlange-42/arche-model/model"
+	"github.com/mlange-42/arche-model/resource"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/res/achievements"
 	"github.com/mlange-42/tiny-world/game/save"
 )
 
@@ -20,11 +23,33 @@ type SaveGame struct {
 	MainMenuFunc func()
 
 	saveEvent generic.Resource[res.SaveEvent]
+	skip      []generic.Comp
 }
 
 // Initialize the system
 func (s *SaveGame) Initialize(world *ecs.World) {
 	s.saveEvent = generic.NewResource[res.SaveEvent](world)
+
+	s.skip = []generic.Comp{generic.T[res.Fonts](),
+		generic.T[res.Screen](),
+		generic.T[res.EntityFactory](),
+		generic.T[res.Sprites](),
+		generic.T[res.Terrain](),
+		generic.T[res.TerrainEntities](),
+		generic.T[res.LandUse](),
+		generic.T[res.LandUseEntities](),
+		generic.T[res.Buildable](),
+		generic.T[res.SaveEvent](),
+		generic.T[res.UpdateInterval](),
+		generic.T[res.GameSpeed](),
+		generic.T[res.Selection](),
+		generic.T[achievements.Achievements](),
+		generic.T[res.Mouse](),
+		generic.T[res.View](),
+		generic.T[resource.Termination](),
+		generic.T[resource.Rand](),
+		generic.T[model.Systems](),
+	}
 }
 
 // Update the system
@@ -48,7 +73,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 		evt.ShouldSave = false
 		print("Saving game... ")
 
-		err := save.SaveWorld(s.SaveFolder, s.Name, world)
+		err := save.SaveWorld(s.SaveFolder, s.Name, world, s.skip)
 		if err != nil {
 			log.Printf("Error saving game: %s", err.Error())
 			return

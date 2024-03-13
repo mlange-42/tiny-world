@@ -2,20 +2,24 @@ package menu
 
 import (
 	"fmt"
+	stdimage "image"
 	"image/color"
 	"io/fs"
 	"math"
 	"math/rand"
 	"slices"
+	"time"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/res/achievements"
 	"github.com/mlange-42/tiny-world/game/save"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
+	"github.com/mlange-42/tiny-world/game/util"
 )
 
 const panelHeight = 400
@@ -43,6 +47,7 @@ func (ui *UI) UI() *ebitenui.UI {
 }
 
 func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprites, fonts *res.Fonts,
+	achievements *achievements.Achievements,
 	start func(string, save.MapLocation, save.LoadType),
 	restart func(tab int)) UI {
 	ui := UI{
@@ -129,7 +134,17 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		)),
 	)
 	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start, restart))
-	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab)
+
+	achievementTab := widget.NewTabBookTab("Achievements",
+		widget.ContainerOpts.BackgroundImage(ui.background),
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
+		)),
+	)
+	achievementTab.AddChild(ui.createAchievementsPanel(achievements, fonts))
+
+	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
 
 	img := ui.defaultButtonImage()
 	ui.tabContainer = widget.NewTabBook(
@@ -149,11 +164,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(60, 0)),
 		),
-		widget.TabBookOpts.Tabs(
-			newWorldTab,
-			scenariosTab,
-			loadWorldTab,
-		),
+		widget.TabBookOpts.Tabs(ui.tabs...),
 		widget.TabBookOpts.InitialTab(ui.tabs[selectedTab]),
 	)
 
@@ -480,6 +491,81 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 		)
 		content.AddChild(newButton)
 
+	}
+
+	menuContainer.AddChild(scroll)
+
+	return menuContainer
+}
+
+func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, fonts *res.Fonts) *widget.Container {
+	menuContainer := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+	)
+
+	img := ui.defaultButtonImage()
+
+	label := widget.NewText(
+		widget.TextOpts.Text("Achievements:", fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+	)
+	menuContainer.AddChild(label)
+
+	scroll, content := ui.createScrollPanel(panelHeight - 110)
+
+	for i := range achievements.Achievements {
+		ach := achievements.Achievements[i]
+		name := util.Capitalize(ach.Name)
+
+		tooltipContainer := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			)),
+			widget.ContainerOpts.AutoDisableChildren(),
+			widget.ContainerOpts.BackgroundImage(ui.background),
+		)
+		label := widget.NewText(
+			widget.TextOpts.Text(fmt.Sprintf("%s\n\n%s", name, ach.Description), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+			widget.TextOpts.MaxWidth(360),
+		)
+		tooltipContainer.AddChild(label)
+
+		achButton := widget.NewButton(
+			widget.ButtonOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				}),
+				widget.WidgetOpts.ToolTip(widget.NewToolTip(
+					widget.ToolTipOpts.Content(tooltipContainer),
+					widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+					widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+					widget.ToolTipOpts.Delay(time.Millisecond*300),
+				)),
+			),
+			widget.ButtonOpts.Image(img),
+			widget.ButtonOpts.Text(name, fonts.Default, &widget.ButtonTextColor{
+				Idle:     ui.sprites.TextColor,
+				Disabled: color.NRGBA{120, 120, 120, 255},
+			}),
+			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		)
+		if !ach.Completed {
+			achButton.GetWidget().Disabled = true
+		}
+
+		content.AddChild(achButton)
 	}
 
 	menuContainer.AddChild(scroll)

@@ -1,13 +1,18 @@
-package res
+package achievements
 
 import (
 	"io/fs"
+	"log"
+	"os"
+	"slices"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/comp"
+	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
+	"github.com/mlange-42/tiny-world/game/save"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -25,22 +30,36 @@ type Condition struct {
 }
 
 type Achievements struct {
+	Achievements []Achievement
+	Completed    []string
+
 	world *ecs.World
 
 	terrainFilter generic.Filter1[comp.Terrain]
-	stock         *Stock
-	production    *Production
+	stock         *res.Stock
+	production    *res.Production
 
-	checks       map[string]func(uint32, int) bool
-	Achievements []Achievement
+	checks map[string]func(uint32, int) bool
 }
 
-func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
+func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievements {
+	var stock *res.Stock
+	var prod *res.Production
+
+	sRes := generic.NewResource[res.Stock](world)
+	pRes := generic.NewResource[res.Production](world)
+	if sRes.Has() {
+		stock = sRes.Get()
+	}
+	if pRes.Has() {
+		prod = pRes.Get()
+	}
+
 	a := Achievements{
 		world:         world,
 		terrainFilter: *generic.NewFilter1[comp.Terrain](),
-		stock:         ecs.GetResource[Stock](world),
-		production:    ecs.GetResource[Production](world),
+		stock:         stock,
+		production:    prod,
 	}
 
 	a.checks = map[string]func(uint32, int) bool{
@@ -86,6 +105,19 @@ func NewAchievements(world *ecs.World, f fs.FS, file string) *Achievements {
 				Conditions:  conditions,
 			},
 		)
+	}
+
+	err = save.LoadAchievements(playerFile, &a.Completed)
+	if err != nil {
+		if _, ok := err.(*os.PathError); !ok {
+			log.Fatal("error parsing achievement: ", err)
+		}
+	}
+
+	for i := range a.Achievements {
+		if slices.Contains(a.Completed, a.Achievements[i].Name) {
+			a.Achievements[i].Completed = true
+		}
 	}
 
 	return &a
