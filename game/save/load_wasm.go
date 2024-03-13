@@ -26,6 +26,10 @@ func loadAchievements(file string, completed *[]string) error {
 	storage := js.Global().Get("localStorage")
 	jsData := storage.Call("getItem", achievementsKey)
 
+	if jsData.IsNull() {
+		return nil
+	}
+
 	return json.Unmarshal([]byte(jsData.String()), completed)
 }
 

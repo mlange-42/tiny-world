@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
+	"math"
 	"math/rand"
 	"slices"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+const panelHeight = 400
+
 type UI struct {
 	fs         fs.FS
 	saveFolder string
@@ -29,6 +32,7 @@ type UI struct {
 	tabContainer *widget.TabBook
 	tabs         []*widget.TabBookTab
 
+	empty             *image.NineSlice
 	background        *image.NineSlice
 	backgroundHover   *image.NineSlice
 	backgroundPressed *image.NineSlice
@@ -59,6 +63,8 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	sp = ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanelPressed))
 	w = sp.Bounds().Dx()
 	ui.backgroundPressed = image.NewNineSliceSimple(sp, w/4, w/2)
+
+	ui.empty = image.NewNineSliceColor(color.Transparent)
 
 	games, err := save.ListSaveGames(folder)
 	if err != nil {
@@ -133,9 +139,10 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		widget.TabBookOpts.ContainerOpts(
 			widget.ContainerOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-					Position: widget.RowLayoutPositionCenter,
+					Position: widget.RowLayoutPositionStart,
+					Stretch:  true,
 				}),
-				widget.WidgetOpts.MinSize(360, 20),
+				widget.WidgetOpts.MinSize(480, panelHeight),
 			),
 		),
 		widget.TabBookOpts.TabButtonOpts(
@@ -154,13 +161,13 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Spacing(5),
+			widget.RowLayoutOpts.Padding(widget.Insets{Top: 24}),
 		)),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
-				VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				VerticalPosition:   widget.AnchorLayoutPositionStart,
 			}),
-			widget.WidgetOpts.MinSize(360, 360),
 		),
 	)
 
@@ -223,8 +230,8 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(360, 20),
 		),
 	)
 
@@ -261,8 +268,9 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionCenter,
-				Stretch:  true,
+				Stretch:  false,
 			}),
+			widget.WidgetOpts.MinSize(160, 0),
 		),
 		widget.ButtonOpts.Image(img),
 		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
@@ -303,8 +311,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(360, 20),
 		),
 	)
 
@@ -317,6 +325,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	}
 
 	img := ui.defaultButtonImage()
+
+	scroll, content := ui.createScrollPanel(panelHeight - 72)
 
 	for _, game := range games {
 		contextMenu := widget.NewContainer(
@@ -345,7 +355,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 				start(game, save.MapLocation{}, save.LoadTypeGame)
 			}),
 		)
-		menuContainer.AddChild(gameButton)
+		content.AddChild(gameButton)
 
 		deleteButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
@@ -377,6 +387,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 
 	}
 
+	menuContainer.AddChild(scroll)
+
 	return menuContainer
 }
 
@@ -394,8 +406,8 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(360, 20),
 		),
 	)
 
@@ -433,6 +445,8 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 	menuContainer.AddChild(newName)
 	menuContainer.AddChild(mapsLabel)
 
+	scroll, content := ui.createScrollPanel(panelHeight - 110)
+
 	for _, m := range maps {
 		newButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
@@ -464,9 +478,11 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 				start(name, m, save.LoadTypeMap)
 			}),
 		)
-		menuContainer.AddChild(newButton)
+		content.AddChild(newButton)
 
 	}
+
+	menuContainer.AddChild(scroll)
 
 	return menuContainer
 }
@@ -544,4 +560,79 @@ func (ui *UI) drawRandomSprites() (terr.Terrain, terr.Terrain) {
 		}
 	}
 	return candidates[rand.Intn(len(candidates))], candidates[rand.Intn(len(candidates))]
+}
+
+func (ui *UI) createScrollPanel(height int) (*widget.Container, *widget.Container) {
+	rootContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(ui.background),
+		// the container will use an grid layout to layout its ScrollableContainer and Slider
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(2),
+			widget.GridLayoutOpts.Spacing(2, 0),
+			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position:  widget.RowLayoutPositionStart,
+				Stretch:   true,
+				MaxHeight: height,
+			}),
+		),
+	)
+
+	content := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+		)),
+	)
+
+	scrollContainer := widget.NewScrollContainer(
+		widget.ScrollContainerOpts.Content(content),
+		widget.ScrollContainerOpts.StretchContentWidth(),
+		widget.ScrollContainerOpts.Padding(widget.NewInsetsSimple(2)),
+		widget.ScrollContainerOpts.Image(&widget.ScrollContainerImage{
+			Idle: ui.background,
+			Mask: ui.background,
+		}),
+	)
+	rootContainer.AddChild(scrollContainer)
+
+	//Create a function to return the page size used by the slider
+	pageSizeFunc := func() int {
+		return int(math.Round(float64(scrollContainer.ViewRect().Dy()) / float64(content.GetWidget().Rect.Dy()) * 1000))
+	}
+
+	vSlider := widget.NewSlider(
+		widget.SliderOpts.Direction(widget.DirectionVertical),
+		widget.SliderOpts.MinMax(0, 1000),
+		widget.SliderOpts.PageSizeFunc(pageSizeFunc),
+		widget.SliderOpts.ChangedHandler(func(args *widget.SliderChangedEventArgs) {
+			scrollContainer.ScrollTop = float64(args.Slider.Current) / 1000
+		}),
+		widget.SliderOpts.Images(
+			&widget.SliderTrackImage{
+				Idle:  ui.empty,
+				Hover: ui.empty,
+			},
+			&widget.ButtonImage{
+				Idle:    ui.backgroundPressed,
+				Hover:   ui.backgroundPressed,
+				Pressed: ui.backgroundPressed,
+			},
+		),
+	)
+	//Set the slider's position if the scrollContainer is scrolled by other means than the slider
+	scrollContainer.GetWidget().ScrolledEvent.AddHandler(func(args interface{}) {
+		a := args.(*widget.WidgetScrolledEventArgs)
+		p := pageSizeFunc() / 3
+		if p < 1 {
+			p = 1
+		}
+		vSlider.Current -= int(math.Round(a.Y * float64(p)))
+	})
+
+	rootContainer.AddChild(vSlider)
+
+	return rootContainer, content
 }
