@@ -1,7 +1,7 @@
 [
     {
         "id": "watermill",
-        "file": ["watermill"],
+        "file": ["watermill_S"],
         "multitile": [
             ["watermill_S"],
             ["watermill_N"],
