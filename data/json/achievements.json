@@ -1,7 +1,20 @@
 [
     {
-        "name": "lumberjack",
-        "description": "Build 5 lumberjacks",
+        "id": "play-once",
+        "name": "Play the Game",
+        "description": "Play the game at least once.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["warehouse"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "master-lumberjack",
+        "name": "Master Lumberjack",
+        "description": "Own 5 lumberjacks.",
         "conditions": [
             {
                 "type": "terrain",
@@ -11,13 +24,26 @@
         ]
     },
     {
-        "name": "producer",
-        "description": "Produce 100 resources per minute",
+        "id": "small-manufacturer",
+        "name": "Small Manufacturer",
+        "description": "Produce 100 resources per minute.",
         "conditions": [
             {
                 "type": "production",
                 "ids": ["food", "wood", "stones"],
                 "number": 100
+            }
+        ]
+    },
+    {
+        "id": "large-manufacturer",
+        "name": "Large Manufacturer",
+        "description": "Produce 250 resources per minute.",
+        "conditions": [
+            {
+                "type": "production",
+                "ids": ["food", "wood", "stones"],
+                "number": 250
             }
         ]
     }

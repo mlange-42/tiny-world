@@ -18,6 +18,7 @@ import (
 )
 
 type Achievement struct {
+	ID          string
 	Name        string
 	Description string
 	Conditions  []Condition
@@ -90,11 +91,11 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 	a.IdMap = map[string]*Achievement{}
 
 	for _, achieve := range ach {
-		if strings.Contains(achieve.Name, " ") {
-			log.Fatalf("disallowed spaces in achievement name '%s'", achieve.Name)
+		if strings.Contains(achieve.ID, " ") {
+			log.Fatalf("disallowed spaces in achievement ID '%s'", achieve.ID)
 		}
-		if _, ok := a.IdMap[achieve.Name]; ok {
-			log.Fatalf("duplicate achievement name '%s'", achieve.Name)
+		if _, ok := a.IdMap[achieve.ID]; ok {
+			log.Fatalf("duplicate achievement ID '%s'", achieve.ID)
 		}
 
 		conditions := []Condition{}
@@ -111,13 +112,14 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 
 		a.Achievements = append(a.Achievements,
 			Achievement{
+				ID:          achieve.ID,
 				Name:        achieve.Name,
 				Description: achieve.Description,
 				Conditions:  conditions,
 			},
 		)
 
-		a.IdMap[achieve.Name] = &a.Achievements[len(a.Achievements)-1]
+		a.IdMap[achieve.ID] = &a.Achievements[len(a.Achievements)-1]
 	}
 
 	err = save.LoadAchievements(playerFile, &a.Completed)
@@ -128,7 +130,7 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 	}
 
 	for i := range a.Achievements {
-		if slices.Contains(a.Completed, a.Achievements[i].Name) {
+		if slices.Contains(a.Completed, a.Achievements[i].ID) {
 			a.Achievements[i].Completed = true
 		}
 	}
@@ -246,6 +248,7 @@ func (a *Achievements) parseResources(ids ...string) uint32 {
 }
 
 type achievementJs struct {
+	ID          string        `json:"id"`
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Conditions  []conditionJs `json:"conditions"`

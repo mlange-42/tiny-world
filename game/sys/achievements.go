@@ -42,7 +42,7 @@ func (s *Achievements) Update(world *ecs.World) {
 		}
 		achievements.Check(ach)
 		if ach.Completed {
-			achievements.Completed = append(achievements.Completed, ach.Name)
+			achievements.Completed = append(achievements.Completed, ach.ID)
 			save.SaveAchievements(s.PlayerFile, achievements.Completed)
 			println(fmt.Sprintf("Achievement completed: %s", ach.Name))
 		}

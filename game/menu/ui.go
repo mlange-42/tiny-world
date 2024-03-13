@@ -9,7 +9,6 @@ import (
 	"math"
 	"math/rand"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/ebitenui/ebitenui"
@@ -488,10 +487,17 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 			widget.ContainerOpts.BackgroundImage(ui.background),
 		)
 
-		achieve := "none"
+		achieve := ""
 		if len(ach) > 0 {
-			achieve = strings.Join(ach, ", ")
+			for _, a := range ach {
+				if name, ok := achievements.IdMap[a]; ok {
+					achieve += "\n - " + name.Name
+				}
+			}
+		} else {
+			achieve = "\n - none"
 		}
+
 		label := widget.NewText(
 			widget.TextOpts.Text(fmt.Sprintf("%s\n\nRequired achievements:\n%s", m.Name, achieve), fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
