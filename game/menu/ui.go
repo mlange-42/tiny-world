@@ -23,6 +23,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/util"
 )
 
+const panelWidth = 500
 const panelHeight = 400
 
 type UI struct {
@@ -158,7 +159,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 					Position: widget.RowLayoutPositionStart,
 					Stretch:  true,
 				}),
-				widget.WidgetOpts.MinSize(480, panelHeight),
+				widget.WidgetOpts.MinSize(panelWidth, panelHeight),
 			),
 		),
 		widget.TabBookOpts.TabButtonOpts(
@@ -565,7 +566,7 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 		),
 	)
 
-	img := ui.defaultButtonImage()
+	img := ui.emptyImage()
 
 	label := widget.NewText(
 		widget.TextOpts.Text("Achievements:", fonts.Default, ui.sprites.TextColor),
@@ -573,52 +574,66 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 	)
 	menuContainer.AddChild(label)
 
-	scroll, content := ui.createScrollPanel(panelHeight - 110)
+	scroll, content := ui.createScrollPanel(panelHeight - 72)
 
 	for i := range achievements.Achievements {
 		ach := achievements.Achievements[i]
 		name := util.Capitalize(ach.Name)
 
-		tooltipContainer := widget.NewContainer(
-			widget.ContainerOpts.Layout(widget.NewRowLayout(
-				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-				widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+		rowContainer := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewGridLayout(
+				widget.GridLayoutOpts.Columns(2),
+				widget.GridLayoutOpts.Spacing(6, 6),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(6)),
+				widget.GridLayoutOpts.Stretch([]bool{false, true}, []bool{false}),
 			)),
-			widget.ContainerOpts.AutoDisableChildren(),
+			widget.ContainerOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+					Position: widget.RowLayoutPositionStart,
+					Stretch:  true,
+				}),
+			),
 			widget.ContainerOpts.BackgroundImage(ui.background),
 		)
-		label := widget.NewText(
-			widget.TextOpts.Text(fmt.Sprintf("%s\n\n%s", name, ach.Description), fonts.Default, ui.sprites.TextColor),
-			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-			widget.TextOpts.MaxWidth(360),
+		var icon *ebiten.Image
+		if terr.IsTerrainName(ach.Icon) {
+			t := terr.ToTerrain(ach.Icon)
+			icon = ui.createTerrainImage(t, 1)
+		} else {
+			icon = ui.sprites.Get(ui.sprites.GetIndex(ach.Icon))
+		}
+
+		graphic := widget.NewGraphic(
+			widget.GraphicOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionCenter,
+					VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				}),
+				widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
+			),
+			widget.GraphicOpts.Image(icon),
 		)
-		tooltipContainer.AddChild(label)
 
 		achButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
-				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-					Position: widget.RowLayoutPositionCenter,
-					Stretch:  true,
-				}),
-				widget.WidgetOpts.ToolTip(widget.NewToolTip(
-					widget.ToolTipOpts.Content(tooltipContainer),
-					widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
-					widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
-					widget.ToolTipOpts.Delay(time.Millisecond*300),
-				)),
+				widget.WidgetOpts.LayoutData(widget.GridLayoutData{}),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(name, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(name+"\n"+ach.Description, fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: color.NRGBA{120, 120, 120, 255},
 			}),
+			widget.ButtonOpts.TextPosition(widget.TextPositionStart, widget.TextPositionCenter),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		)
 		if !ach.Completed {
 			achButton.GetWidget().Disabled = true
 		}
 
-		content.AddChild(achButton)
+		rowContainer.AddChild(graphic)
+		rowContainer.AddChild(achButton)
+
+		content.AddChild(rowContainer)
 	}
 
 	menuContainer.AddChild(scroll)
@@ -638,10 +653,18 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	}
 }
 
-func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
-	img := ui.createTerrainImage(terrain)
+func (ui *UI) emptyImage() *widget.ButtonImage {
+	return &widget.ButtonImage{
+		Idle:    image.NewNineSliceColor(color.Transparent),
+		Hover:   image.NewNineSliceColor(color.Transparent),
+		Pressed: image.NewNineSliceColor(color.Transparent),
+	}
+}
 
-	button := widget.NewGraphic(
+func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
+	img := ui.createTerrainImage(terrain, 3)
+
+	graphic := widget.NewGraphic(
 		widget.GraphicOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
@@ -652,12 +675,10 @@ func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
 		widget.GraphicOpts.Image(img),
 	)
 
-	return button
+	return graphic
 }
 
-func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
-	scale := 3
-
+func (ui *UI) createTerrainImage(t terr.Terrain, scale int) *ebiten.Image {
 	props := &terr.Properties[t]
 
 	bx, by := ui.sprites.TileWidth, ui.sprites.TileWidth
