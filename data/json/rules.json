@@ -10,8 +10,8 @@
     "random_terrains_count": 6,
     "special_card_probability": 0.05,
     "random_terrains": [
-        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
-        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
+        "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains",
+        "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains",
         "hills", "hills", "hills", "hills", "hills", "hills",
         "water", "water", "water", "water", "water", "water",
         "desert",

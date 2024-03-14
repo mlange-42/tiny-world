@@ -2,7 +2,7 @@
     {
         "id": "play-the-game",
         "name": "Play the Game",
-        "icon": "grass",
+        "icon": "plains",
         "description": "Play the game at least once.",
         "conditions": [
             {
@@ -20,7 +20,7 @@
         "conditions": [
             {
                 "type": "terrain",
-                "ids": ["grass", "desert", "water"],
+                "ids": ["plains", "hills", "desert", "water"],
                 "number": 1000
             }
         ]
