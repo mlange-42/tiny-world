@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -171,9 +172,31 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				prod, pop, randTile := s.landUseMapper.Get(luE)
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off,
 					randTile, terr.Properties[lu].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
-				if (prod != nil && (prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource])) ||
-					(pop != nil && pop.Pop == 0) {
+
+				noProd := prod != nil && prod.Amount == 0
+				noStorage := prod != nil && prod.Stock >= terr.Properties[lu].Storage[prod.Resource]
+				noPop := pop != nil && pop.Pop == 0
+				if noProd || noStorage || noPop {
 					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
+					if sel.BuildType == terr.Air && cursor.X == i && cursor.Y == j {
+						if noProd {
+							if prod.HasRequired {
+								ui.SetStatusLabel("No production - no terrain to use.")
+							} else {
+								req := terr.Properties[lu].Production.RequiredTerrain
+								ui.SetStatusLabel(fmt.Sprintf("No production - requires %s.", terr.Properties[req].Name))
+							}
+						} else if noPop {
+							if pop.HasRequired {
+								ui.SetStatusLabel("No population support - no terrain to use.")
+							} else {
+								req := terr.Properties[lu].PopulationSupport.RequiredTerrain
+								ui.SetStatusLabel(fmt.Sprintf("No population support - requires %s.", terr.Properties[req].Name))
+							}
+						} else if noStorage {
+							ui.SetStatusLabel("No production - storage is full.")
+						}
+					}
 				}
 			}
 

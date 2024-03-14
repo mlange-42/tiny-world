@@ -58,8 +58,10 @@ func (s *UpdatePopulation) Update(world *ecs.World) {
 		if supp.RequiredTerrain != terr.Air &&
 			terrain.CountNeighbors4(tile.X, tile.Y, supp.RequiredTerrain) == 0 &&
 			landUse.CountNeighbors4(tile.X, tile.Y, supp.RequiredTerrain) == 0 {
+			pop.HasRequired = false
 			continue
 		}
+		pop.HasRequired = true
 		count := int(supp.BasePopulation)
 		if supp.BonusTerrain != 0 {
 			count += terrain.CountNeighborsMask8(tile.X, tile.Y, supp.BonusTerrain) +
