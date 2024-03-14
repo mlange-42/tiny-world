@@ -565,7 +565,7 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 		),
 	)
 
-	img := ui.defaultButtonImage()
+	img := ui.emptyImage()
 
 	label := widget.NewText(
 		widget.TextOpts.Text("Achievements:", fonts.Default, ui.sprites.TextColor),
@@ -594,12 +594,43 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 		)
 		tooltipContainer.AddChild(label)
 
-		achButton := widget.NewButton(
-			widget.ButtonOpts.WidgetOpts(
+		rowContainer := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewGridLayout(
+				widget.GridLayoutOpts.Columns(2),
+				widget.GridLayoutOpts.Spacing(6, 6),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(6)),
+				widget.GridLayoutOpts.Stretch([]bool{false, true}, []bool{false}),
+			)),
+			widget.ContainerOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-					Position: widget.RowLayoutPositionCenter,
+					Position: widget.RowLayoutPositionStart,
 					Stretch:  true,
 				}),
+			),
+			widget.ContainerOpts.BackgroundImage(ui.background),
+		)
+		var icon *ebiten.Image
+		if terr.IsTerrainName(ach.Icon) {
+			t := terr.ToTerrain(ach.Icon)
+			icon = ui.createTerrainImage(t, 1)
+		} else {
+			icon = ui.sprites.Get(ui.sprites.GetIndex(ach.Icon))
+		}
+
+		graphic := widget.NewGraphic(
+			widget.GraphicOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionCenter,
+					VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				}),
+				widget.WidgetOpts.MinSize(ui.sprites.TileWidth, ui.sprites.TileWidth),
+			),
+			widget.GraphicOpts.Image(icon),
+		)
+
+		achButton := widget.NewButton(
+			widget.ButtonOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.GridLayoutData{}),
 				widget.WidgetOpts.ToolTip(widget.NewToolTip(
 					widget.ToolTipOpts.Content(tooltipContainer),
 					widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
@@ -618,7 +649,10 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 			achButton.GetWidget().Disabled = true
 		}
 
-		content.AddChild(achButton)
+		rowContainer.AddChild(graphic)
+		rowContainer.AddChild(achButton)
+
+		content.AddChild(rowContainer)
 	}
 
 	menuContainer.AddChild(scroll)
@@ -638,10 +672,18 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	}
 }
 
-func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
-	img := ui.createTerrainImage(terrain)
+func (ui *UI) emptyImage() *widget.ButtonImage {
+	return &widget.ButtonImage{
+		Idle:    image.NewNineSliceColor(color.Transparent),
+		Hover:   image.NewNineSliceColor(color.Transparent),
+		Pressed: image.NewNineSliceColor(color.Transparent),
+	}
+}
 
-	button := widget.NewGraphic(
+func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
+	img := ui.createTerrainImage(terrain, 3)
+
+	graphic := widget.NewGraphic(
 		widget.GraphicOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
 				HorizontalPosition: widget.AnchorLayoutPositionCenter,
@@ -652,12 +694,10 @@ func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
 		widget.GraphicOpts.Image(img),
 	)
 
-	return button
+	return graphic
 }
 
-func (ui *UI) createTerrainImage(t terr.Terrain) *ebiten.Image {
-	scale := 3
-
+func (ui *UI) createTerrainImage(t terr.Terrain, scale int) *ebiten.Image {
 	props := &terr.Properties[t]
 
 	bx, by := ui.sprites.TileWidth, ui.sprites.TileWidth

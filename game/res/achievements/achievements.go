@@ -21,6 +21,7 @@ type Achievement struct {
 	ID          string
 	Name        string
 	Description string
+	Icon        string
 	Conditions  []Condition
 	Completed   bool
 }
@@ -111,6 +112,7 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 			Achievement{
 				ID:          achieve.ID,
 				Name:        achieve.Name,
+				Icon:        achieve.Icon,
 				Description: achieve.Description,
 				Conditions:  conditions,
 			},
@@ -251,6 +253,7 @@ func (a *Achievements) parseResources(ids ...string) uint32 {
 type achievementJs struct {
 	ID          string        `json:"id"`
 	Name        string        `json:"name"`
+	Icon        string        `json:"icon"`
 	Description string        `json:"description"`
 	Conditions  []conditionJs `json:"conditions"`
 }

@@ -384,3 +384,8 @@ func ToTerrain(t string) Terrain {
 	}
 	return id
 }
+
+func IsTerrainName(t string) bool {
+	_, ok := idLookup[t]
+	return ok
+}
