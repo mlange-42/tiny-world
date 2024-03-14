@@ -38,6 +38,13 @@
    "y_offset": 10
   },
   {
+   "id": "hauler_shepherd",
+   "index": [
+    1
+   ],
+   "y_offset": 10
+  },
+  {
    "id": "ui_panel",
    "index": [
     5
