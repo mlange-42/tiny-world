@@ -460,6 +460,12 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 
 	scroll, content := ui.createScrollPanel(panelHeight - 110)
 
+	mapsUnlocked := []save.MapLocation{}
+	mapsLocked := []save.MapLocation{}
+	achUnlocked := [][]string{}
+	achLocked := [][]string{}
+	cntEnabled := 0
+
 	for _, m := range maps {
 		ach, err := save.LoadMapAchievements(ui.fs, ui.mapsFolder, m)
 		if err != nil {
@@ -478,6 +484,21 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 				break
 			}
 		}
+		if enabled {
+			mapsUnlocked = append(mapsUnlocked, m)
+			achUnlocked = append(achUnlocked, ach)
+			cntEnabled++
+		} else {
+			mapsLocked = append(mapsLocked, m)
+			achLocked = append(achLocked, ach)
+		}
+	}
+	mapsUnlocked = append(mapsUnlocked, mapsLocked...)
+	achUnlocked = append(achUnlocked, achLocked...)
+
+	for i, m := range mapsUnlocked {
+		ach := achUnlocked[i]
+		enabled := i < cntEnabled
 
 		tooltipContainer := widget.NewContainer(
 			widget.ContainerOpts.Layout(widget.NewRowLayout(
