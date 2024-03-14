@@ -117,6 +117,19 @@
         ]
     },
     {
+        "id": "shepherd-guild",
+        "name": "Shepherd Guild",
+        "icon": "shepherd",
+        "description": "Own 10 shepherds.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["shepherd"],
+                "number": 10
+            }
+        ]
+    },
+    {
         "id": "fisherman-guild",
         "name": "Fisherman Guild",
         "icon": "fisherman",
