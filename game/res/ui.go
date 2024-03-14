@@ -734,7 +734,7 @@ func (ui *UI) createInfo() *widget.Container {
 	infoContainer.AddChild(cont)
 	ui.timerLabel = lab
 
-	cont, lab = ui.createLabel("", "Game speed.\nControl with PageUp/PageDown/Space.", 35, widget.TextPositionEnd)
+	cont, lab = ui.createLabel("", "Game speed.\nControl with [/] (square brackets) and Space.", 35, widget.TextPositionEnd)
 	infoContainer.AddChild(cont)
 	ui.speedLabel = lab
 
