@@ -6,6 +6,7 @@
 
 * The game can be played on pre-defined, embedded maps/scenarios (#168)
 * The game can be played on user-created maps/scenarios (#171)
+* Adds achievements that are required to unlock maps/scenarios (#187, #194, #195, #196, #203)
 
 ### Game rules
 
