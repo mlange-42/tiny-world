@@ -1,23 +1,169 @@
 [
     {
-        "name": "lumberjack",
-        "description": "Build 5 lumberjacks",
+        "id": "play-the-game",
+        "name": "Play the Game",
+        "description": "Play the game at least once.",
         "conditions": [
             {
                 "type": "terrain",
-                "ids": ["lumberjack"],
-                "number": 5
+                "ids": ["warehouse"],
+                "number": 1
             }
         ]
     },
     {
-        "name": "producer",
-        "description": "Produce 100 resources per minute",
+        "id": "landscape-architect",
+        "name": "Landscape Architect",
+        "description": "Build a map with 1000 tiles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["grass", "desert", "water"],
+                "number": 1000
+            }
+        ]
+    },
+    {
+        "id": "wood-gnome",
+        "name": "Wood Gnome",
+        "description": "Build a map with 250 trees.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["tree"],
+                "number": 250
+            }
+        ]
+    },
+    {
+        "id": "small-manufacturer",
+        "name": "Small Manufacturer",
+        "description": "Produce 100 resources per minute.",
         "conditions": [
             {
                 "type": "production",
                 "ids": ["food", "wood", "stones"],
                 "number": 100
+            }
+        ]
+    },
+    {
+        "id": "large-manufacturer",
+        "name": "Large Manufacturer",
+        "description": "Produce 250 resources per minute.",
+        "conditions": [
+            {
+                "type": "production",
+                "ids": ["food", "wood", "stones"],
+                "number": 250
+            }
+        ]
+    },
+    {
+        "id": "trader",
+        "name": "Trader",
+        "description": "Own 5 warehouses.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["warehouse"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "knight",
+        "name": "Knight",
+        "description": "Own a castle.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "earl",
+        "name": "Earl",
+        "description": "Own 5 castles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "duke",
+        "name": "Duke",
+        "description": "Own 10 castles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "king",
+        "name": "King",
+        "description": "Own 25 castles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 25
+            }
+        ]
+    },
+    {
+        "id": "farmer-guild",
+        "name": "Farmer Guild",
+        "description": "Own 10 farms.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["farm"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "fisherman-guild",
+        "name": "Fisherman Guild",
+        "description": "Own 10 fishermen.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["fisherman"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "lumberjack-guild",
+        "name": "Lumberjack Guild",
+        "description": "Own 10 lumberjacks.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["lumberjack"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "mason-guild",
+        "name": "Mason Guild",
+        "description": "Own 10 masons.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["mason"],
+                "number": 10
             }
         ]
     }

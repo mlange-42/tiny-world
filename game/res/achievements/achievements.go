@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -17,6 +18,7 @@ import (
 )
 
 type Achievement struct {
+	ID          string
 	Name        string
 	Description string
 	Conditions  []Condition
@@ -32,6 +34,7 @@ type Condition struct {
 type Achievements struct {
 	Achievements []Achievement
 	Completed    []string
+	IdMap        map[string]*Achievement
 
 	world *ecs.World
 
@@ -85,7 +88,13 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 		panic(err)
 	}
 
+	a.IdMap = map[string]*Achievement{}
+
 	for _, achieve := range ach {
+		if strings.Contains(achieve.ID, " ") {
+			log.Fatalf("disallowed spaces in achievement ID '%s'", achieve.ID)
+		}
+
 		conditions := []Condition{}
 
 		for _, c := range achieve.Conditions {
@@ -100,6 +109,7 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 
 		a.Achievements = append(a.Achievements,
 			Achievement{
+				ID:          achieve.ID,
 				Name:        achieve.Name,
 				Description: achieve.Description,
 				Conditions:  conditions,
@@ -115,9 +125,15 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 	}
 
 	for i := range a.Achievements {
-		if slices.Contains(a.Completed, a.Achievements[i].Name) {
-			a.Achievements[i].Completed = true
+		ach := &a.Achievements[i]
+		if slices.Contains(a.Completed, ach.ID) {
+			ach.Completed = true
 		}
+
+		if _, ok := a.IdMap[ach.ID]; ok {
+			log.Fatalf("duplicate achievement ID '%s'", ach.ID)
+		}
+		a.IdMap[ach.ID] = ach
 	}
 
 	return &a
@@ -233,6 +249,7 @@ func (a *Achievements) parseResources(ids ...string) uint32 {
 }
 
 type achievementJs struct {
+	ID          string        `json:"id"`
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Conditions  []conditionJs `json:"conditions"`

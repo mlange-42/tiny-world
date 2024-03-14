@@ -5,6 +5,7 @@ import (
 	stdimage "image"
 	"image/color"
 	"io/fs"
+	"log"
 	"math"
 	"math/rand"
 	"slices"
@@ -124,7 +125,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
 		)),
 	)
-	scenariosTab.AddChild(ui.createScenariosPanel(games, fonts, start))
+	scenariosTab.AddChild(ui.createScenariosPanel(games, achievements, fonts, start))
 
 	loadWorldTab := widget.NewTabBookTab("Load World",
 		widget.ContainerOpts.BackgroundImage(ui.background),
@@ -403,7 +404,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	return menuContainer
 }
 
-func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
+func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Achievements, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
 	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
 	if err != nil {
 		panic(err)
@@ -459,12 +460,63 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 	scroll, content := ui.createScrollPanel(panelHeight - 110)
 
 	for _, m := range maps {
+		ach, err := save.LoadMapAchievements(ui.fs, ui.mapsFolder, m)
+		if err != nil {
+			log.Fatalf("error loading achievements for map %s: %s", m.Name, err.Error())
+		}
+
+		enabled := true
+		for _, a := range ach {
+			a2, ok := achievements.IdMap[a]
+			if !ok {
+				log.Printf("WARNING: Achievement '%s' in map '%s' not found", a, m.Name)
+				continue
+			}
+			if !a2.Completed {
+				enabled = false
+				break
+			}
+		}
+
+		tooltipContainer := widget.NewContainer(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+				widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			)),
+			widget.ContainerOpts.AutoDisableChildren(),
+			widget.ContainerOpts.BackgroundImage(ui.background),
+		)
+
+		achieve := ""
+		if len(ach) > 0 {
+			for _, a := range ach {
+				if name, ok := achievements.IdMap[a]; ok {
+					achieve += "\n - " + name.Name
+				}
+			}
+		} else {
+			achieve = "\n - none"
+		}
+
+		label := widget.NewText(
+			widget.TextOpts.Text(fmt.Sprintf("%s\n\nRequired achievements:\n%s", m.Name, achieve), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+			widget.TextOpts.MaxWidth(360),
+		)
+		tooltipContainer.AddChild(label)
+
 		newButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 					Position: widget.RowLayoutPositionCenter,
 					Stretch:  true,
 				}),
+				widget.WidgetOpts.ToolTip(widget.NewToolTip(
+					widget.ToolTipOpts.Content(tooltipContainer),
+					widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
+					widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
+					widget.ToolTipOpts.Delay(time.Millisecond*300),
+				)),
 			),
 			widget.ButtonOpts.Image(img),
 			widget.ButtonOpts.Text(m.Name, fonts.Default, &widget.ButtonTextColor{
@@ -489,6 +541,7 @@ func (ui *UI) createScenariosPanel(games []string, fonts *res.Fonts, start func(
 				start(name, m, save.LoadTypeMap)
 			}),
 		)
+		newButton.GetWidget().Disabled = !enabled
 		content.AddChild(newButton)
 
 	}
