@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -70,6 +71,7 @@ func (s *Build) Update(world *ecs.World) {
 
 	p := &terr.Properties[sel.BuildType]
 	if p.TerrainBits.Contains(terr.RequiresRange) && buildable.Get(cursor.X, cursor.Y) == 0 {
+		ui.SetStatusLabel("Outside of controlled area.")
 		return
 	}
 
@@ -122,7 +124,12 @@ func (s *Build) Update(world *ecs.World) {
 		}
 		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
 	} else {
+		if terrHere == terr.Air || terrHere == terr.Buildable {
+			ui.SetStatusLabel("No terrain here.")
+			return
+		}
 		if !p.BuildOn.Contains(terrHere) {
+			ui.SetStatusLabel(fmt.Sprintf("Can't build this on %s", terr.Properties[terrHere].Name))
 			return
 		}
 
@@ -150,14 +157,13 @@ func (s *Build) checkAbort() bool {
 		return true
 	}
 
-	sel := s.selection.Get()
-
 	ui := s.ui.Get()
 	x, y := ebiten.CursorPosition()
 	if ui.MouseInside(x, y) {
 		return true
 	}
 
+	sel := s.selection.Get()
 	p := &terr.Properties[sel.BuildType]
 	if sel.BuildType != terr.Bulldoze && !p.TerrainBits.Contains(terr.CanBuild) {
 		return true
