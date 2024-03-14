@@ -47,7 +47,7 @@ const helpText = "Tiny World Help" +
 	" - Pan: Arrows, WASD or middle mouse button\n" +
 	" - Zoom: +/- or mouse wheel\n" +
 	" - Pause/resume: Space\n" +
-	" - Game speed: PageUp / PageDown\n" +
+	" - Game speed: [/] (square brackets)\n" +
 	" - Toggle fullscreen: F11"
 
 const helpPanelWidth = 680
