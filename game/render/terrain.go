@@ -53,7 +53,7 @@ type Terrain struct {
 	pathMapper    generic.Map1[comp.Path]
 	haulerMapper  generic.Map2[comp.Hauler, comp.HaulerSprite]
 	spriteMapper  generic.Map1[comp.RandomSprite]
-	landUseMapper generic.Map2[comp.Production, comp.RandomSprite]
+	landUseMapper generic.Map3[comp.Production, comp.PopulationSupport, comp.RandomSprite]
 
 	font font.Face
 }
@@ -81,7 +81,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
-	s.landUseMapper = generic.NewMap2[comp.Production, comp.RandomSprite](world)
+	s.landUseMapper = generic.NewMap3[comp.Production, comp.PopulationSupport, comp.RandomSprite](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
@@ -168,11 +168,11 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				luE := s.landUseE.Get(i, j)
-				prod, randTile := s.landUseMapper.Get(luE)
+				prod, pop, randTile := s.landUseMapper.Get(luE)
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off,
 					randTile, terr.Properties[lu].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
-				if prod != nil &&
-					(prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource]) {
+				if (prod != nil && (prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource])) ||
+					(pop != nil && pop.Pop == 0) {
 					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
 				}
 			}
