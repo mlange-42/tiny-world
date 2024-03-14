@@ -22,12 +22,14 @@ type SaveGame struct {
 
 	MainMenuFunc func()
 
+	ui        generic.Resource[res.UI]
 	saveEvent generic.Resource[res.SaveEvent]
 	skip      []generic.Comp
 }
 
 // Initialize the system
 func (s *SaveGame) Initialize(world *ecs.World) {
+	s.ui = generic.NewResource[res.UI](world)
 	s.saveEvent = generic.NewResource[res.SaveEvent](world)
 
 	s.skip = []generic.Comp{generic.T[res.Fonts](),
@@ -62,9 +64,11 @@ func (s *SaveGame) Update(world *ecs.World) {
 		print("Saving map... ")
 		err := save.SaveMap(s.MapFolder, s.Name, world)
 		if err != nil {
+			s.ui.Get().SetStatusLabel("Error saving map")
 			log.Printf("Error saving map: %s", err.Error())
 			return
 		}
+		s.ui.Get().SetStatusLabel("Map saved.")
 		println("done.")
 	}
 
@@ -75,9 +79,11 @@ func (s *SaveGame) Update(world *ecs.World) {
 
 		err := save.SaveWorld(s.SaveFolder, s.Name, world, s.skip)
 		if err != nil {
+			s.ui.Get().SetStatusLabel("Error saving game")
 			log.Printf("Error saving game: %s", err.Error())
 			return
 		}
+		s.ui.Get().SetStatusLabel("Game saved.")
 		println("done.")
 	}
 

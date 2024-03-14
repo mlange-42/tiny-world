@@ -62,8 +62,10 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 		if prod.RequiredTerrain != terr.Air &&
 			terrain.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 &&
 			landUse.CountNeighbors4(tile.X, tile.Y, prod.RequiredTerrain) == 0 {
+			pr.HasRequired = false
 			continue
 		}
+		pr.HasRequired = true
 		count := 0
 		if prod.ProductionTerrain != 0 {
 			count += terrain.CountNeighborsMask8(tile.X, tile.Y, prod.ProductionTerrain) +

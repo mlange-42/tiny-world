@@ -9,6 +9,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -81,7 +82,8 @@ func (s *Build) Update(world *ecs.World) {
 		luHere := landUse.Get(cursor.X, cursor.Y)
 		luProps := &terr.Properties[luHere]
 
-		if luProps.TerrainBits.Contains(terr.IsWarehouse) && s.isLastWarehouse(world) {
+		if luProps.TerrainBits.Contains(terr.IsWarehouse) && s.isLastWarehouse(stock, luHere) {
+			ui.SetStatusLabel("Can't destroy last warehouse.")
 			return
 		}
 
@@ -95,9 +97,11 @@ func (s *Build) Update(world *ecs.World) {
 	}
 
 	if !stock.CanPay(p.BuildCost) {
+		ui.SetStatusLabel("Not enough resources.")
 		return
 	}
 	if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
+		ui.SetStatusLabel("Population limit reached.")
 		return
 	}
 
@@ -106,9 +110,14 @@ func (s *Build) Update(world *ecs.World) {
 	luHere := landUse.Get(cursor.X, cursor.Y)
 	if p.TerrainBits.Contains(terr.IsTerrain) {
 		canBuild := luHere == terr.Air
+		if terrHere == terr.Air {
+			ui.SetStatusLabel("Can only add next to existing terrain.")
+			return
+		}
 		canBuild = canBuild &&
-			(p.BuildOn.Contains(terrHere) || (sel.AllowRemove && terrHere != terr.Air && terrHere != sel.BuildType))
+			(p.BuildOn.Contains(terrHere) || (sel.AllowRemove && terrHere != sel.BuildType))
 		if !canBuild {
+			ui.SetStatusLabel("Terrain already occupied.")
 			return
 		}
 		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
@@ -124,6 +133,7 @@ func (s *Build) Update(world *ecs.World) {
 			}
 			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
 		} else {
+			ui.SetStatusLabel("Terrain already occupied.")
 			return
 		}
 	}
@@ -155,9 +165,12 @@ func (s *Build) checkAbort() bool {
 	return false
 }
 
-func (s *Build) isLastWarehouse(world *ecs.World) bool {
-	query := s.warehouseFilter.Query(world)
-	count := query.Count()
-	query.Close()
-	return count <= 1
+func (s *Build) isLastWarehouse(stock *res.Stock, building terr.Terrain) bool {
+	storage := terr.Properties[building].Storage
+	for i := range resource.Properties {
+		if stock.Cap[i] <= int(storage[i]) {
+			return true
+		}
+	}
+	return false
 }
