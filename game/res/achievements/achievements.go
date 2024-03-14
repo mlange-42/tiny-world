@@ -165,6 +165,7 @@ func (a *Achievements) checkTerrain(ids uint32, num int) bool {
 		if (bits & ids) == bits {
 			cnt++
 			if cnt >= num {
+				query.Close()
 				return true
 			}
 		}
