@@ -23,7 +23,7 @@ func (s *UI) UpdateUI(world *ecs.World) {
 	screen := s.screen.Get()
 	ui := s.ui.Get()
 
-	ui.UI().Draw(screen.Image)
+	ui.Draw(screen.Image)
 }
 
 // PostUpdateUI the system

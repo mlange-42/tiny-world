@@ -52,6 +52,7 @@ const helpText = "Tiny World Help" +
 
 const helpPanelWidth = 680
 const helpPanelHeight = 460
+const statusTimeout = 180
 
 const saveTooltipText = "Save game to disk or local browser storage."
 
@@ -77,7 +78,10 @@ type UI struct {
 	populationLabel *widget.Text
 	timerLabel      *widget.Text
 	speedLabel      *widget.Text
-	terrainButtons  []terrainButton
+	statusLabel     *widget.Button
+	statusTimer     int
+
+	terrainButtons []terrainButton
 
 	animMapper generic.Map1[comp.CardAnimation]
 
@@ -120,6 +124,19 @@ func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
+func (ui *UI) Update() {
+	ui.UI().Update()
+}
+
+func (ui *UI) Draw(screen *ebiten.Image) {
+	ui.statusTimer--
+	if ui.statusTimer == 0 {
+		ui.statusLabel.GetWidget().Visibility = widget.Visibility_Hide
+	}
+
+	ui.UI().Draw(screen)
+}
+
 func (ui *UI) SetResourceLabel(id resource.Resource, text string, warning bool) {
 	label := ui.resourceLabels[id]
 	label.Label = text
@@ -145,6 +162,12 @@ func (ui *UI) SetTimerLabel(text string) {
 
 func (ui *UI) SetSpeedLabel(text string) {
 	ui.speedLabel.Label = text
+}
+
+func (ui *UI) SetStatusLabel(text string) {
+	ui.statusLabel.Text().Label = text
+	ui.statusLabel.GetWidget().Visibility = widget.Visibility_Show
+	ui.statusTimer = statusTimeout
 }
 
 func (ui *UI) EnableButton(id terr.Terrain) {
@@ -231,6 +254,9 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 
 	menu := ui.createMenu()
 	rootContainer.AddChild(menu)
+
+	status := ui.createStatusBar()
+	rootContainer.AddChild(status)
 
 	eui := ebitenui.UI{
 		Container: rootContainer,
@@ -443,6 +469,36 @@ func (ui *UI) createHUD() *widget.Container {
 	anchor.AddChild(info)
 
 	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget())
+
+	return anchor
+}
+
+func (ui *UI) createStatusBar() *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
+		),
+	)
+
+	ui.statusLabel = widget.NewButton(
+		widget.ButtonOpts.Text("", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(4)),
+		widget.ButtonOpts.Image(ui.simpleButtonImage()),
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionCenter,
+				VerticalPosition:   widget.AnchorLayoutPositionEnd,
+			}),
+			widget.WidgetOpts.MinSize(600, 30),
+		),
+	)
+	ui.statusLabel.GetWidget().Visibility = widget.Visibility_Hide
+	anchor.AddChild(ui.statusLabel)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, ui.statusLabel.GetWidget())
 
 	return anchor
 }
@@ -965,6 +1021,14 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 		Idle:    ui.background,
 		Hover:   ui.backgroundHover,
 		Pressed: ui.backgroundPressed,
+	}
+}
+
+func (ui *UI) simpleButtonImage() *widget.ButtonImage {
+	return &widget.ButtonImage{
+		Idle:    ui.background,
+		Hover:   ui.background,
+		Pressed: ui.background,
 	}
 }
 
