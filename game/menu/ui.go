@@ -573,7 +573,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 	return menuContainer
 }
 
-func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, fonts *res.Fonts) *widget.Container {
+func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts *res.Fonts) *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -597,8 +597,19 @@ func (ui *UI) createAchievementsPanel(achievements *achievements.Achievements, f
 
 	scroll, content := ui.createScrollPanel(panelHeight - 72)
 
-	for i := range achievements.Achievements {
-		ach := achievements.Achievements[i]
+	achUnlocked := []*achievements.Achievement{}
+	achLocked := []*achievements.Achievement{}
+	for i := range achieves.Achievements {
+		ach := &achieves.Achievements[i]
+		if ach.Completed {
+			achUnlocked = append(achUnlocked, ach)
+		} else {
+			achLocked = append(achLocked, ach)
+		}
+	}
+	achUnlocked = append(achUnlocked, achLocked...)
+
+	for _, ach := range achUnlocked {
 		name := util.Capitalize(ach.Name)
 
 		rowContainer := widget.NewContainer(
