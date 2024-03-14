@@ -33,10 +33,11 @@ type UI struct {
 
 	ui *ebitenui.UI
 
-	sprites      *res.Sprites
-	infoLabel    *widget.Text
-	tabContainer *widget.TabBook
-	tabs         []*widget.TabBookTab
+	sprites         *res.Sprites
+	infoLabel       *widget.Text
+	tabContainer    *widget.TabBook
+	tabs            []*widget.TabBookTab
+	scenarioButtons []*widget.Button
 
 	empty             *image.NineSlice
 	background        *image.NineSlice
@@ -46,6 +47,12 @@ type UI struct {
 
 func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
+}
+
+func (ui *UI) UnlockAll() {
+	for _, b := range ui.scenarioButtons {
+		b.GetWidget().Disabled = false
+	}
 }
 
 func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprites, fonts *res.Fonts,
@@ -565,7 +572,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 		)
 		newButton.GetWidget().Disabled = !enabled
 		content.AddChild(newButton)
-
+		ui.scenarioButtons = append(ui.scenarioButtons, newButton)
 	}
 
 	menuContainer.AddChild(scroll)
