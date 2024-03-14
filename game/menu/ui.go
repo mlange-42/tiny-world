@@ -821,7 +821,8 @@ func (ui *UI) createScrollPanel(height int) (*widget.Container, *widget.Containe
 		if p < 1 {
 			p = 1
 		}
-		vSlider.Current -= int(math.Round(a.Y * float64(p)))
+		dy := math.Copysign(1.0, a.Y)
+		vSlider.Current -= int(math.Round(dy * float64(p)))
 	})
 
 	rootContainer.AddChild(vSlider)
