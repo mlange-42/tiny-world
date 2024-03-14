@@ -22,6 +22,7 @@
 * Adds scroll containers for main menu lists (#191)
 * Fixes the in-game UI layout for small screens (#193)
 * Adds a status bar for information like why a building has a warning sign (#213, #214)
+* Use square brackets instead of PageUp/PageDown to control game speed (#215)
 
 ### Graphics
 

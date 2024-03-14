@@ -39,7 +39,7 @@ The **natural features** in the lower part appear randomly and are replenished w
 * Pan: Arrows, WASD or middle mouse button
 * Zoom: +/- or mouse wheel
 * Pause/resume: Space
-* Game speed: PageUp / PageDown
+* Game speed: [/] (square brackets)
 * Toggle fullscreen: F11
 
 All UI controls have tooltips. Read them carefully!

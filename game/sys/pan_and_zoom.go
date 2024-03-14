@@ -21,6 +21,8 @@ type mouse struct {
 // PanAndZoom system.
 type PanAndZoom struct {
 	PanButton        ebiten.MouseButton
+	ZoomInKey        rune
+	ZoomOutKey       rune
 	KeyboardPanSpeed int
 
 	MinZoom float64
@@ -89,12 +91,12 @@ func (s *PanAndZoom) Update(world *ecs.World) {
 	mx, my := view.ScreenToGlobal(x, y)
 
 	s.inputChars = ebiten.AppendInputChars(s.inputChars)
-	if ((mouseInside && dy > 0) || slices.Contains(s.inputChars, '+')) && view.Zoom < s.MaxZoom {
+	if ((mouseInside && dy > 0) || slices.Contains(s.inputChars, s.ZoomInKey)) && view.Zoom < s.MaxZoom {
 		view.Zoom *= 2
 		view.X += (mx - view.X) / 2
 		view.Y += (my - view.Y) / 2
 	}
-	if ((mouseInside && dy < 0) || slices.Contains(s.inputChars, '-')) && view.Zoom > s.MinZoom {
+	if ((mouseInside && dy < 0) || slices.Contains(s.inputChars, s.ZoomOutKey)) && view.Zoom > s.MinZoom {
 		view.Zoom /= 2
 		view.X -= (mx - view.X)
 		view.Y -= (my - view.Y)

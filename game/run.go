@@ -182,6 +182,8 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton:        ebiten.MouseButton1,
+		ZoomInKey:        '+',
+		ZoomOutKey:       '-',
 		KeyboardPanSpeed: 4,
 		MinZoom:          0.25,
 		MaxZoom:          4,
@@ -197,8 +199,8 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	})
 	g.Model.AddSystem(&sys.GameControls{
 		PauseKey:      ebiten.KeySpace,
-		SlowerKey:     ebiten.KeyPageDown,
-		FasterKey:     ebiten.KeyPageUp,
+		SlowerKey:     '[',
+		FasterKey:     ']',
 		FullscreenKey: ebiten.KeyF11,
 	})
 
