@@ -94,9 +94,6 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 		if strings.Contains(achieve.ID, " ") {
 			log.Fatalf("disallowed spaces in achievement ID '%s'", achieve.ID)
 		}
-		if _, ok := a.IdMap[achieve.ID]; ok {
-			log.Fatalf("duplicate achievement ID '%s'", achieve.ID)
-		}
 
 		conditions := []Condition{}
 
@@ -118,8 +115,6 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 				Conditions:  conditions,
 			},
 		)
-
-		a.IdMap[achieve.ID] = &a.Achievements[len(a.Achievements)-1]
 	}
 
 	err = save.LoadAchievements(playerFile, &a.Completed)
@@ -130,9 +125,15 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 	}
 
 	for i := range a.Achievements {
-		if slices.Contains(a.Completed, a.Achievements[i].ID) {
-			a.Achievements[i].Completed = true
+		ach := &a.Achievements[i]
+		if slices.Contains(a.Completed, ach.ID) {
+			ach.Completed = true
 		}
+
+		if _, ok := a.IdMap[ach.ID]; ok {
+			log.Fatalf("duplicate achievement ID '%s'", ach.ID)
+		}
+		a.IdMap[ach.ID] = ach
 	}
 
 	return &a

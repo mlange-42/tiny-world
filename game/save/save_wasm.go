@@ -25,7 +25,7 @@ func saveToFile(folder, name string, jsData []byte) error {
 func saveAchievements(file string, completed []string) error {
 	_ = file
 
-	jsData, err := json.Marshal(completed)
+	jsData, err := json.MarshalIndent(completed, "", " ")
 	if err != nil {
 		return err
 	}
