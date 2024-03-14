@@ -91,6 +91,19 @@
         ]
     },
     {
+        "id": "pastoralism",
+        "name": "Pastoralism",
+        "icon": "pasture",
+        "description": "Own 100 pastures.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["pasture"],
+                "number": 100
+            }
+        ]
+    },
+    {
         "id": "farmer-guild",
         "name": "Farmer Guild",
         "icon": "farm",
