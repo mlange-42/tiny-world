@@ -21,7 +21,7 @@
 * Adds a "Save map" button to the in-game menu (#190)
 * Adds scroll containers for main menu lists (#191)
 * Fixes the in-game UI layout for small screens (#193)
-* Adds a status bar for information like why a building has a warning sign (#213)
+* Adds a status bar for information like why a building has a warning sign (#213, #214)
 
 ### Graphics
 
