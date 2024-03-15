@@ -183,7 +183,7 @@
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 3},
