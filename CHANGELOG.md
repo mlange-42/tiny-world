@@ -11,6 +11,8 @@
 ### Game rules
 
 * Haulers stay in buildings for a second before continuing (#163)
+* Adds hills terrain, which allows no farming (#218)
+* Adds shepherds and pastures for food production on hills (#218)
 
 ### Usability
 
@@ -30,6 +32,7 @@
 * Tweak info labels to accommodate 3-digit values without size changes (#164)
 * Complete rework and themed styling of the main menu (#176, #177)
 * Text highlight color is a tileset property (#186)
+* Adds the possibility for multiple terrains below a terrain (used for shepherds) (#220)
 
 ### Documentation
 
