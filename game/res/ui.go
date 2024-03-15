@@ -876,8 +876,8 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 
 	height := 0
 
-	if props.TerrainBelow != terr.Air {
-		idx2 := ui.sprites.GetTerrainIndex(props.TerrainBelow)
+	for _, tr := range props.TerrainBelow {
+		idx2 := ui.sprites.GetTerrainIndex(tr)
 		info2 := ui.sprites.GetInfo(idx2)
 
 		sp2 := ui.sprites.Get(idx2)

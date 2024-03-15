@@ -437,16 +437,16 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	below terr.Terrain,
+	below []terr.Terrain,
 	cursorX, cursorY int, cursorTerr terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
 
-	if below != terr.Air {
+	for _, tr := range below {
 		height = s.drawSprite(img, terrain, landUse,
-			x, y, below, point, height,
-			camOffset, randSprite, terr.Air, cursorX, cursorY, cursorTerr)
+			x, y, tr, point, height,
+			camOffset, randSprite, nil, cursorX, cursorY, cursorTerr)
 	}
 
 	var sp *ebiten.Image
