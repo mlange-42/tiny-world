@@ -69,7 +69,7 @@
         {
             "name": "fence",
             "build_on": [],
-            "connects_to": ["fence", "shepherd"],
+            "connects_to": ["pasture", "shepherd"],
             "can_build": false,
             "can_buy": false
         },

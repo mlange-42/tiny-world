@@ -1,4 +1,58 @@
-[{
-    "id": "fence",
-    "file": ["fence"]
-}]
+[
+ {
+  "id": "fence",
+  "file": [
+   "fence"
+  ],
+  "multitile": [
+   [
+    "fence"
+   ],
+   [
+    "fence_01"
+   ],
+   [
+    "fence_02"
+   ],
+   [
+    "fence_03"
+   ],
+   [
+    "fence_04"
+   ],
+   [
+    "fence_05"
+   ],
+   [
+    "fence_06"
+   ],
+   [
+    "fence_07"
+   ],
+   [
+    "fence_08"
+   ],
+   [
+    "fence_09"
+   ],
+   [
+    "fence_10"
+   ],
+   [
+    "fence_11"
+   ],
+   [
+    "fence_12"
+   ],
+   [
+    "fence_13"
+   ],
+   [
+    "fence_14"
+   ],
+   [
+    "fence_15"
+   ]
+  ]
+ }
+]
