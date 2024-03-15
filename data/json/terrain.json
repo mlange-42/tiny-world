@@ -67,6 +67,13 @@
             "can_buy": false
         },
         {
+            "name": "fence",
+            "build_on": [],
+            "connects_to": ["fence", "shepherd"],
+            "can_build": false,
+            "can_buy": false
+        },
+        {
             "name": "path",
             "is_path": true,
             "build_on": ["plains", "hills", "desert"],
@@ -120,6 +127,7 @@
         {
             "name": "pasture",
             "build_on": ["plains", "hills"],
+            "terrain_below": ["fence"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
@@ -183,7 +191,7 @@
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": ["building_base"],
+            "terrain_below": ["building_base", "fence"],
             "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 3},

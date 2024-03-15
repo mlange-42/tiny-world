@@ -3,33 +3,39 @@
  "sprite_height": 36,
  "sprites": [
   {
-   "id": "field",
+   "id": "fence",
    "index": [
     0
    ]
   },
   {
+   "id": "field",
+   "index": [
+    1
+   ]
+  },
+  {
    "id": "pasture",
    "index": [
-    1,
     2,
-    3
+    3,
+    4
    ]
   },
   {
    "id": "warning_marker",
    "index": [
-    4,
-    4,
-    4,
-    4,
-    4,
-    5
+    5,
+    5,
+    5,
+    5,
+    5,
+    6
    ],
    "y_offset": 36,
    "animation_frames": 6,
    "animation_speed": 15
   }
  ],
- "total_sprites": 6
+ "total_sprites": 7
 }
