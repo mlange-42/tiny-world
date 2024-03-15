@@ -11,23 +11,25 @@
   {
    "id": "pasture",
    "index": [
-    1
+    1,
+    2,
+    3
    ]
   },
   {
    "id": "warning_marker",
    "index": [
-    2,
-    2,
-    2,
-    2,
-    2,
-    3
+    4,
+    4,
+    4,
+    4,
+    4,
+    5
    ],
    "y_offset": 36,
    "animation_frames": 6,
    "animation_speed": 15
   }
  ],
- "total_sprites": 4
+ "total_sprites": 6
 }
