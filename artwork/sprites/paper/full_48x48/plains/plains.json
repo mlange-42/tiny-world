@@ -1,0 +1,63 @@
+[
+ {
+  "id": "plains",
+  "file": [
+   "plains"
+  ],
+  "height": 24,
+  "multitile": [
+   [
+    "plains"
+   ],
+   [
+    "plains_01"
+   ],
+   [
+    "plains_02"
+   ],
+   [
+    "plains_03"
+   ],
+   [
+    "plains_04"
+   ],
+   [
+    "plains_05"
+   ],
+   [
+    "plains_06"
+   ],
+   [
+    "plains_07"
+   ],
+   [
+    "plains_08"
+   ],
+   [
+    "plains_09"
+   ],
+   [
+    "plains_10"
+   ],
+   [
+    "plains_11"
+   ],
+   [
+    "plains_12"
+   ],
+   [
+    "plains_13"
+   ],
+   [
+    "plains_14"
+   ],
+   [
+    "plains_15",
+    "plains_15_r1",
+    "plains_15_r2",
+    "plains_15_r3",
+    "plains_15_r4"
+   ]
+  ]
+ }
+]

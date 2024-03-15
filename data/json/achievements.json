@@ -2,7 +2,7 @@
     {
         "id": "play-the-game",
         "name": "Play the Game",
-        "icon": "grass",
+        "icon": "plains",
         "description": "Play the game at least once.",
         "conditions": [
             {
@@ -20,7 +20,7 @@
         "conditions": [
             {
                 "type": "terrain",
-                "ids": ["grass", "desert", "water"],
+                "ids": ["plains", "hills", "desert", "water"],
                 "number": 1000
             }
         ]
@@ -91,6 +91,19 @@
         ]
     },
     {
+        "id": "pastoralism",
+        "name": "Pastoralism",
+        "icon": "pasture",
+        "description": "Own 100 pastures.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["pasture"],
+                "number": 100
+            }
+        ]
+    },
+    {
         "id": "farmer-guild",
         "name": "Farmer Guild",
         "icon": "farm",
@@ -99,6 +112,19 @@
             {
                 "type": "terrain",
                 "ids": ["farm"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "shepherd-guild",
+        "name": "Shepherd Guild",
+        "icon": "shepherd",
+        "description": "Own 10 shepherds.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["shepherd"],
                 "number": 10
             }
         ]
