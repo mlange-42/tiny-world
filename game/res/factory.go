@@ -2,6 +2,7 @@ package res
 
 import (
 	"image"
+	"math"
 	"math/rand"
 
 	"github.com/mlange-42/arche/ecs"
@@ -145,7 +146,10 @@ func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint1
 }
 
 // Set creates an entity of the given terrain type, placing it in the world and updating the game grids.
-func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) ecs.Entity {
+func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16, randomize bool) ecs.Entity {
+	if randomize {
+		randSprite = uint16(rand.Int31n(math.MaxUint16))
+	}
 	if !terr.Properties[value].TerrainBits.Contains(terr.IsTerrain) {
 		f.landUse.Get().Set(x, y, value)
 		e := f.create(image.Pt(x, y), value, randSprite)

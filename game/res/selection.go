@@ -10,15 +10,18 @@ type Selection struct {
 	ButtonID int
 	// Random sprite index of the selected button.
 	RandSprite uint16
+	// Whether a new random sprite index should be draw on placement.
+	Randomize bool
 	// Whether a special tile has been selected.
 	AllowRemove bool
 }
 
 // SetBuild sets all fields to the given selection.
-func (s *Selection) SetBuild(build terr.Terrain, button int, randSprite uint16, allowRemove bool) {
+func (s *Selection) SetBuild(build terr.Terrain, button int, randSprite uint16, randomize, allowRemove bool) {
 	s.BuildType = build
 	s.ButtonID = button
 	s.RandSprite = randSprite
+	s.Randomize = randomize
 	s.AllowRemove = allowRemove
 }
 

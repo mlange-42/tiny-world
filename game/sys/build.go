@@ -122,7 +122,7 @@ func (s *Build) Update(world *ecs.World) {
 			ui.SetStatusLabel("Terrain already occupied.")
 			return
 		}
-		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
+		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite, sel.Randomize)
 	} else {
 		if terrHere == terr.Air || terrHere == terr.Buildable {
 			ui.SetStatusLabel("No terrain here.")
@@ -138,7 +138,7 @@ func (s *Build) Update(world *ecs.World) {
 			if luHere != terr.Air {
 				fac.RemoveLandUse(world, cursor.X, cursor.Y)
 			}
-			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
+			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite, sel.Randomize)
 		} else {
 			ui.SetStatusLabel("Terrain already occupied.")
 			return
