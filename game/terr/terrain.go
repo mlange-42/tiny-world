@@ -121,9 +121,9 @@ func Prepare(f fs.FS, file string) {
 			}
 		}
 
-		var terrBelow Terrain
-		if t.TerrainBelow != "" {
-			terrBelow = ToTerrain(t.TerrainBelow)
+		var terrBelow []Terrain
+		for _, tr := range t.TerrainBelow {
+			terrBelow = append(terrBelow, ToTerrain(tr))
 		}
 		var requiredTerrain Terrain
 		if t.Production.RequiredTerrain != "" {
@@ -278,7 +278,7 @@ type TerrainProps struct {
 	BuildOn           Terrains
 	ConnectsTo        Terrains
 	TerrainBits       TerrainBits
-	TerrainBelow      Terrain
+	TerrainBelow      []Terrain
 	BuildRadius       uint8
 	Population        uint8
 	Description       string
@@ -301,7 +301,7 @@ type terrainPropsJs struct {
 	Population        uint8               `json:"population"`
 	BuildOn           []string            `json:"build_on,omitempty"`
 	RequiresRange     bool                `json:"requires_range"`
-	TerrainBelow      string              `json:"terrain_below"`
+	TerrainBelow      []string            `json:"terrain_below"`
 	ConnectsTo        []string            `json:"connects_to,omitempty"`
 	CanBuild          bool                `json:"can_build"`
 	CanBuy            bool                `json:"can_buy"`
