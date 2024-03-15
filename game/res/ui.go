@@ -298,14 +298,14 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target
 		// Try at the same index first
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Index == bt.Index && bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
-				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
+				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, false, bt2.AllowRemove)
 				return true
 			}
 		}
 		// Try to find any
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
-				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
+				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, false, bt2.AllowRemove)
 				return true
 			}
 		}
@@ -960,7 +960,8 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 
 	bImage := ui.buttonImages[terrain]
 	var randSpriteVal uint16 = 0
-	if len(randSprite) > 0 {
+	randomize := len(randSprite) == 0
+	if !randomize {
 		bImage = ui.createButtonImage(terrain, randSprite[0], allowRemove)
 		randSpriteVal = randSprite[0]
 	}
@@ -983,14 +984,14 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		widget.ButtonOpts.Image(&bImage),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.selectTerrain(args.Button, terrain, id, randSpriteVal, allowRemove)
+			ui.selectTerrain(args.Button, terrain, id, randSpriteVal, randomize, allowRemove)
 		}),
 	)
 
 	return button, warningLabel, id
 }
 
-func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, allowRemove bool) {
+func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, randomize bool, allowRemove bool) {
 	for _, bt := range ui.terrainButtons {
 		if bt.Button != nil {
 			bt.Button.SetState(widget.WidgetUnchecked)
@@ -1000,7 +1001,7 @@ func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int,
 		bt.Button.SetState(widget.WidgetUnchecked)
 	}
 
-	ui.selection.SetBuild(terrain, id, randSprite, allowRemove)
+	ui.selection.SetBuild(terrain, id, randSprite, randomize, allowRemove)
 	button.SetState(widget.WidgetChecked)
 }
 

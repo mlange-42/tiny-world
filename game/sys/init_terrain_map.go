@@ -5,8 +5,6 @@ import (
 	"image"
 	"io/fs"
 	"log"
-	"math"
-	"math/rand"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -66,10 +64,10 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 			}
 			xx := x + xOff
 			if ter.Terrain != terr.Air {
-				fac.Set(world, xx, yy, ter.Terrain, uint16(rand.Int31n(math.MaxUint16)))
+				fac.Set(world, xx, yy, ter.Terrain, 0, true)
 			}
 			if ter.LandUse != terr.Air {
-				fac.Set(world, xx, yy, ter.LandUse, uint16(rand.Int31n(math.MaxUint16)))
+				fac.Set(world, xx, yy, ter.LandUse, 0, true)
 			}
 		}
 	}
