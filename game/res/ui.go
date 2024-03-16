@@ -68,13 +68,12 @@ type randomButton struct {
 
 // UI resource.Represents the complete game UI.
 type UI struct {
-	// Initial random terrains, if any.
-	RandomTerrains []randomTerrain
+	ui             *ebitenui.UI
+	sprites        *Sprites
+	saveEvent      *SaveEvent
+	editor         *EditorMode
+	randomTerrains *RandomTerrains
 
-	ui              *ebitenui.UI
-	sprites         *Sprites
-	saveEvent       *SaveEvent
-	editor          *EditorMode
 	resourceLabels  []*widget.Text
 	populationLabel *widget.Text
 	timerLabel      *widget.Text
@@ -109,11 +108,6 @@ type UI struct {
 	idPool    util.IntPool[int]
 
 	buttonSize stdimage.Point
-}
-
-type randomTerrain struct {
-	Terrain     terr.Terrain
-	AllowRemove bool
 }
 
 type terrainButton struct {
@@ -207,15 +201,18 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent, editor *EditorMode) UI {
+func NewUI(world *ecs.World,
+	selection *Selection, fonts *Fonts, sprts *Sprites,
+	randomTerrains *RandomTerrains, save *SaveEvent, editor *EditorMode) UI {
 	ui := UI{
-		randomButtons: map[int]randomButton{},
-		selection:     selection,
-		fonts:         fonts,
-		idPool:        util.NewIntPool[int](8),
-		sprites:       sprts,
-		saveEvent:     save,
-		editor:        editor,
+		randomButtons:  map[int]randomButton{},
+		selection:      selection,
+		fonts:          fonts,
+		idPool:         util.NewIntPool[int](8),
+		sprites:        sprts,
+		saveEvent:      save,
+		editor:         editor,
+		randomTerrains: randomTerrains,
 
 		specialCardSprite:    sprts.GetIndex(sprites.SpecialCardMarker),
 		buttonIdleSprite:     sprts.GetIndex(sprites.Button),
@@ -446,7 +443,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 
 			idx++
 		}
-	} else if len(ui.RandomTerrains) == 0 {
+	} else if len(ui.randomTerrains.Terrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
 			button, _, id := ui.createButton(terr.Default, false, randSprite)
@@ -460,24 +457,27 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 		}
 		ui.updateRandomTerrains()
 	} else {
-		for i, t := range ui.RandomTerrains {
+		for i, t := range ui.randomTerrains.Terrains {
+			rem := ui.randomTerrains.AllowRemove[i]
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, _, id := ui.createButton(t.Terrain, t.AllowRemove, randSprite)
+			button, _, id := ui.createButton(t, rem, randSprite)
 
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
 			container.AddChild(button)
 			ui.randomContainers = append(ui.randomContainers, container)
 			ui.randomButtonsContainer.AddChild(container)
-			ui.randomButtons[id] = randomButton{t.Terrain, randSprite, t.AllowRemove, button, i}
+			ui.randomButtons[id] = randomButton{t, randSprite, rem, button, i}
 		}
 	}
 }
 
 func (ui *UI) updateRandomTerrains() {
-	ui.RandomTerrains = ui.RandomTerrains[:0]
+	ui.randomTerrains.Terrains = ui.randomTerrains.Terrains[:0]
+	ui.randomTerrains.AllowRemove = ui.randomTerrains.AllowRemove[:0]
 	for _, bt := range ui.randomButtons {
-		ui.RandomTerrains = append(ui.RandomTerrains, randomTerrain{bt.Terrain, bt.AllowRemove})
+		ui.randomTerrains.Terrains = append(ui.randomTerrains.Terrains, bt.Terrain)
+		ui.randomTerrains.AllowRemove = append(ui.randomTerrains.AllowRemove, bt.AllowRemove)
 	}
 }
 

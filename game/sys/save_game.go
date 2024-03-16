@@ -48,6 +48,7 @@ func (s *SaveGame) Initialize(world *ecs.World) {
 		generic.T[achievements.Achievements](),
 		generic.T[res.Mouse](),
 		generic.T[res.View](),
+		generic.T[res.UI](),
 		generic.T[resource.Termination](),
 		generic.T[resource.Rand](),
 		generic.T[model.Systems](),

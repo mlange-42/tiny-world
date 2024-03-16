@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mlange-42/arche-model/model"
 	"github.com/mlange-42/arche/ecs"
+	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/menu"
 	"github.com/mlange-42/tiny-world/game/render"
 	"github.com/mlange-42/tiny-world/game/res"
@@ -78,6 +79,8 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	g.Model = model.New()
 
+	_ = ecs.ComponentID[comp.CardAnimation](&g.Model.World)
+
 	// =========== Resources ===========
 
 	rules := res.NewRules(gameData, "data/json/rules.json")
@@ -116,6 +119,9 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	editor := res.EditorMode{IsEditor: isEditor}
 	ecs.AddResource(&g.Model.World, &editor)
 
+	randomTerrains := res.RandomTerrains{}
+	ecs.AddResource(&g.Model.World, &randomTerrains)
+
 	update := res.UpdateInterval{
 		Interval:  TPS,
 		Countdown: 60,
@@ -143,9 +149,6 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	fonts := res.NewFonts(gameData)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&g.Model.World, &selection, &fonts, &sprites, &saveEvent, &editor)
-	ecs.AddResource(&g.Model.World, &ui)
-
 	factory := res.NewEntityFactory(&g.Model.World)
 	ecs.AddResource(&g.Model.World, &factory)
 
@@ -165,6 +168,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	} else {
 		g.Model.AddSystem(&sys.InitTerrain{})
 	}
+	g.Model.AddSystem(&sys.InitUI{})
 
 	g.Model.AddSystem(&sys.Tick{})
 	g.Model.AddSystem(&sys.UpdateProduction{})

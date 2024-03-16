@@ -61,7 +61,8 @@ func (s *Build) Update(world *ecs.World) {
 		ui.ClearSelection()
 		return
 	}
-	if s.checkAbort() {
+	isEditor := s.editor.Get().IsEditor
+	if s.checkAbort(isEditor) {
 		return
 	}
 	buildable := s.buildable.Get()
@@ -81,7 +82,6 @@ func (s *Build) Update(world *ecs.World) {
 	rules := s.rules.Get()
 	stock := s.stock.Get()
 	landUse := s.landUse.Get()
-	isEditor := s.editor.Get().IsEditor
 
 	if !isEditor {
 		if !stock.CanPay(p.BuildCost) {
@@ -164,9 +164,15 @@ func (s *Build) Update(world *ecs.World) {
 // Finalize the system
 func (s *Build) Finalize(world *ecs.World) {}
 
-func (s *Build) checkAbort() bool {
-	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-		return true
+func (s *Build) checkAbort(isEditor bool) bool {
+	if isEditor {
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+			return true
+		}
+	} else {
+		if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+			return true
+		}
 	}
 
 	ui := s.ui.Get()
