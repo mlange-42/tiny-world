@@ -543,9 +543,15 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 		} else {
 			achieve = "\n - none"
 		}
+		localText := ""
+		localMarker := ""
+		if !m.IsEmbedded {
+			localText = " (*local)"
+			localMarker = " (*)"
+		}
 
 		label := widget.NewText(
-			widget.TextOpts.Text(fmt.Sprintf("%s\n\nRequired achievements:\n%s", m.Name, achieve), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Text(fmt.Sprintf("%s%s\n\nRequired achievements:\n%s", m.Name, localText, achieve), fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 			widget.TextOpts.MaxWidth(360),
 		)
@@ -565,7 +571,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 				)),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(m.Name, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(m.Name+localMarker, fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
