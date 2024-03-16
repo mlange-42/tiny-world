@@ -194,8 +194,7 @@
             "terrain_below": ["building_base", "fence"],
             "population": 1,
             "build_cost": [
-                {"resource": "wood", "amount": 6},
-                {"resource": "stones", "amount": 0}
+                {"resource": "wood", "amount": 6}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
@@ -224,7 +223,8 @@
             "terrain_below": ["building_base"],
             "population": 1,
             "build_cost": [
-                {"resource": "wood", "amount": 3}
+                {"resource": "wood", "amount": 3},
+                {"resource": "stones", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
