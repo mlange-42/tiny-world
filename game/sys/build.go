@@ -29,6 +29,7 @@ type Build struct {
 	ui              generic.Resource[res.UI]
 	factory         generic.Resource[res.EntityFactory]
 	editor          generic.Resource[res.EditorMode]
+	randTerrains    generic.Resource[res.RandomTerrains]
 
 	radiusFilter    generic.Filter2[comp.Tile, comp.BuildRadius]
 	warehouseFilter generic.Filter1[comp.Warehouse]
@@ -49,6 +50,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.ui = generic.NewResource[res.UI](world)
 	s.factory = generic.NewResource[res.EntityFactory](world)
 	s.editor = generic.NewResource[res.EditorMode](world)
+	s.randTerrains = generic.NewResource[res.RandomTerrains](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 	s.warehouseFilter = *generic.NewFilter1[comp.Warehouse]()
@@ -81,12 +83,19 @@ func (s *Build) Update(world *ecs.World) {
 	fac := s.factory.Get()
 	rules := s.rules.Get()
 	stock := s.stock.Get()
+	randTerr := s.randTerrains.Get()
 	landUse := s.landUse.Get()
 
 	if !isEditor {
 		if !stock.CanPay(p.BuildCost) {
 			ui.SetStatusLabel("Not enough resources.")
 			return
+		}
+		if p.TerrainBits.Contains(terr.CanBuild) && !p.TerrainBits.Contains(terr.CanBuy) {
+			if randTerr.TotalPlaced >= randTerr.TotalAvailable {
+				ui.SetStatusLabel("No more random terrains available.")
+				return
+			}
 		}
 	}
 
@@ -105,7 +114,7 @@ func (s *Build) Update(world *ecs.World) {
 			if !isEditor {
 				stock.Pay(p.BuildCost)
 			}
-			ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
+			ui.ReplaceButton(stock, rules, randTerr, s.time.Get().RenderTick, image.Pt(x, y))
 		}
 		return
 	}
@@ -158,7 +167,7 @@ func (s *Build) Update(world *ecs.World) {
 	if !isEditor {
 		stock.Pay(p.BuildCost)
 	}
-	ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
+	ui.ReplaceButton(stock, rules, randTerr, s.time.Get().RenderTick, image.Pt(x, y))
 }
 
 // Finalize the system

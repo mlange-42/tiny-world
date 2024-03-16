@@ -119,7 +119,9 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	editor := res.EditorMode{IsEditor: isEditor}
 	ecs.AddResource(&g.Model.World, &editor)
 
-	randomTerrains := res.RandomTerrains{}
+	randomTerrains := res.RandomTerrains{
+		TotalAvailable: rules.InitialRandomTerrains,
+	}
 	ecs.AddResource(&g.Model.World, &randomTerrains)
 
 	update := res.UpdateInterval{

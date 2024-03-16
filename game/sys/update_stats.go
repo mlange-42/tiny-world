@@ -16,14 +16,15 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
-	rules      generic.Resource[res.Rules]
-	production generic.Resource[res.Production]
-	stock      generic.Resource[res.Stock]
-	ui         generic.Resource[res.UI]
-	tick       generic.Resource[res.GameTick]
-	speed      generic.Resource[res.GameSpeed]
-	interval   generic.Resource[res.UpdateInterval]
-	editor     generic.Resource[res.EditorMode]
+	rules          generic.Resource[res.Rules]
+	production     generic.Resource[res.Production]
+	stock          generic.Resource[res.Stock]
+	ui             generic.Resource[res.UI]
+	tick           generic.Resource[res.GameTick]
+	speed          generic.Resource[res.GameSpeed]
+	interval       generic.Resource[res.UpdateInterval]
+	editor         generic.Resource[res.EditorMode]
+	randomTerrains generic.Resource[res.RandomTerrains]
 
 	prodFilter              generic.Filter1[comp.Production]
 	consFilter              generic.Filter1[comp.Consumption]
@@ -42,6 +43,7 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.interval = generic.NewResource[res.UpdateInterval](world)
 	s.editor = generic.NewResource[res.EditorMode](world)
+	s.randomTerrains = generic.NewResource[res.RandomTerrains](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
@@ -60,6 +62,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	tick := s.tick.Get().Tick
 	speed := s.speed.Get()
 	interval := s.interval.Get().Interval
+	randomTerrains := s.randomTerrains.Get()
 
 	isEditor := s.editor.Get().IsEditor
 
@@ -128,6 +131,10 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		}
 	}
 	ui.SetSpeedLabel(speedStr)
+
+	ui.SetRandomTilesLabel(fmt.Sprintf("%d/%d",
+		randomTerrains.TotalAvailable-randomTerrains.TotalPlaced,
+		randomTerrains.TotalAvailable))
 
 	if tick%interval != 0 {
 		return
