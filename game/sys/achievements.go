@@ -16,6 +16,7 @@ type Achievements struct {
 
 	time         generic.Resource[res.GameTick]
 	update       generic.Resource[res.UpdateInterval]
+	editor       generic.Resource[res.EditorMode]
 	achievements generic.Resource[achievements.Achievements]
 }
 
@@ -23,6 +24,7 @@ type Achievements struct {
 func (s *Achievements) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[res.GameTick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 	s.achievements = generic.NewResource[achievements.Achievements](world)
 }
 
@@ -33,6 +35,10 @@ func (s *Achievements) Update(world *ecs.World) {
 	if tick%s.update.Get().Interval != 0 {
 		return
 	}
+	if s.editor.Get().IsEditor {
+		return
+	}
+
 	achievements := s.achievements.Get()
 
 	for i := range achievements.Achievements {

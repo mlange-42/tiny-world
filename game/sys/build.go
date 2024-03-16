@@ -16,8 +16,6 @@ import (
 
 // Build system.
 type Build struct {
-	IsEditor bool
-
 	time            generic.Resource[res.GameTick]
 	rules           generic.Resource[res.Rules]
 	view            generic.Resource[res.View]
@@ -30,6 +28,7 @@ type Build struct {
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
 	factory         generic.Resource[res.EntityFactory]
+	editor          generic.Resource[res.EditorMode]
 
 	radiusFilter    generic.Filter2[comp.Tile, comp.BuildRadius]
 	warehouseFilter generic.Filter1[comp.Warehouse]
@@ -49,6 +48,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
 	s.factory = generic.NewResource[res.EntityFactory](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 	s.warehouseFilter = *generic.NewFilter1[comp.Warehouse]()
@@ -81,8 +81,9 @@ func (s *Build) Update(world *ecs.World) {
 	rules := s.rules.Get()
 	stock := s.stock.Get()
 	landUse := s.landUse.Get()
+	isEditor := s.editor.Get().IsEditor
 
-	if !s.IsEditor {
+	if !isEditor {
 		if !stock.CanPay(p.BuildCost) {
 			ui.SetStatusLabel("Not enough resources.")
 			return
@@ -101,7 +102,7 @@ func (s *Build) Update(world *ecs.World) {
 		if luProps.TerrainBits.Contains(terr.CanBuild) {
 			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
-			if !s.IsEditor {
+			if !isEditor {
 				stock.Pay(p.BuildCost)
 			}
 			ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
@@ -109,7 +110,7 @@ func (s *Build) Update(world *ecs.World) {
 		return
 	}
 
-	if !s.IsEditor {
+	if !isEditor {
 		if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
 			ui.SetStatusLabel("Population limit reached.")
 			return
@@ -154,7 +155,7 @@ func (s *Build) Update(world *ecs.World) {
 		}
 	}
 
-	if !s.IsEditor {
+	if !isEditor {
 		stock.Pay(p.BuildCost)
 	}
 	ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))

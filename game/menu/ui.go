@@ -26,6 +26,9 @@ import (
 const panelWidth = 500
 const panelHeight = 400
 
+type startFunction = func(name string, mapLoc save.MapLocation, loadType save.LoadType, isEditor bool)
+type menuFunction = func(tab int)
+
 type UI struct {
 	fs         fs.FS
 	saveFolder string
@@ -57,8 +60,7 @@ func (ui *UI) UnlockAll() {
 
 func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprites, fonts *res.Fonts,
 	achievements *achievements.Achievements,
-	start func(string, save.MapLocation, save.LoadType),
-	restart func(tab int)) UI {
+	start startFunction, restart menuFunction) UI {
 	ui := UI{
 		fs:         f,
 		saveFolder: folder,
@@ -241,7 +243,7 @@ func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	return container
 }
 
-func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
+func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -312,7 +314,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
 				return
 			}
-			start(name, save.MapLocation{}, save.LoadTypeNone)
+			start(name, save.MapLocation{}, save.LoadTypeNone, false)
 		}),
 	)
 	menuContainer.AddChild(newButton)
@@ -321,8 +323,8 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start func(s
 }
 
 func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
-	start func(string, save.MapLocation, save.LoadType),
-	restart func(tab int)) *widget.Container {
+	start startFunction,
+	restart menuFunction) *widget.Container {
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -372,7 +374,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				start(game, save.MapLocation{}, save.LoadTypeGame)
+				start(game, save.MapLocation{}, save.LoadTypeGame, false)
 			}),
 		)
 		content.AddChild(gameButton)
@@ -412,7 +414,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	return menuContainer
 }
 
-func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Achievements, fonts *res.Fonts, start func(string, save.MapLocation, save.LoadType)) *widget.Container {
+func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Achievements, fonts *res.Fonts, start startFunction) *widget.Container {
 	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
 	if err != nil {
 		panic(err)
@@ -567,7 +569,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
 					return
 				}
-				start(name, m, save.LoadTypeMap)
+				start(name, m, save.LoadTypeMap, false)
 			}),
 		)
 		newButton.GetWidget().Disabled = !enabled

@@ -16,8 +16,6 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
-	IsEditor bool
-
 	rules      generic.Resource[res.Rules]
 	production generic.Resource[res.Production]
 	stock      generic.Resource[res.Stock]
@@ -25,6 +23,7 @@ type UpdateStats struct {
 	tick       generic.Resource[res.GameTick]
 	speed      generic.Resource[res.GameSpeed]
 	interval   generic.Resource[res.UpdateInterval]
+	editor     generic.Resource[res.EditorMode]
 
 	prodFilter              generic.Filter1[comp.Production]
 	consFilter              generic.Filter1[comp.Consumption]
@@ -42,6 +41,7 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.tick = generic.NewResource[res.GameTick](world)
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.interval = generic.NewResource[res.UpdateInterval](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
@@ -60,6 +60,8 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	tick := s.tick.Get().Tick
 	speed := s.speed.Get()
 	interval := s.interval.Get().Interval
+
+	isEditor := s.editor.Get().IsEditor
 
 	prodQuery := s.prodFilter.Query(world)
 	for prodQuery.Next() {
@@ -131,7 +133,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		return
 	}
 
-	if s.IsEditor {
+	if isEditor {
 		return
 	}
 	for i := range terr.Properties {

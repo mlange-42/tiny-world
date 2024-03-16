@@ -70,11 +70,11 @@ type randomButton struct {
 type UI struct {
 	// Initial random terrains, if any.
 	RandomTerrains []randomTerrain
-	isEditor       bool
 
 	ui              *ebitenui.UI
 	sprites         *Sprites
 	saveEvent       *SaveEvent
+	editor          *EditorMode
 	resourceLabels  []*widget.Text
 	populationLabel *widget.Text
 	timerLabel      *widget.Text
@@ -207,15 +207,15 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent, editor bool) UI {
+func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent, editor *EditorMode) UI {
 	ui := UI{
-		isEditor:      editor,
 		randomButtons: map[int]randomButton{},
 		selection:     selection,
 		fonts:         fonts,
 		idPool:        util.NewIntPool[int](8),
 		sprites:       sprts,
 		saveEvent:     save,
+		editor:        editor,
 
 		specialCardSprite:    sprts.GetIndex(sprites.SpecialCardMarker),
 		buttonIdleSprite:     sprts.GetIndex(sprites.Button),
@@ -289,7 +289,7 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target
 			RandSprite: bt.RandomSprite,
 			StartTick:  renderTick,
 		})
-		if ui.isEditor {
+		if ui.editor.IsEditor {
 			return true
 		}
 
@@ -427,7 +427,7 @@ func (ui *UI) createUI() *widget.Container {
 
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
 	ui.randomContainers = make([]*widget.Container, 0)
-	if ui.isEditor {
+	if ui.editor.IsEditor {
 		idx := 0
 		for i := range terr.Properties {
 			prop := &terr.Properties[i]
@@ -1025,7 +1025,7 @@ func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int,
 		bt.Button.SetState(widget.WidgetUnchecked)
 	}
 
-	ui.selection.SetBuild(terrain, id, randSprite, randomize || ui.isEditor, allowRemove)
+	ui.selection.SetBuild(terrain, id, randSprite, randomize || ui.editor.IsEditor, allowRemove)
 	button.SetState(widget.WidgetChecked)
 }
 

@@ -38,8 +38,8 @@ func Run(data embed.FS) {
 	}
 }
 
-func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType) {
-	if err := runGame(g, load, name, mapLoc, "paper"); err != nil {
+func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType, isEditor bool) {
+	if err := runGame(g, load, name, mapLoc, "paper", isEditor); err != nil {
 		panic(err)
 	}
 }
@@ -57,8 +57,8 @@ func runMenu(g *Game, tab int) {
 
 	fonts := res.NewFonts(gameData)
 	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &sprites, &fonts, achievements,
-		func(name string, mapLoc save.MapLocation, load save.LoadType) {
-			run(g, name, mapLoc, load)
+		func(name string, mapLoc save.MapLocation, load save.LoadType, isEditor bool) {
+			run(g, name, mapLoc, load, isEditor)
 		},
 		func(tab int) {
 			runMenu(g, tab)
@@ -73,9 +73,7 @@ func runMenu(g *Game, tab int) {
 	g.Model.Initialize()
 }
 
-func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string) error {
-	editor := true
-
+func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string, isEditor bool) error {
 	ebiten.SetVsyncEnabled(true)
 
 	g.Model = model.New()
@@ -115,6 +113,9 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	bounds := res.WorldBounds{}
 	ecs.AddResource(&g.Model.World, &bounds)
 
+	editor := res.EditorMode{IsEditor: isEditor}
+	ecs.AddResource(&g.Model.World, &editor)
+
 	update := res.UpdateInterval{
 		Interval:  TPS,
 		Countdown: 60,
@@ -142,7 +143,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	fonts := res.NewFonts(gameData)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&g.Model.World, &selection, &fonts, &sprites, &saveEvent, editor)
+	ui := res.NewUI(&g.Model.World, &selection, &fonts, &sprites, &saveEvent, &editor)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	factory := res.NewEntityFactory(&g.Model.World)
@@ -168,22 +169,19 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	g.Model.AddSystem(&sys.Tick{})
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.UpdatePopulation{})
-	g.Model.AddSystem(&sys.DoProduction{IsEditor: editor})
-	g.Model.AddSystem(&sys.DoConsumption{IsEditor: editor})
+	g.Model.AddSystem(&sys.DoProduction{})
+	g.Model.AddSystem(&sys.DoConsumption{})
 	g.Model.AddSystem(&sys.Haul{})
-	g.Model.AddSystem(&sys.UpdateStats{IsEditor: editor})
+	g.Model.AddSystem(&sys.UpdateStats{})
 	g.Model.AddSystem(&sys.RemoveMarkers{
 		MaxTime: TPS,
 	})
 
-	g.Model.AddSystem(&sys.Build{IsEditor: editor})
+	g.Model.AddSystem(&sys.Build{})
 	g.Model.AddSystem(&sys.AssignHaulers{})
-
-	if !editor {
-		g.Model.AddSystem(&sys.Achievements{
-			PlayerFile: "user/achievements.json",
-		})
-	}
+	g.Model.AddSystem(&sys.Achievements{
+		PlayerFile: "user/achievements.json",
+	})
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton:        ebiten.MouseButton1,
