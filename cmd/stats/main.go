@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strings"
 
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/save"
@@ -16,9 +17,12 @@ func main() {
 		log.Fatal("Please specify a map file!")
 	}
 	file := os.Args[1]
-	mapStr, err := os.ReadFile(file + ".asc")
+	if !strings.HasSuffix(file, ".asc") {
+		file += ".asc"
+	}
+	mapStr, err := os.ReadFile(file)
 	if err != nil {
-		log.Fatalf("Error reading file '%s': %s", file, err.Error())
+		log.Fatalf("Error reading map '%s': %s", file, err.Error())
 	}
 
 	mapData, err := save.ParseMap(string(mapStr))
