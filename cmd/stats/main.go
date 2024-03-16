@@ -73,7 +73,9 @@ func main() {
 	}
 
 	for t, cnt := range frequencies {
-		fmt.Printf("%10s: %4d (%5.1f%%) %5.1fx\n", terr.Properties[t].Name, cnt,
+		fmt.Printf("%10s (%s): %4d (%5.1f%%) %5.1fx\n",
+			terr.Properties[t].Name, string(terr.Properties[t].Symbols[0]),
+			cnt,
 			float64(cnt*100)/float64(total), float64(cnt)/float64(minCount))
 	}
 }

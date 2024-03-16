@@ -38,6 +38,7 @@
 ### Documentation
 
 * Adds doc-strings for all resources (#159)
+* Adds documentation on scenario editing and creation under [`docs/SCENARIOS.md`](https://github.com/mlange-42/tiny-world/blob/main/docs/SCENARIOS.md) (#224)
 
 ### Other
 
