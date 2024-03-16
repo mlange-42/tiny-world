@@ -16,6 +16,8 @@ import (
 
 // Build system.
 type Build struct {
+	IsEditor bool
+
 	time            generic.Resource[res.GameTick]
 	rules           generic.Resource[res.Rules]
 	view            generic.Resource[res.View]
@@ -80,6 +82,13 @@ func (s *Build) Update(world *ecs.World) {
 	stock := s.stock.Get()
 	landUse := s.landUse.Get()
 
+	if !s.IsEditor {
+		if !stock.CanPay(p.BuildCost) {
+			ui.SetStatusLabel("Not enough resources.")
+			return
+		}
+	}
+
 	if sel.BuildType == terr.Bulldoze {
 		luHere := landUse.Get(cursor.X, cursor.Y)
 		luProps := &terr.Properties[luHere]
@@ -92,19 +101,19 @@ func (s *Build) Update(world *ecs.World) {
 		if luProps.TerrainBits.Contains(terr.CanBuild) {
 			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
-			stock.Pay(p.BuildCost)
+			if !s.IsEditor {
+				stock.Pay(p.BuildCost)
+			}
 			ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
 		}
 		return
 	}
 
-	if !stock.CanPay(p.BuildCost) {
-		ui.SetStatusLabel("Not enough resources.")
-		return
-	}
-	if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
-		ui.SetStatusLabel("Population limit reached.")
-		return
+	if !s.IsEditor {
+		if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
+			ui.SetStatusLabel("Population limit reached.")
+			return
+		}
 	}
 
 	terrain := s.terrain.Get()
@@ -145,7 +154,9 @@ func (s *Build) Update(world *ecs.World) {
 		}
 	}
 
-	stock.Pay(p.BuildCost)
+	if !s.IsEditor {
+		stock.Pay(p.BuildCost)
+	}
 	ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
 }
 

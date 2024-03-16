@@ -9,6 +9,8 @@ import (
 
 // DoConsumption system.
 type DoConsumption struct {
+	IsEditor bool
+
 	speed  generic.Resource[res.GameSpeed]
 	time   generic.Resource[res.GameTick]
 	update generic.Resource[res.UpdateInterval]
@@ -47,6 +49,10 @@ func (s *DoConsumption) Update(world *ecs.World) {
 		}
 
 		cons.IsSatisfied = true
+		if s.IsEditor {
+			continue
+		}
+
 		for i, c := range cons.Amount {
 			cons.Countdown[i] -= int16(c)
 			if cons.Countdown[i] < 0 {

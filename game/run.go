@@ -74,6 +74,8 @@ func runMenu(g *Game, tab int) {
 }
 
 func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string) error {
+	editor := true
+
 	ebiten.SetVsyncEnabled(true)
 
 	g.Model = model.New()
@@ -140,7 +142,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	fonts := res.NewFonts(gameData)
 	ecs.AddResource(&g.Model.World, &fonts)
 
-	ui := res.NewUI(&g.Model.World, &selection, &fonts, &sprites, &saveEvent)
+	ui := res.NewUI(&g.Model.World, &selection, &fonts, &sprites, &saveEvent, editor)
 	ecs.AddResource(&g.Model.World, &ui)
 
 	factory := res.NewEntityFactory(&g.Model.World)
@@ -166,19 +168,22 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	g.Model.AddSystem(&sys.Tick{})
 	g.Model.AddSystem(&sys.UpdateProduction{})
 	g.Model.AddSystem(&sys.UpdatePopulation{})
-	g.Model.AddSystem(&sys.DoProduction{})
-	g.Model.AddSystem(&sys.DoConsumption{})
+	g.Model.AddSystem(&sys.DoProduction{IsEditor: editor})
+	g.Model.AddSystem(&sys.DoConsumption{IsEditor: editor})
 	g.Model.AddSystem(&sys.Haul{})
-	g.Model.AddSystem(&sys.UpdateStats{})
+	g.Model.AddSystem(&sys.UpdateStats{IsEditor: editor})
 	g.Model.AddSystem(&sys.RemoveMarkers{
 		MaxTime: TPS,
 	})
 
-	g.Model.AddSystem(&sys.Build{})
+	g.Model.AddSystem(&sys.Build{IsEditor: editor})
 	g.Model.AddSystem(&sys.AssignHaulers{})
-	g.Model.AddSystem(&sys.Achievements{
-		PlayerFile: "user/achievements.json",
-	})
+
+	if !editor {
+		g.Model.AddSystem(&sys.Achievements{
+			PlayerFile: "user/achievements.json",
+		})
+	}
 
 	g.Model.AddSystem(&sys.PanAndZoom{
 		PanButton:        ebiten.MouseButton1,

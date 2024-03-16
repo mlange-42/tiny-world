@@ -70,6 +70,7 @@ type randomButton struct {
 type UI struct {
 	// Initial random terrains, if any.
 	RandomTerrains []randomTerrain
+	isEditor       bool
 
 	ui              *ebitenui.UI
 	sprites         *Sprites
@@ -206,8 +207,9 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent) UI {
+func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent, editor bool) UI {
 	ui := UI{
+		isEditor:      editor,
 		randomButtons: map[int]randomButton{},
 		selection:     selection,
 		fonts:         fonts,
@@ -287,6 +289,9 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target
 			RandSprite: bt.RandomSprite,
 			StartTick:  renderTick,
 		})
+		if ui.isEditor {
+			return true
+		}
 
 		ui.randomContainers[bt.Index].RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
@@ -421,8 +426,27 @@ func (ui *UI) createUI() *widget.Container {
 }
 
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
-	ui.randomContainers = make([]*widget.Container, randomTerrains)
-	if len(ui.RandomTerrains) == 0 {
+	ui.randomContainers = make([]*widget.Container, 0)
+	if ui.isEditor {
+		idx := 0
+		for i := range terr.Properties {
+			prop := &terr.Properties[i]
+			if !prop.TerrainBits.Contains(terr.CanBuild) || prop.TerrainBits.Contains(terr.CanBuy) {
+				continue
+			}
+			randSprite := uint16(rand.Int31n(math.MaxUint16))
+			button, _, id := ui.createButton(terr.Terrain(i), true, randSprite)
+
+			container := widget.NewContainer(widget.ContainerOpts.Layout(
+				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
+			container.AddChild(button)
+			ui.randomContainers = append(ui.randomContainers, container)
+			ui.randomButtonsContainer.AddChild(container)
+			ui.randomButtons[id] = randomButton{terr.Default, randSprite, true, button, idx}
+
+			idx++
+		}
+	} else if len(ui.RandomTerrains) == 0 {
 		for i := 0; i < randomTerrains; i++ {
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
 			button, _, id := ui.createButton(terr.Default, false, randSprite)
@@ -430,7 +454,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
 			container.AddChild(button)
-			ui.randomContainers[i] = container
+			ui.randomContainers = append(ui.randomContainers, container)
 			ui.randomButtonsContainer.AddChild(container)
 			ui.randomButtons[id] = randomButton{terr.Default, randSprite, false, button, i}
 		}
@@ -443,7 +467,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
 			container.AddChild(button)
-			ui.randomContainers[i] = container
+			ui.randomContainers = append(ui.randomContainers, container)
 			ui.randomButtonsContainer.AddChild(container)
 			ui.randomButtons[id] = randomButton{t.Terrain, randSprite, t.AllowRemove, button, i}
 		}
@@ -1001,7 +1025,7 @@ func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int,
 		bt.Button.SetState(widget.WidgetUnchecked)
 	}
 
-	ui.selection.SetBuild(terrain, id, randSprite, randomize, allowRemove)
+	ui.selection.SetBuild(terrain, id, randSprite, randomize || ui.isEditor, allowRemove)
 	button.SetState(widget.WidgetChecked)
 }
 

@@ -16,6 +16,8 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
+	IsEditor bool
+
 	rules      generic.Resource[res.Rules]
 	production generic.Resource[res.Production]
 	stock      generic.Resource[res.Stock]
@@ -129,6 +131,9 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		return
 	}
 
+	if s.IsEditor {
+		return
+	}
 	for i := range terr.Properties {
 		props := &terr.Properties[i]
 		if !props.TerrainBits.Contains(terr.CanBuy) {

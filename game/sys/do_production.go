@@ -11,6 +11,8 @@ import (
 
 // DoProduction system.
 type DoProduction struct {
+	IsEditor bool
+
 	speed   generic.Resource[res.GameSpeed]
 	time    generic.Resource[res.GameTick]
 	update  generic.Resource[res.UpdateInterval]
@@ -37,7 +39,7 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *DoProduction) Update(world *ecs.World) {
-	if s.speed.Get().Pause {
+	if s.speed.Get().Pause || s.IsEditor {
 		return
 	}
 
