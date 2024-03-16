@@ -29,6 +29,8 @@ const panelHeight = 400
 type startFunction = func(name string, mapLoc save.MapLocation, loadType save.LoadType, isEditor bool)
 type menuFunction = func(tab int)
 
+const editorModeText = "Shift+click for scenario editor mode."
+
 type UI struct {
 	fs         fs.FS
 	saveFolder string
@@ -321,7 +323,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 	menuContainer.AddChild(newButton)
 
 	editorLabel := widget.NewText(
-		widget.TextOpts.Text("Shift+click for map editor mode.", fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(editorModeText, fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionEnd),
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
