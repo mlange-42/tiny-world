@@ -314,10 +314,23 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
 				return
 			}
-			start(name, save.MapLocation{}, save.LoadTypeNone, false)
+			isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
+			start(name, save.MapLocation{}, save.LoadTypeNone, isEditor)
 		}),
 	)
 	menuContainer.AddChild(newButton)
+
+	editorLabel := widget.NewText(
+		widget.TextOpts.Text("Shift+click for map editor mode.", fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionEnd),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Stretch: true,
+			}),
+			widget.WidgetOpts.MinSize(10, 48),
+		),
+	)
+	menuContainer.AddChild(editorLabel)
 
 	return menuContainer
 }
@@ -569,7 +582,8 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
 					return
 				}
-				start(name, m, save.LoadTypeMap, false)
+				isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
+				start(name, m, save.LoadTypeMap, isEditor)
 			}),
 		)
 		newButton.GetWidget().Disabled = !enabled
