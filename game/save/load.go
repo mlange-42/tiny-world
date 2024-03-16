@@ -60,7 +60,19 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) (maps.Map, error) {
 	var result [][]rune
 	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
 
-	terrains := []rune(lines[0])
+	terrainParts := strings.Split(lines[0], " ")
+	terrains := []rune{}
+	for _, p := range terrainParts {
+		rn := []rune(p)
+		sym := rn[len(rn)-1]
+		cnt, err := strconv.Atoi(string(rn[:len(rn)-1]))
+		if err != nil {
+			panic(fmt.Sprintf("can't convert to integer in map symbols: `%s`", string(rn[:len(rn)-1])))
+		}
+		for i := 0; i < cnt; i++ {
+			terrains = append(terrains, sym)
+		}
+	}
 
 	ach := strings.Split(lines[1], " ")
 	achievements := []string{}
