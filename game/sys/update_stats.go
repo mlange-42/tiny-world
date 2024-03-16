@@ -82,13 +82,16 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	for i := range resource.Properties {
 		stock.Cap[i] = 0
 	}
+	randomTerrains.TotalAvailable = rules.InitialRandomTerrains
+
 	stockQuery := s.stockFilter.Query(world)
 	for stockQuery.Next() {
 		tp := stockQuery.Get()
-		st := terr.Properties[tp.Terrain].Storage
+		prop := &terr.Properties[tp.Terrain]
 		for i := range resource.Properties {
-			stock.Cap[i] += int(st[i])
+			stock.Cap[i] += int(prop.Storage[i])
 		}
+		randomTerrains.TotalAvailable += int(prop.UnlocksTerrains)
 	}
 
 	stock.Population = 0
