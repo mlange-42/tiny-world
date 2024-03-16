@@ -16,6 +16,7 @@ Existing scenarios can also be started in editor mode with Shift+Click.
 
 Controls in editor mode are the same as in a usual game.
 However, all natural terrains are available and there are no costs or cost restrictions.
+Further, terrain is not only placed by clicking, but also by dragging the mouse.
 
 Saving a game in editor mode is like saving the editor session. Saving the map means to export it in the [Map Format](#map-format) for use as a scenario.
 
