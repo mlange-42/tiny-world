@@ -54,7 +54,7 @@ type Terrain struct {
 	pathMapper    generic.Map1[comp.Path]
 	haulerMapper  generic.Map2[comp.Hauler, comp.HaulerSprite]
 	spriteMapper  generic.Map1[comp.RandomSprite]
-	landUseMapper generic.Map3[comp.Production, comp.PopulationSupport, comp.RandomSprite]
+	landUseMapper generic.Map4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite]
 
 	font font.Face
 }
@@ -82,7 +82,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
-	s.landUseMapper = generic.NewMap3[comp.Production, comp.PopulationSupport, comp.RandomSprite](world)
+	s.landUseMapper = generic.NewMap4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
@@ -169,7 +169,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				luE := s.landUseE.Get(i, j)
-				prod, pop, randTile := s.landUseMapper.Get(luE)
+				prod, cons, pop, randTile := s.landUseMapper.Get(luE)
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off,
 					randTile, terr.Properties[lu].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
 
@@ -180,11 +180,13 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
 					if sel.BuildType == terr.Air && cursor.X == i && cursor.Y == j {
 						if noProd {
-							if prod.HasRequired {
-								ui.SetStatusLabel("No production - no terrain to use.")
-							} else {
+							if !prod.HasRequired {
 								req := terr.Properties[lu].Production.RequiredTerrain
 								ui.SetStatusLabel(fmt.Sprintf("No production - requires %s.", terr.Properties[req].Name))
+							} else if !cons.IsSatisfied {
+								ui.SetStatusLabel("No production - consumption needs not satisfied.")
+							} else {
+								ui.SetStatusLabel("No production - no terrain to use.")
 							}
 						} else if noPop {
 							if pop.HasRequired {
