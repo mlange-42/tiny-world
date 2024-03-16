@@ -7,6 +7,7 @@
 * The game can be played on pre-defined, embedded maps/scenarios (#168)
 * The game can be played on user-created maps/scenarios (#171)
 * Adds achievements that are required to unlock maps/scenarios (#187, #194, #195, #196, #203)
+* Ads a map editor mode for easier scenario creation (#223)
 
 ### Game rules
 
@@ -41,6 +42,7 @@
 ### Other
 
 * Adds precompiled binaries for MacOS/Darwin to release builds (#165 by [Ecostack](https://github.com/Ecostack))
+* Adds a command line tool under `cmd/stats` to print terrain frequencies of maps, useful for deriving random terrain probabilities (#223)
 
 ## [[v0.1.0]](https://github.com/mlange-42/tiny-world/tree/v0.1.0)
 

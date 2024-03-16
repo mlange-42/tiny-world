@@ -3,6 +3,7 @@ package terr
 import (
 	"fmt"
 	"io/fs"
+	"strings"
 
 	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/resource"
@@ -158,6 +159,9 @@ func Prepare(f fs.FS, file string) {
 		symbols := []rune(t.Symbols)
 		if len(symbols) != len(t.BuildOn) {
 			panic(fmt.Sprintf("length of `symbols` not equal to length of `build_on` in %s", t.Name))
+		}
+		if strings.Contains(t.Symbols, " ") {
+			panic(fmt.Sprintf("disallowed map symbol ' ' (Space) in %s", t.Name))
 		}
 
 		bits := TerrainBits(0)

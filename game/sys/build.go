@@ -28,6 +28,7 @@ type Build struct {
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
 	factory         generic.Resource[res.EntityFactory]
+	editor          generic.Resource[res.EditorMode]
 
 	radiusFilter    generic.Filter2[comp.Tile, comp.BuildRadius]
 	warehouseFilter generic.Filter1[comp.Warehouse]
@@ -47,6 +48,7 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
 	s.factory = generic.NewResource[res.EntityFactory](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 	s.warehouseFilter = *generic.NewFilter1[comp.Warehouse]()
@@ -59,7 +61,8 @@ func (s *Build) Update(world *ecs.World) {
 		ui.ClearSelection()
 		return
 	}
-	if s.checkAbort() {
+	isEditor := s.editor.Get().IsEditor
+	if s.checkAbort(isEditor) {
 		return
 	}
 	buildable := s.buildable.Get()
@@ -80,6 +83,13 @@ func (s *Build) Update(world *ecs.World) {
 	stock := s.stock.Get()
 	landUse := s.landUse.Get()
 
+	if !isEditor {
+		if !stock.CanPay(p.BuildCost) {
+			ui.SetStatusLabel("Not enough resources.")
+			return
+		}
+	}
+
 	if sel.BuildType == terr.Bulldoze {
 		luHere := landUse.Get(cursor.X, cursor.Y)
 		luProps := &terr.Properties[luHere]
@@ -92,19 +102,19 @@ func (s *Build) Update(world *ecs.World) {
 		if luProps.TerrainBits.Contains(terr.CanBuild) {
 			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
-			stock.Pay(p.BuildCost)
+			if !isEditor {
+				stock.Pay(p.BuildCost)
+			}
 			ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
 		}
 		return
 	}
 
-	if !stock.CanPay(p.BuildCost) {
-		ui.SetStatusLabel("Not enough resources.")
-		return
-	}
-	if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
-		ui.SetStatusLabel("Population limit reached.")
-		return
+	if !isEditor {
+		if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
+			ui.SetStatusLabel("Population limit reached.")
+			return
+		}
 	}
 
 	terrain := s.terrain.Get()
@@ -145,16 +155,24 @@ func (s *Build) Update(world *ecs.World) {
 		}
 	}
 
-	stock.Pay(p.BuildCost)
+	if !isEditor {
+		stock.Pay(p.BuildCost)
+	}
 	ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
 }
 
 // Finalize the system
 func (s *Build) Finalize(world *ecs.World) {}
 
-func (s *Build) checkAbort() bool {
-	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-		return true
+func (s *Build) checkAbort(isEditor bool) bool {
+	if isEditor {
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+			return true
+		}
+	} else {
+		if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+			return true
+		}
 	}
 
 	ui := s.ui.Get()

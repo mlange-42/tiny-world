@@ -13,6 +13,7 @@ type DoConsumption struct {
 	time   generic.Resource[res.GameTick]
 	update generic.Resource[res.UpdateInterval]
 	stock  generic.Resource[res.Stock]
+	editor generic.Resource[res.EditorMode]
 
 	filter generic.Filter2[comp.UpdateTick, comp.Consumption]
 }
@@ -23,6 +24,7 @@ func (s *DoConsumption) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[res.GameTick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 
 	s.filter = *generic.NewFilter2[comp.UpdateTick, comp.Consumption]()
 }
@@ -32,6 +34,7 @@ func (s *DoConsumption) Update(world *ecs.World) {
 	if s.speed.Get().Pause {
 		return
 	}
+	isEditor := s.editor.Get().IsEditor
 
 	stock := s.stock.Get()
 	tick := s.time.Get().Tick
@@ -47,6 +50,10 @@ func (s *DoConsumption) Update(world *ecs.World) {
 		}
 
 		cons.IsSatisfied = true
+		if isEditor {
+			continue
+		}
+
 		for i, c := range cons.Amount {
 			cons.Countdown[i] -= int16(c)
 			if cons.Countdown[i] < 0 {

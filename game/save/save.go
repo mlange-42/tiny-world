@@ -50,6 +50,8 @@ func SaveMap(folder, name string, world *ecs.World) error {
 	terrain := ecs.GetResource[res.Terrain](world)
 	landUse := ecs.GetResource[res.LandUse](world)
 
+	terrains := map[rune]int{}
+
 	for _, t := range rules.RandomTerrains {
 		var tp terr.TerrainPair
 		if terr.Properties[t].TerrainBits.Contains(terr.IsTerrain) {
@@ -61,8 +63,19 @@ func SaveMap(folder, name string, world *ecs.World) error {
 		if !ok {
 			return fmt.Errorf("symbol not found for %s/%s", terr.Properties[tp.Terrain].Name, terr.Properties[tp.LandUse].Name)
 		}
-		b.WriteRune(sym)
+		if cnt, ok := terrains[sym]; ok {
+			terrains[sym] = cnt + 1
+		} else {
+			terrains[sym] = 1
+		}
 	}
+
+	symbols := []string{}
+	for sym, cnt := range terrains {
+		symbols = append(symbols, fmt.Sprintf("%d%s", cnt, string(sym)))
+	}
+	b.WriteString(strings.Join(symbols, " "))
+
 	b.WriteString("\n")
 
 	// Space for required achievements

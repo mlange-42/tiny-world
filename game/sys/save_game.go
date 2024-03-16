@@ -48,6 +48,7 @@ func (s *SaveGame) Initialize(world *ecs.World) {
 		generic.T[achievements.Achievements](),
 		generic.T[res.Mouse](),
 		generic.T[res.View](),
+		generic.T[res.UI](),
 		generic.T[resource.Termination](),
 		generic.T[resource.Rand](),
 		generic.T[model.Systems](),
@@ -58,8 +59,10 @@ func (s *SaveGame) Initialize(world *ecs.World) {
 func (s *SaveGame) Update(world *ecs.World) {
 	evt := s.saveEvent.Get()
 
-	if ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyShift) && inpututil.IsKeyJustPressed(ebiten.KeyS) ||
-		evt.ShouldSaveMap {
+	keysPressed := ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyS)
+	shift := ebiten.IsKeyPressed(ebiten.KeyShift)
+
+	if evt.ShouldSaveMap || (keysPressed && shift) {
 		evt.ShouldSaveMap = false
 		print("Saving map... ")
 		err := save.SaveMap(s.MapFolder, s.Name, world)
@@ -72,8 +75,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 		println("done.")
 	}
 
-	if (ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyS)) ||
-		evt.ShouldSave {
+	if evt.ShouldSaveMap || (keysPressed && !shift) {
 		evt.ShouldSave = false
 		print("Saving game... ")
 
