@@ -22,13 +22,13 @@ const TPS = 60
 const saveFolder = "save"
 const mapsFolder = "maps"
 
-var gameData embed.FS
+var GameData embed.FS
 
 func Run(data embed.FS) {
-	gameData = data
+	GameData = data
 
-	resource.Prepare(gameData, "data/json/resources.json")
-	terr.Prepare(gameData, "data/json/terrain.json")
+	resource.Prepare(GameData, "data/json/resources.json")
+	terr.Prepare(GameData, "data/json/terrain.json")
 
 	game := NewGame(nil)
 	runMenu(&game, 0)
@@ -51,13 +51,13 @@ func runMenu(g *Game, tab int) {
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
-	sprites := res.NewSprites(gameData, "data/gfx", "paper")
+	sprites := res.NewSprites(GameData, "data/gfx", "paper")
 	ecs.AddResource(&g.Model.World, &sprites)
 
-	achievements := achievements.New(&g.Model.World, gameData, "data/json/achievements.json", "user/achievements.json")
+	achievements := achievements.New(&g.Model.World, GameData, "data/json/achievements.json", "user/achievements.json")
 
-	fonts := res.NewFonts(gameData)
-	ui := menu.NewUI(gameData, saveFolder, mapsFolder, tab, &sprites, &fonts, achievements,
+	fonts := res.NewFonts(GameData)
+	ui := menu.NewUI(GameData, saveFolder, mapsFolder, tab, &sprites, &fonts, achievements,
 		func(name string, mapLoc save.MapLocation, load save.LoadType, isEditor bool) {
 			run(g, name, mapLoc, load, isEditor)
 		},
@@ -83,7 +83,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	// =========== Resources ===========
 
-	rules := res.NewRules(gameData, "data/json/rules.json")
+	rules := res.NewRules(GameData, "data/json/rules.json")
 	ecs.AddResource(&g.Model.World, &rules)
 
 	gameSpeed := res.GameSpeed{
@@ -128,7 +128,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	}
 	ecs.AddResource(&g.Model.World, &update)
 
-	sprites := res.NewSprites(gameData, "data/gfx", tileSet)
+	sprites := res.NewSprites(GameData, "data/gfx", tileSet)
 	ecs.AddResource(&g.Model.World, &sprites)
 
 	view := res.NewView(sprites.TileWidth, sprites.TileHeight)
@@ -146,13 +146,13 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 	saveEvent := res.SaveEvent{}
 	ecs.AddResource(&g.Model.World, &saveEvent)
 
-	fonts := res.NewFonts(gameData)
+	fonts := res.NewFonts(GameData)
 	ecs.AddResource(&g.Model.World, &fonts)
 
 	factory := res.NewEntityFactory(&g.Model.World)
 	ecs.AddResource(&g.Model.World, &factory)
 
-	achievements := achievements.New(&g.Model.World, gameData, "data/json/achievements.json", "user/achievements.json")
+	achievements := achievements.New(&g.Model.World, GameData, "data/json/achievements.json", "user/achievements.json")
 	ecs.AddResource(&g.Model.World, achievements)
 
 	// =========== Systems ===========
@@ -161,7 +161,7 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 		g.Model.AddSystem(&sys.InitTerrainLoaded{})
 	} else if load == save.LoadTypeMap {
 		g.Model.AddSystem(&sys.InitTerrainMap{
-			FS:        gameData,
+			FS:        GameData,
 			MapFolder: mapsFolder,
 			Map:       mapLoc,
 		})

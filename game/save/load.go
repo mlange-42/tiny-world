@@ -57,6 +57,10 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) (maps.Map, error) {
 		return maps.Map{}, err
 	}
 
+	return ParseMap(mapStr)
+}
+
+func ParseMap(mapStr string) (maps.Map, error) {
 	var result [][]rune
 	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
 
