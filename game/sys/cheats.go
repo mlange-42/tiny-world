@@ -10,9 +10,10 @@ import (
 
 // Cheats system.
 type Cheats struct {
-	rules generic.Resource[res.Rules]
-	stock generic.Resource[res.Stock]
-	ui    generic.Resource[res.UI]
+	rules  generic.Resource[res.Rules]
+	stock  generic.Resource[res.Stock]
+	ui     generic.Resource[res.UI]
+	editor generic.Resource[res.EditorMode]
 }
 
 // Initialize the system
@@ -24,6 +25,11 @@ func (s *Cheats) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *Cheats) Update(world *ecs.World) {
+	if s.editor.Get().IsEditor {
+		println("cheats are not available in editor mode")
+		return
+	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyShift) &&
 		ebiten.IsKeyPressed(ebiten.KeyControl) &&
 		ebiten.IsKeyPressed(ebiten.KeyAlt) &&
