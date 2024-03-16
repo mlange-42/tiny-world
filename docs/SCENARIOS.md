@@ -27,15 +27,18 @@ as well as required achievement, can be tweaked by editing the exported scenario
 
 A small example map is shown below.
 
-* The first line contains frequencies of random terrains
-* The second line contains a list of required achievements, separated by spaces
-* The third line contains the relative coordinates of the starting position, from the top-left corner (0,0)
+* The 1st line contains frequencies of random terrains.
+* The second line contains the number of initially placable trains.
+* The 3rd line contains a list of required achievements, separated by spaces.
+* The 4th line contains the relative coordinates of the starting position, from the top-left corner (0,0).
+* All further lines are the actual map.
 
 Terrain characters are defined in [`data/json/terrain.json`](https://github.com/mlange-42/tiny-world/blob/main/data/json/terrain.json).
 Achievements are defined in [`data/json/achievements.json`](https://github.com/mlange-42/tiny-world/blob/main/data/json/achievements.json)
 
 ```
 1r 20- 6^ 6~ 1+ 6t
+500
 play-the-game
 8 8
 ......---------~....

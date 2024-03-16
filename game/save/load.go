@@ -78,7 +78,12 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		}
 	}
 
-	ach := strings.Split(lines[1], " ")
+	randTerr, err := strconv.Atoi(lines[1])
+	if err != nil {
+		panic(fmt.Sprintf("can't convert to integer in map initial random terrains: `%s`", lines[1]))
+	}
+
+	ach := strings.Split(lines[2], " ")
 	achievements := []string{}
 	for _, a := range ach {
 		if a != "" {
@@ -86,7 +91,7 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		}
 	}
 
-	sizeLine := lines[2]
+	sizeLine := lines[3]
 	parts := strings.Split(sizeLine, " ")
 	cx, err := strconv.Atoi(parts[0])
 	if err != nil {
@@ -97,7 +102,7 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
 	}
 
-	lines = lines[3:]
+	lines = lines[4:]
 
 	for _, s := range lines {
 		if len(s) > 0 {
@@ -106,7 +111,13 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		}
 	}
 
-	return maps.Map{Data: result, Terrains: terrains, Center: image.Pt(cx, cy), Achievements: achievements}, nil
+	return maps.Map{
+		Data:                  result,
+		Terrains:              terrains,
+		InitialRandomTerrains: randTerr,
+		Center:                image.Pt(cx, cy),
+		Achievements:          achievements,
+	}, nil
 }
 
 func LoadMapAchievements(f fs.FS, folder string, mapLoc MapLocation) ([]string, error) {
@@ -115,9 +126,9 @@ func LoadMapAchievements(f fs.FS, folder string, mapLoc MapLocation) ([]string, 
 		return nil, err
 	}
 
-	lines := strings.SplitN(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n", 3)
+	lines := strings.SplitN(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n", 4)
 
-	ach := strings.Split(lines[1], " ")
+	ach := strings.Split(lines[2], " ")
 	achievements := []string{}
 	for _, a := range ach {
 		if a != "" {

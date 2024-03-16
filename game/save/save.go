@@ -75,8 +75,9 @@ func SaveMap(folder, name string, world *ecs.World) error {
 		symbols = append(symbols, fmt.Sprintf("%d%s", cnt, string(sym)))
 	}
 	b.WriteString(strings.Join(symbols, " "))
-
 	b.WriteString("\n")
+
+	b.WriteString(fmt.Sprintf("%d\n", rules.InitialRandomTerrains))
 
 	// Space for required achievements
 	b.WriteString("\n")

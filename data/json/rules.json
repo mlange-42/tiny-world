@@ -2,7 +2,7 @@
     "world_size": 1024,
     "initial_build_radius": 12,
     "initial_population": 10,
-    "initial_random_terrains": 500,
+    "initial_random_terrains": 1000,
     "initial_resources": [
         {"resource": "food", "amount": 25},
         {"resource": "wood", "amount": 25},

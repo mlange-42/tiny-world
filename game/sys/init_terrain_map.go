@@ -46,6 +46,7 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 		}
 	}
 	rules.RandomTerrains = terrains
+	rules.InitialRandomTerrains = mapData.InitialRandomTerrains
 
 	xOff, yOff := terrain.Width()/2-mapData.Center.X, terrain.Height()/2-mapData.Center.Y
 
