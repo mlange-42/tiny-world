@@ -28,9 +28,10 @@ type UpdateStats struct {
 
 	prodFilter              generic.Filter1[comp.Production]
 	consFilter              generic.Filter1[comp.Consumption]
-	stockFilter             generic.Filter1[comp.Terrain]
 	populationFilter        generic.Filter1[comp.Population]
 	populationSupportFilter generic.Filter1[comp.PopulationSupport]
+	stockFilter             generic.Filter1[comp.Terrain]
+	unlockFilter            generic.Filter1[comp.Terrain]
 }
 
 // Initialize the system
@@ -47,9 +48,11 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
-	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
 	s.populationFilter = *generic.NewFilter1[comp.Population]()
 	s.populationSupportFilter = *generic.NewFilter1[comp.PopulationSupport]()
+
+	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
+	s.unlockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.UnlocksTerrain]())
 }
 
 // Update the system
@@ -82,7 +85,6 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	for i := range resource.Properties {
 		stock.Cap[i] = 0
 	}
-	randomTerrains.TotalAvailable = rules.InitialRandomTerrains
 
 	stockQuery := s.stockFilter.Query(world)
 	for stockQuery.Next() {
@@ -91,6 +93,13 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		for i := range resource.Properties {
 			stock.Cap[i] += int(prop.Storage[i])
 		}
+	}
+
+	randomTerrains.TotalAvailable = rules.InitialRandomTerrains
+	unlockQuery := s.unlockFilter.Query(world)
+	for unlockQuery.Next() {
+		tp := unlockQuery.Get()
+		prop := &terr.Properties[tp.Terrain]
 		randomTerrains.TotalAvailable += int(prop.UnlocksTerrains)
 	}
 

@@ -79,6 +79,8 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	g.Model = model.New()
 
+	// Register components for deserialization,
+	// where it does not happen in systems already.
 	_ = ecs.ComponentID[comp.CardAnimation](&g.Model.World)
 
 	// =========== Resources ===========

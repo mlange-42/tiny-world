@@ -21,6 +21,7 @@ type EntityFactory struct {
 	consumptionMapper       generic.Map1[comp.Consumption]
 	populationMapper        generic.Map1[comp.Population]
 	populationSupportMapper generic.Map1[comp.PopulationSupport]
+	unlockMapper            generic.Map1[comp.UnlocksTerrain]
 	warehouseMapper         generic.Map1[comp.Warehouse]
 
 	terrain         generic.Resource[Terrain]
@@ -45,6 +46,7 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 		populationMapper:        generic.NewMap1[comp.Population](world),
 		populationSupportMapper: generic.NewMap1[comp.PopulationSupport](world),
 		warehouseMapper:         generic.NewMap1[comp.Warehouse](world),
+		unlockMapper:            generic.NewMap1[comp.UnlocksTerrain](world),
 
 		terrain:         generic.NewResource[Terrain](world),
 		terrainEntities: generic.NewResource[TerrainEntities](world),
@@ -127,6 +129,9 @@ func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint1
 	}
 	if props.PopulationSupport.MaxPopulation > 0 {
 		f.populationSupportMapper.Add(e)
+	}
+	if props.UnlocksTerrains > 0 {
+		f.unlockMapper.Add(e)
 	}
 	if props.TerrainBits.Contains(terr.IsWarehouse) {
 		f.warehouseMapper.Add(e)
