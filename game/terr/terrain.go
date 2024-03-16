@@ -55,7 +55,7 @@ var Default Terrain
 var Bulldoze Terrain
 var FirstBuilding Terrain
 
-type Terrains uint32
+type Terrains uint64
 
 var Buildings Terrains
 var Paths Terrains
@@ -102,6 +102,10 @@ func Prepare(f fs.FS, file string) {
 
 	props := []TerrainProps{}
 	for i, t := range propsHelper.Terrains {
+		if i >= 64 {
+			panic("supports only 64 terrain types")
+		}
+
 		cost := []ResourceAmount{}
 		for _, cst := range t.BuildCost {
 			id, ok := resource.ResourceID(cst.Resource)
