@@ -35,7 +35,7 @@
 
 * Adds random variants for grass tiles (#158)
 * Tweak info labels to accommodate 3-digit values without size changes (#164)
-* Complete rework and themed styling of the main menu (#176, #177)
+* Complete rework and themed styling of the main menu (#176, #177, #243)
 * Text highlight color is a tileset property (#186)
 * Adds the possibility for multiple terrains below a terrain (used for shepherds) (#220)
 
