@@ -30,6 +30,8 @@
 * Fixes the in-game UI layout for small screens (#193)
 * Adds a status bar for information like why a building has a warning sign (#213, #214)
 * Use square brackets instead of PageUp/PageDown to control game speed (#215)
+* Saved games are sorted by date (#245)
+* Adds a "Continue ..." button to the main menu (#245)
 
 ### Graphics
 
