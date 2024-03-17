@@ -41,8 +41,14 @@
     "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
     "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
   ],
-  "achievements": [],
-  "description": [],
+  "achievements": [
+    "landscape-architect",
+    "fisherman-guild"
+  ],
+  "description": [
+    "A medium-sized (40x40) map with a coastline and a river. Plenty of all resources.",
+    "Available random tiles: 500."
+  ],
   "center": {
     "X": 18,
     "Y": 20
