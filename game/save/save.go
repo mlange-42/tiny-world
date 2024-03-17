@@ -12,6 +12,8 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
+const mapDescriptionDelimiter = "----"
+
 func SaveWorld(folder, name string, world *ecs.World, skip []generic.Comp) error {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
@@ -81,6 +83,9 @@ func SaveMap(folder, name string, world *ecs.World) error {
 
 	// Space for required achievements
 	b.WriteString("\n")
+
+	// Delimiter for map description
+	b.WriteString(mapDescriptionDelimiter + "\n")
 
 	cx, cy := terrain.Width()/2, terrain.Height()/2
 	b.WriteString(fmt.Sprintf("%d %d\n", cx-bounds.Min.X, cy-bounds.Min.Y))

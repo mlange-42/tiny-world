@@ -40,6 +40,11 @@ type saveTime struct {
 	Time time.Time
 }
 
+type MapInfo struct {
+	Achievements []string
+	Description  string
+}
+
 const (
 	LoadTypeNone LoadType = iota
 	LoadTypeGame
@@ -119,7 +124,18 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		}
 	}
 
-	sizeLine := lines[3]
+	description := []string{}
+	lineIdx := 3
+	for {
+		line := lines[lineIdx]
+		lineIdx++
+		if strings.HasPrefix(line, mapDescriptionDelimiter) {
+			break
+		}
+		description = append(description, line)
+	}
+
+	sizeLine := lines[lineIdx]
 	parts := strings.Split(sizeLine, " ")
 	cx, err := strconv.Atoi(parts[0])
 	if err != nil {
@@ -130,7 +146,7 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
 	}
 
-	lines = lines[4:]
+	lines = lines[lineIdx+1:]
 
 	for _, s := range lines {
 		if len(s) > 0 {
@@ -145,16 +161,17 @@ func ParseMap(mapStr string) (maps.Map, error) {
 		InitialRandomTerrains: randTerr,
 		Center:                image.Pt(cx, cy),
 		Achievements:          achievements,
+		Description:           strings.Join(description, "\n"),
 	}, nil
 }
 
-func LoadMapAchievements(f fs.FS, folder string, mapLoc MapLocation) ([]string, error) {
+func LoadMapData(f fs.FS, folder string, mapLoc MapLocation) (MapInfo, error) {
 	mapStr, err := loadMap(f, folder, mapLoc)
 	if err != nil {
-		return nil, err
+		return MapInfo{}, err
 	}
 
-	lines := strings.SplitN(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n", 4)
+	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
 
 	ach := strings.Split(lines[2], " ")
 	achievements := []string{}
@@ -164,7 +181,18 @@ func LoadMapAchievements(f fs.FS, folder string, mapLoc MapLocation) ([]string, 
 		}
 	}
 
-	return achievements, nil
+	description := []string{}
+	lineIdx := 3
+	for {
+		line := lines[lineIdx]
+		lineIdx++
+		if strings.HasPrefix(line, mapDescriptionDelimiter) {
+			break
+		}
+		description = append(description, line)
+	}
+
+	return MapInfo{Achievements: achievements, Description: strings.Join(description, "\n")}, nil
 }
 
 func ListMaps(f fs.FS, folder string) ([]MapLocation, error) {
