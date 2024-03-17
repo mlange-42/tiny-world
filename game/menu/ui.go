@@ -262,6 +262,70 @@ func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widg
 	return button
 }
 
+func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts, click func(args *widget.ButtonClickedEventArgs)) *widget.Container {
+	cols := 2
+	if len(text) == 0 {
+		cols = 1
+	}
+	container := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(cols),
+			widget.GridLayoutOpts.Stretch([]bool{true, true}, []bool{false}),
+			widget.GridLayoutOpts.Spacing(48, 12),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				},
+			),
+		),
+	)
+
+	backButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionStart,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Back", fonts.Default, &widget.ButtonTextColor{
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.selectPage(0)
+		}),
+	)
+	container.AddChild(backButton)
+
+	if len(text) == 0 {
+		return container
+	}
+
+	startButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionEnd,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(click),
+	)
+	container.AddChild(startButton)
+
+	return container
+}
+
 func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
 	label := widget.NewText(
 		widget.TextOpts.Text(text, fonts.Default, ui.sprites.TextColor),
@@ -282,7 +346,8 @@ func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
 func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
 	menuContainer := ui.createTabPanel()
 
-	img := ui.defaultButtonImage()
+	newLabel := ui.createMainMenuLabel("New World", fonts)
+	menuContainer.AddChild(newLabel)
 
 	newName := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(
@@ -311,39 +376,26 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 
 	menuContainer.AddChild(newName)
 
-	newButton := widget.NewButton(
-		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
-				Stretch:  false,
-			}),
-			widget.WidgetOpts.MinSize(160, 0),
-		),
-		widget.ButtonOpts.Image(img),
-		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
-			Idle:     ui.sprites.TextColor,
-			Disabled: ui.sprites.TextColor,
-		}),
-		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			name := newName.GetText()
-			if len(name) == 0 {
-				ui.infoLabel.Label = "Give your world a name!"
-				return
-			}
-			if slices.Contains(games, name) {
-				ui.infoLabel.Label = "World already exists!"
-				return
-			}
-			if !save.IsValidName(name) {
-				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
-				return
-			}
-			isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
-			start(name, save.MapLocation{}, save.LoadTypeNone, isEditor)
-		}),
-	)
-	menuContainer.AddChild(newButton)
+	click := func(args *widget.ButtonClickedEventArgs) {
+		name := newName.GetText()
+		if len(name) == 0 {
+			ui.infoLabel.Label = "Give your world a name!"
+			return
+		}
+		if slices.Contains(games, name) {
+			ui.infoLabel.Label = "World already exists!"
+			return
+		}
+		if !save.IsValidName(name) {
+			ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+			return
+		}
+		isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
+		start(name, save.MapLocation{}, save.LoadTypeNone, isEditor)
+	}
+
+	buttons := ui.createBackStartButtons("New World", fonts, click)
+	menuContainer.AddChild(buttons)
 
 	editorLabel := widget.NewText(
 		widget.TextOpts.Text(editorModeText, fonts.Default, ui.sprites.TextColor),
@@ -676,6 +728,9 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 	}
 
 	menuContainer.AddChild(scroll)
+
+	buttons := ui.createBackStartButtons("", fonts, nil)
+	menuContainer.AddChild(buttons)
 
 	return menuContainer
 }
