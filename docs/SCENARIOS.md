@@ -25,43 +25,59 @@ as well as required achievement and the map description can be tweaked by editin
 
 ## Map Format
 
-A small example map is shown below.
+Maps are saved in JSON format. See the example below.
 
-* The 1st line contains frequencies of random terrains.
-* The second line contains the number of initially placable trains.
-* The 3rd line contains a list of required achievements, separated by spaces.
-* Subsequent lines contain the map description, up to the first line that starts with `----`.
-* The 1st line after the delimiter `----` contains the relative coordinates of the starting position, from the top-left corner (0,0).
-* All further lines are the actual map.
+* `terrains` contains frequencies of random terrains.
+* `initial_terrains` is the number of initially placable trains.
+* `achievements` is a list of required achievements.
+* `description` is the scenario description shown in the main menu tooltip.
+* `center` is the relative starting position, from the top-left corner (0,0).
+* `map` is the actual map.
 
 Terrain characters are defined in [`data/json/terrain.json`](https://github.com/mlange-42/tiny-world/blob/main/data/json/terrain.json).
 Achievements are defined in [`data/json/achievements.json`](https://github.com/mlange-42/tiny-world/blob/main/data/json/achievements.json)
 
-```
-1r 20- 6^ 6~ 1+ 6t
-500
-play-the-game
-Description of the map.
-Can be an arbitrary number of lines.
-Terminated by a line starting with ----
-----
-8 8
-......---------~....
-....-----------~-...
-...------------~t-..
-..-----TTT----t~t--.
-.-----TTTT----t~~t-.
-.----rTTT-----rt~t--
-------Tt------rt~t--
----------------t~~--
---ttt---h------tt~--
-~~~~~t--------ttt~--
----t~~t----t~~~~t~--
-----t~t---tt~tt~~~--
-.----~~~~~~~~t------
-..--------ttt-^^---.
-...---------^^----..
-....---tt--------...
-.....--tt-------....
-......---------.....
+```json
+{
+  "terrains": {
+    "+": 1,
+    "-": 20,
+    "^": 4,
+    "r": 1,
+    "t": 6,
+    "~": 6
+  },
+  "map": [
+    "......---------~....",
+    "....-----------~-...",
+    "...------------~t-..",
+    "..-----TTT----t~t--.",
+    ".-----TTTT----t~~t-.",
+    ".----rTTT-----rt~t--",
+    "------Tt------rt~t--",
+    "---------------t~~--",
+    "--ttt---h------tt~--",
+    "~~~~~t--------ttt~--",
+    "---t~~t----t~~~~t~--",
+    "----t~t---tt~tt~~~--",
+    ".----~~~~~~~~t------",
+    "..--------ttt-^^---.",
+    "...---------^^----..",
+    "....---tt--------...",
+    ".....--tt-------....",
+    "......---------....."
+  ],
+  "achievements": [
+    "play-the-game"
+  ],
+  "description": [
+    "A small (20x20) starting area with a river.",
+    "Available random tiles: 500."
+  ],
+  "center": {
+    "X": 8,
+    "Y": 8
+  },
+  "initial_terrains": 500
+}
 ```
