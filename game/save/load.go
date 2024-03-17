@@ -6,8 +6,10 @@ import (
 	"io/fs"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -19,6 +21,23 @@ type LoadType uint8
 type MapLocation struct {
 	Name       string
 	IsEmbedded bool
+}
+
+type SaveGame struct {
+	Name string
+	Time time.Time
+}
+
+type saveGame struct {
+	Resources saveGameResources
+}
+
+type saveGameResources struct {
+	SaveTime saveTime `json:"res.SaveTime"`
+}
+
+type saveTime struct {
+	Time time.Time
 }
 
 const (
@@ -47,8 +66,17 @@ func LoadAchievements(file string, completed *[]string) error {
 	return loadAchievements(file, completed)
 }
 
-func ListSaveGames(folder string) ([]string, error) {
-	return listGames(folder)
+func ListSaveGames(folder string) ([]SaveGame, error) {
+	games, err := listGames(folder)
+	if err != nil {
+		return nil, err
+	}
+
+	slices.SortFunc(games, func(a, b SaveGame) int {
+		return -a.Time.Compare(b.Time)
+	})
+
+	return games, nil
 }
 
 func LoadMap(f fs.FS, folder string, mapLoc MapLocation) (maps.Map, error) {

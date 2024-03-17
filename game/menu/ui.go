@@ -221,7 +221,7 @@ func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	return container
 }
 
-func (ui *UI) createMainMenuPanel(games []string, fonts *res.Fonts) *widget.Container {
+func (ui *UI) createMainMenuPanel(games []save.SaveGame, fonts *res.Fonts) *widget.Container {
 	menuContainer := ui.createTabPanel()
 
 	mainLabel := ui.createMainMenuLabel("Main menu", fonts)
@@ -359,7 +359,7 @@ func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
 	return label
 }
 
-func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
+func (ui *UI) createNewWorldPanel(games []save.SaveGame, fonts *res.Fonts, start startFunction) *widget.Container {
 	menuContainer := ui.createTabPanel()
 
 	newLabel := ui.createMainMenuLabel("New World", fonts)
@@ -398,9 +398,11 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 			ui.infoLabel.Label = "Give your world a name!"
 			return
 		}
-		if slices.Contains(games, name) {
-			ui.infoLabel.Label = "World already exists!"
-			return
+		for _, g := range games {
+			if g.Name == name {
+				ui.infoLabel.Label = "World already exists!"
+				return
+			}
 		}
 		if !save.IsValidName(name) {
 			ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
@@ -428,7 +430,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 	return menuContainer
 }
 
-func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
+func (ui *UI) createLoadPanel(games []save.SaveGame, fonts *res.Fonts,
 	start startFunction,
 	restart menuFunction) *widget.Container {
 	menuContainer := ui.createTabPanel()
@@ -459,7 +461,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 				widget.WidgetOpts.ContextMenu(contextMenu),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(game, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(game.Name, fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: ui.sprites.TextColor,
 			}),
@@ -484,7 +486,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				if err := deleteGame(ui.saveFolder, game); err != nil {
+				if err := deleteGame(ui.saveFolder, game.Name); err != nil {
 					ui.infoLabel.Label = err.Error()
 					return
 				}
@@ -504,7 +506,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	btn, _ := ui.createBackStartButtons("Load World", fonts,
 		func(args *widget.ButtonClickedEventArgs) {
 			idx := slices.Index(buttons, ui.loadButtonsGroup.Active())
-			start(games[idx], save.MapLocation{}, save.LoadTypeGame, false)
+			start(games[idx].Name, save.MapLocation{}, save.LoadTypeGame, false)
 		},
 	)
 	menuContainer.AddChild(btn)
@@ -512,7 +514,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	return menuContainer
 }
 
-func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Achievements, fonts *res.Fonts, start startFunction) *widget.Container {
+func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievements.Achievements, fonts *res.Fonts, start startFunction) *widget.Container {
 	maps, err := save.ListMaps(ui.fs, ui.mapsFolder)
 	if err != nil {
 		panic(err)
@@ -671,9 +673,11 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 				ui.infoLabel.Label = "Give your world a name!"
 				return
 			}
-			if slices.Contains(games, name) {
-				ui.infoLabel.Label = "World already exists!"
-				return
+			for _, g := range games {
+				if g.Name == name {
+					ui.infoLabel.Label = "World already exists!"
+					return
+				}
 			}
 			if !save.IsValidName(name) {
 				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
