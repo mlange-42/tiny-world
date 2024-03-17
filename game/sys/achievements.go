@@ -17,6 +17,7 @@ type Achievements struct {
 	time         generic.Resource[res.GameTick]
 	update       generic.Resource[res.UpdateInterval]
 	editor       generic.Resource[res.EditorMode]
+	ui           generic.Resource[res.UI]
 	achievements generic.Resource[achievements.Achievements]
 }
 
@@ -25,6 +26,7 @@ func (s *Achievements) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[res.GameTick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.editor = generic.NewResource[res.EditorMode](world)
+	s.ui = generic.NewResource[res.UI](world)
 	s.achievements = generic.NewResource[achievements.Achievements](world)
 }
 
@@ -51,6 +53,7 @@ func (s *Achievements) Update(world *ecs.World) {
 			achievements.Completed = append(achievements.Completed, ach.ID)
 			save.SaveAchievements(s.PlayerFile, achievements.Completed)
 			println(fmt.Sprintf("Achievement completed: %s", ach.Name))
+			s.ui.Get().SetStatusLabel(fmt.Sprintf(" \nAchievement completed!\n\"%s\"\n ", ach.Name))
 		}
 	}
 }
