@@ -127,7 +127,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		),
 	)
 
-	mainTab := ui.createMainMenuPanel(games, fonts)
+	mainTab := ui.createMainMenuPanel(games, fonts, start)
 	newWorldTab := ui.createNewWorldPanel(games, fonts, start)
 	scenariosTab := ui.createScenariosPanel(games, achievements, fonts, start)
 	loadWorldTab := ui.createLoadPanel(games, fonts, start, restart)
@@ -221,43 +221,63 @@ func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	return container
 }
 
-func (ui *UI) createMainMenuPanel(games []save.SaveGame, fonts *res.Fonts) *widget.Container {
+func (ui *UI) createMainMenuPanel(games []save.SaveGame, fonts *res.Fonts, start startFunction) *widget.Container {
 	menuContainer := ui.createTabPanel()
 
 	mainLabel := ui.createMainMenuLabel("Main menu", fonts)
 	menuContainer.AddChild(mainLabel)
 
-	newButton := ui.createMainMenuButton("New World", fonts, 1)
+	enabled := false
+	text := "Continue"
+	if len(games) > 0 {
+		enabled = true
+		text = fmt.Sprintf("Continue %s", games[0].Name)
+	}
+	continueButton := ui.createMainMenuButton(text, fonts,
+		func(args *widget.ButtonClickedEventArgs) {
+			if enabled {
+				start(games[0].Name, save.MapLocation{}, save.LoadTypeGame, false)
+			}
+		})
+	continueButton.GetWidget().Disabled = !enabled
+	menuContainer.AddChild(continueButton)
+
+	newButton := ui.createMainMenuButton("New World", fonts,
+		func(args *widget.ButtonClickedEventArgs) { ui.selectPage(1) })
 	menuContainer.AddChild(newButton)
 
-	scenariosButton := ui.createMainMenuButton("Scenarios", fonts, 2)
+	scenariosButton := ui.createMainMenuButton("Scenarios", fonts,
+		func(args *widget.ButtonClickedEventArgs) { ui.selectPage(2) })
 	menuContainer.AddChild(scenariosButton)
 
-	loadButton := ui.createMainMenuButton("Load World", fonts, 3)
+	loadButton := ui.createMainMenuButton("Load World", fonts,
+		func(args *widget.ButtonClickedEventArgs) { ui.selectPage(3) })
 	menuContainer.AddChild(loadButton)
 	if len(games) == 0 {
 		loadButton.GetWidget().Disabled = true
 	}
 
-	achievementsButton := ui.createMainMenuButton("Achievements", fonts, 4)
+	achievementsButton := ui.createMainMenuButton("Achievements", fonts,
+		func(args *widget.ButtonClickedEventArgs) { ui.selectPage(4) })
 	menuContainer.AddChild(achievementsButton)
 
 	if runtime.GOOS != "js" {
-		quitButton := ui.createMainMenuButton("Quit", fonts, -1)
+		quitButton := ui.createMainMenuButton("Quit", fonts,
+			func(args *widget.ButtonClickedEventArgs) { os.Exit(0) })
 		menuContainer.AddChild(quitButton)
 	}
 
 	return menuContainer
 }
 
-func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widget.Button {
+func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, click func(args *widget.ButtonClickedEventArgs)) *widget.Button {
 	button := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 				Position: widget.RowLayoutPositionCenter,
 				Stretch:  false,
 			}),
-			widget.WidgetOpts.MinSize(200, 0),
+			widget.WidgetOpts.MinSize(240, 0),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
 		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
@@ -265,13 +285,7 @@ func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widg
 			Disabled: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			if tab < 0 {
-				os.Exit(0)
-				return
-			}
-			ui.selectPage(tab)
-		}),
+		widget.ButtonOpts.ClickedHandler(click),
 	)
 
 	return button
