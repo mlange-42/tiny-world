@@ -55,6 +55,7 @@ const helpPanelHeight = 460
 const statusTimeout = 180
 
 const saveTooltipText = "Save game to disk or local browser storage."
+const randomTilesTooltipText = "Random tiles available/total.\nBuild religious buildings to get more."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
 
@@ -74,12 +75,13 @@ type UI struct {
 	editor         *EditorMode
 	randomTerrains *RandomTerrains
 
-	resourceLabels  []*widget.Text
-	populationLabel *widget.Text
-	timerLabel      *widget.Text
-	speedLabel      *widget.Text
-	statusLabel     *widget.Button
-	statusTimer     int
+	resourceLabels   []*widget.Text
+	populationLabel  *widget.Text
+	timerLabel       *widget.Text
+	speedLabel       *widget.Text
+	randomTilesLabel *widget.Text
+	statusLabel      *widget.Button
+	statusTimer      int
 
 	terrainButtons []terrainButton
 
@@ -157,6 +159,10 @@ func (ui *UI) SetTimerLabel(text string) {
 
 func (ui *UI) SetSpeedLabel(text string) {
 	ui.speedLabel.Label = text
+}
+
+func (ui *UI) SetRandomTilesLabel(text string) {
+	ui.randomTilesLabel.Label = text
 }
 
 func (ui *UI) SetStatusLabel(text string) {
@@ -276,7 +282,7 @@ func (ui *UI) createRandomButton(rules *Rules, index int) {
 	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button, index}
 }
 
-func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target stdimage.Point) bool {
+func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, randTerrains *RandomTerrains, renderTick int64, target stdimage.Point) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
 		ui.animMapper.NewWith(&comp.CardAnimation{
@@ -289,6 +295,8 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target
 		if ui.editor.IsEditor {
 			return true
 		}
+
+		randTerrains.TotalPlaced++
 
 		ui.randomContainers[bt.Index].RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
@@ -351,7 +359,7 @@ func (ui *UI) createUI() *widget.Container {
 			widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.RowLayoutOpts.Spacing(24),
+				widget.RowLayoutOpts.Spacing(6),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
@@ -369,18 +377,15 @@ func (ui *UI) createUI() *widget.Container {
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
-				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.GridLayoutOpts.Spacing(4, 4),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(2)),
+				widget.GridLayoutOpts.Spacing(8, 8),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionEnd,
-				VerticalPosition:   widget.AnchorLayoutPositionCenter,
-				StretchHorizontal:  false,
-				StretchVertical:    false,
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
 
@@ -396,22 +401,23 @@ func (ui *UI) createUI() *widget.Container {
 	}
 	innerContainer.AddChild(buildButtonsContainer)
 
+	cont, lab := ui.createLabel("", randomTilesTooltipText, ui.sprites.TileWidth*3+16, widget.TextPositionCenter)
+	ui.randomTilesLabel = lab
+	innerContainer.AddChild(cont)
+
 	ui.randomButtonsContainer = widget.NewContainer(
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
-				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.GridLayoutOpts.Spacing(4, 4),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(2)),
+				widget.GridLayoutOpts.Spacing(8, 8),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionEnd,
-				VerticalPosition:   widget.AnchorLayoutPositionCenter,
-				StretchHorizontal:  false,
-				StretchVertical:    false,
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
 	innerContainer.AddChild(ui.randomButtonsContainer)

@@ -79,7 +79,7 @@
             "build_on": ["plains", "hills", "desert"],
             "connects_to": [
                 "path", "bridge", "farm", "shepherd", "fisherman", "lumberjack", "mason",
-                "warehouse", "tower", "castle", "windmill", "watermill"
+                "warehouse", "tower", "castle", "windmill", "watermill", "church", "monastery"
             ],
             "can_build": true,
             "can_buy": true,
@@ -95,7 +95,7 @@
             "build_on": ["water"],
             "connects_to": [
                 "path", "farm", "shepherd", "fisherman", "lumberjack", "mason",
-                "warehouse", "tower", "castle", "windmill", "watermill"
+                "warehouse", "tower", "castle", "windmill", "watermill", "church", "monastery"
             ],
             "can_build": true,
             "can_buy": true,
@@ -327,7 +327,7 @@
                 "required_terrain": "path",
                 "malus_terrain": [
                     "tree", "farm", "shepherd", "lumberjack", "mason", "windmill", "watermill",
-                    "tower", "castle", "warehouse"
+                    "tower", "castle", "warehouse", "church", "monastery"
                 ]
             },
             "symbols": "wWX",
@@ -404,7 +404,7 @@
                 {"resource": "wood", "amount": 1},
                 {"resource": "stones", "amount": 1}
             ],
-            "symbols": "oOV",
+            "symbols": "oóò",
             "description": "Conquers land to colonize"
         },
         {
@@ -429,6 +429,63 @@
             ],
             "symbols": "cCD",
             "description": "Conquers land to colonize"
+        },
+        {
+            "name": "church",
+            "is_building": true,
+            "build_on": ["plains", "hills", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "requires_range": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": ["building_base"],
+            "unlocks_terrains": 250,
+            "build_cost": [
+                {"resource": "wood", "amount": 20},
+                {"resource": "stones", "amount": 10}
+            ],
+            "consumption": [
+                {"resource": "wood", "amount": 1}
+            ],
+            "symbols": "uúù",
+            "description": "Unlocks 200 random terrain tiles"
+        },
+        {
+            "name": "monastery",
+            "is_building": true,
+            "is_warehouse": true,
+            "build_on": ["plains", "hills", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "build_radius": 6,
+            "population": 3,
+            "requires_range": false,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": ["building_base"],
+            "unlocks_terrains": 1000,
+            "build_cost": [
+                {"resource": "wood", "amount": 50},
+                {"resource": "stones", "amount": 50}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 7,
+                "required_terrain": "path",
+                "production_terrain": ["field", "pasture"],
+                "haul_capacity": 2
+            },
+            "consumption": [
+                {"resource": "food", "amount": 3},
+                {"resource": "wood", "amount": 1},
+                {"resource": "stones", "amount": 1}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5},
+                {"resource": "wood", "amount": 5},
+                {"resource": "stones", "amount": 5}
+            ],
+            "symbols": "áàâ",
+            "description": "Unlocks 1000 random terrain tiles, conquers land to colonize and serves as a small warehouse.\nProduces 1 food/min per neighboring field or pasture"
         }
     ]
 }

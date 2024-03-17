@@ -55,6 +55,8 @@ type PopulationSupport struct {
 
 type Warehouse struct{}
 
+type UnlocksTerrain struct{}
+
 type ProductionMarker struct {
 	StartTick int64
 	Resource  resource.Resource

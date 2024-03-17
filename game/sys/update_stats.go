@@ -16,20 +16,22 @@ import (
 
 // UpdateStats system.
 type UpdateStats struct {
-	rules      generic.Resource[res.Rules]
-	production generic.Resource[res.Production]
-	stock      generic.Resource[res.Stock]
-	ui         generic.Resource[res.UI]
-	tick       generic.Resource[res.GameTick]
-	speed      generic.Resource[res.GameSpeed]
-	interval   generic.Resource[res.UpdateInterval]
-	editor     generic.Resource[res.EditorMode]
+	rules          generic.Resource[res.Rules]
+	production     generic.Resource[res.Production]
+	stock          generic.Resource[res.Stock]
+	ui             generic.Resource[res.UI]
+	tick           generic.Resource[res.GameTick]
+	speed          generic.Resource[res.GameSpeed]
+	interval       generic.Resource[res.UpdateInterval]
+	editor         generic.Resource[res.EditorMode]
+	randomTerrains generic.Resource[res.RandomTerrains]
 
 	prodFilter              generic.Filter1[comp.Production]
 	consFilter              generic.Filter1[comp.Consumption]
-	stockFilter             generic.Filter1[comp.Terrain]
 	populationFilter        generic.Filter1[comp.Population]
 	populationSupportFilter generic.Filter1[comp.PopulationSupport]
+	stockFilter             generic.Filter1[comp.Terrain]
+	unlockFilter            generic.Filter1[comp.Terrain]
 }
 
 // Initialize the system
@@ -42,12 +44,15 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.speed = generic.NewResource[res.GameSpeed](world)
 	s.interval = generic.NewResource[res.UpdateInterval](world)
 	s.editor = generic.NewResource[res.EditorMode](world)
+	s.randomTerrains = generic.NewResource[res.RandomTerrains](world)
 
 	s.prodFilter = *generic.NewFilter1[comp.Production]()
 	s.consFilter = *generic.NewFilter1[comp.Consumption]()
-	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
 	s.populationFilter = *generic.NewFilter1[comp.Population]()
 	s.populationSupportFilter = *generic.NewFilter1[comp.PopulationSupport]()
+
+	s.stockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.Warehouse]())
+	s.unlockFilter = *generic.NewFilter1[comp.Terrain]().With(generic.T[comp.UnlocksTerrain]())
 }
 
 // Update the system
@@ -60,6 +65,7 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	tick := s.tick.Get().Tick
 	speed := s.speed.Get()
 	interval := s.interval.Get().Interval
+	randomTerrains := s.randomTerrains.Get()
 
 	isEditor := s.editor.Get().IsEditor
 
@@ -79,13 +85,22 @@ func (s *UpdateStats) Update(world *ecs.World) {
 	for i := range resource.Properties {
 		stock.Cap[i] = 0
 	}
+
 	stockQuery := s.stockFilter.Query(world)
 	for stockQuery.Next() {
 		tp := stockQuery.Get()
-		st := terr.Properties[tp.Terrain].Storage
+		prop := &terr.Properties[tp.Terrain]
 		for i := range resource.Properties {
-			stock.Cap[i] += int(st[i])
+			stock.Cap[i] += int(prop.Storage[i])
 		}
+	}
+
+	randomTerrains.TotalAvailable = rules.InitialRandomTerrains
+	unlockQuery := s.unlockFilter.Query(world)
+	for unlockQuery.Next() {
+		tp := unlockQuery.Get()
+		prop := &terr.Properties[tp.Terrain]
+		randomTerrains.TotalAvailable += int(prop.UnlocksTerrains)
 	}
 
 	stock.Population = 0
@@ -128,6 +143,10 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		}
 	}
 	ui.SetSpeedLabel(speedStr)
+
+	ui.SetRandomTilesLabel(fmt.Sprintf("%d/%d",
+		randomTerrains.TotalAvailable-randomTerrains.TotalPlaced,
+		randomTerrains.TotalAvailable))
 
 	if tick%interval != 0 {
 		return

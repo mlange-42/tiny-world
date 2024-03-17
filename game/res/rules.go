@@ -17,6 +17,8 @@ type Rules struct {
 	InitialBuildRadius int
 	// Initial population limit.
 	InitialPopulation int
+	// Initial number of placable terrains.
+	InitialRandomTerrains int
 	// Number of random terrains/cards.
 	RandomTerrainsCount int
 	// List of terrains to draw cards from.
@@ -54,6 +56,7 @@ func NewRules(f fs.FS, file string) Rules {
 		InitialBuildRadius:     rulesHelper.InitialBuildRadius,
 		InitialPopulation:      rulesHelper.InitialPopulation,
 		InitialResources:       storage,
+		InitialRandomTerrains:  rulesHelper.InitialRandomTerrains,
 		RandomTerrainsCount:    rulesHelper.RandomTerrainsCount,
 		RandomTerrains:         randTerr,
 		SpecialCardProbability: rulesHelper.SpecialCardProbability,
@@ -61,10 +64,11 @@ func NewRules(f fs.FS, file string) Rules {
 }
 
 type rulesJs struct {
-	WorldSize           int `json:"world_size"`
-	InitialBuildRadius  int `json:"initial_build_radius"`
-	InitialPopulation   int `json:"initial_population"`
-	RandomTerrainsCount int `json:"random_terrains_count"`
+	WorldSize             int `json:"world_size"`
+	InitialBuildRadius    int `json:"initial_build_radius"`
+	InitialPopulation     int `json:"initial_population"`
+	InitialRandomTerrains int `json:"initial_random_terrains"`
+	RandomTerrainsCount   int `json:"random_terrains_count"`
 
 	RandomTerrains         []string           `json:"random_terrains"`
 	InitialResources       []resourceAmountJs `json:"initial_resources"`

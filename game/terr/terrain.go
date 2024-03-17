@@ -55,7 +55,7 @@ var Default Terrain
 var Bulldoze Terrain
 var FirstBuilding Terrain
 
-type Terrains uint32
+type Terrains uint64
 
 var Buildings Terrains
 var Paths Terrains
@@ -102,6 +102,10 @@ func Prepare(f fs.FS, file string) {
 
 	props := []TerrainProps{}
 	for i, t := range propsHelper.Terrains {
+		if i >= 64 {
+			panic("supports only 64 terrain types")
+		}
+
 		cost := []ResourceAmount{}
 		for _, cst := range t.BuildCost {
 			id, ok := resource.ResourceID(cst.Resource)
@@ -191,17 +195,18 @@ func Prepare(f fs.FS, file string) {
 		}
 
 		p := TerrainProps{
-			Name:         t.Name,
-			TerrainBits:  bits,
-			BuildOn:      ToTerrains(t.BuildOn...),
-			TerrainBelow: terrBelow,
-			ConnectsTo:   ToTerrains(t.ConnectsTo...),
-			BuildRadius:  t.BuildRadius,
-			Population:   t.Population,
-			Symbols:      symbols,
-			Description:  t.Description,
-			BuildCost:    cost,
-			Storage:      storage,
+			Name:            t.Name,
+			TerrainBits:     bits,
+			BuildOn:         ToTerrains(t.BuildOn...),
+			TerrainBelow:    terrBelow,
+			UnlocksTerrains: t.UnlocksTerrains,
+			ConnectsTo:      ToTerrains(t.ConnectsTo...),
+			BuildRadius:     t.BuildRadius,
+			Population:      t.Population,
+			Symbols:         symbols,
+			Description:     t.Description,
+			BuildCost:       cost,
+			Storage:         storage,
 			Production: Production{
 				Resource:          prodRes,
 				MaxProduction:     t.Production.MaxProduction,
@@ -283,6 +288,7 @@ type TerrainProps struct {
 	ConnectsTo        Terrains
 	TerrainBits       TerrainBits
 	TerrainBelow      []Terrain
+	UnlocksTerrains   uint16
 	BuildRadius       uint8
 	Population        uint8
 	Description       string
@@ -301,6 +307,7 @@ type terrainPropsJs struct {
 	IsBridge          bool                `json:"is_bridge"`
 	IsBuilding        bool                `json:"is_building"`
 	IsWarehouse       bool                `json:"is_warehouse"`
+	UnlocksTerrains   uint16              `json:"unlocks_terrains"`
 	BuildRadius       uint8               `json:"build_radius"`
 	Population        uint8               `json:"population"`
 	BuildOn           []string            `json:"build_on,omitempty"`
