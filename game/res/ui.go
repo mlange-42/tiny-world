@@ -52,7 +52,7 @@ const helpText = "Tiny World Help" +
 
 const helpPanelWidth = 680
 const helpPanelHeight = 460
-const statusTimeout = 180
+const statusTimeout = 4 * 60
 
 const saveTooltipText = "Save game to disk or local browser storage."
 const randomTilesTooltipText = "Random tiles available/total.\nBuild religious buildings to get more."
@@ -516,6 +516,7 @@ func (ui *UI) createStatusBar() *widget.Container {
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(4)),
+		widget.ButtonOpts.TextPosition(widget.TextPositionCenter, widget.TextPositionCenter),
 		widget.ButtonOpts.Image(ui.simpleButtonImage()),
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
