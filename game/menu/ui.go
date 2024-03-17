@@ -45,6 +45,9 @@ type UI struct {
 	tabs            []*widget.Container
 	scenarioButtons []*widget.Button
 
+	loadButtonsGroup     *widget.RadioGroup
+	scenarioButtonsGroup *widget.RadioGroup
+
 	empty             *image.NineSlice
 	background        *image.NineSlice
 	backgroundHover   *image.NineSlice
@@ -144,7 +147,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 			widget.ContainerOpts.BackgroundImage(ui.background),
 		),
 	)
-	ui.selectPage(0)
+	ui.selectPage(selectedTab)
 
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
@@ -424,7 +427,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 
 	scroll, content := ui.createScrollPanel(panelHeight - 72)
 
-	for _, game := range games {
+	buttons := make([]widget.RadioGroupElement, len(games))
+	for i, game := range games {
 		contextMenu := widget.NewContainer(
 			widget.ContainerOpts.Layout(widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -447,11 +451,10 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 				Disabled: ui.sprites.TextColor,
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				start(game, save.MapLocation{}, save.LoadTypeGame, false)
-			}),
+			widget.ButtonOpts.ToggleMode(),
 		)
 		content.AddChild(gameButton)
+		buttons[i] = gameButton
 
 		deleteButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
@@ -477,10 +480,21 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 			}),
 		)
 		contextMenu.AddChild(deleteButton)
-
 	}
 
+	ui.loadButtonsGroup = widget.NewRadioGroup(
+		widget.RadioGroupOpts.Elements(buttons...),
+	)
+
 	menuContainer.AddChild(scroll)
+
+	btn := ui.createBackStartButtons("Load World", fonts,
+		func(args *widget.ButtonClickedEventArgs) {
+			idx := slices.Index(buttons, ui.loadButtonsGroup.Active())
+			start(games[idx], save.MapLocation{}, save.LoadTypeGame, false)
+		},
+	)
+	menuContainer.AddChild(btn)
 
 	return menuContainer
 }
