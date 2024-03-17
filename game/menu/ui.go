@@ -122,11 +122,12 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		),
 	)
 
+	mainTab := ui.createMainMenuPanel(games, fonts)
 	newWorldTab := ui.createNewWorldPanel(games, fonts, start)
 	scenariosTab := ui.createScenariosPanel(games, achievements, fonts, start)
 	loadWorldTab := ui.createLoadPanel(games, fonts, start, restart)
 	achievementTab := ui.createAchievementsPanel(achievements, fonts)
-	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
+	ui.tabs = append(ui.tabs, mainTab, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
 
 	ui.tabContainer = widget.NewFlipBook(
 		widget.FlipBookOpts.ContainerOpts(
@@ -212,6 +213,70 @@ func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	container.AddChild(graphic)
 
 	return container
+}
+
+func (ui *UI) createMainMenuPanel(games []string, fonts *res.Fonts) *widget.Container {
+	menuContainer := ui.createTabPanel()
+
+	mainLabel := ui.createMainMenuLabel("Main menu", fonts)
+	menuContainer.AddChild(mainLabel)
+
+	newButton := ui.createMainMenuButton("New World", fonts, 1)
+	menuContainer.AddChild(newButton)
+
+	scenariosButton := ui.createMainMenuButton("Scenarios", fonts, 2)
+	menuContainer.AddChild(scenariosButton)
+
+	loadButton := ui.createMainMenuButton("Load World", fonts, 3)
+	menuContainer.AddChild(loadButton)
+	if len(games) == 0 {
+		loadButton.GetWidget().Disabled = true
+	}
+
+	achievementsButton := ui.createMainMenuButton("Achievements", fonts, 4)
+	menuContainer.AddChild(achievementsButton)
+
+	return menuContainer
+}
+
+func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widget.Button {
+	button := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+				Stretch:  false,
+			}),
+			widget.WidgetOpts.MinSize(200, 0),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.selectPage(tab)
+		}),
+	)
+
+	return button
+}
+
+func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
+	label := widget.NewText(
+		widget.TextOpts.Text(text, fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				},
+			),
+		),
+	)
+
+	return label
 }
 
 func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
@@ -300,13 +365,8 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	restart menuFunction) *widget.Container {
 	menuContainer := ui.createTabPanel()
 
-	if len(games) > 0 {
-		worldsLabel := widget.NewText(
-			widget.TextOpts.Text("Load world:", fonts.Default, ui.sprites.TextColor),
-			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		)
-		menuContainer.AddChild(worldsLabel)
-	}
+	worldsLabel := ui.createMainMenuLabel("Load World", fonts)
+	menuContainer.AddChild(worldsLabel)
 
 	img := ui.defaultButtonImage()
 
@@ -408,12 +468,9 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 		),
 	)
 
-	mapsLabel := widget.NewText(
-		widget.TextOpts.Text("Scenarios:", fonts.Default, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	menuContainer.AddChild(newName)
+	mapsLabel := ui.createMainMenuLabel("Scenarios", fonts)
 	menuContainer.AddChild(mapsLabel)
+	menuContainer.AddChild(newName)
 
 	scroll, content := ui.createScrollPanel(panelHeight - 110)
 
@@ -542,10 +599,7 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 
 	img := ui.emptyImage()
 
-	label := widget.NewText(
-		widget.TextOpts.Text("Achievements:", fonts.Default, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
+	label := ui.createMainMenuLabel("Achievements", fonts)
 	menuContainer.AddChild(label)
 
 	scroll, content := ui.createScrollPanel(panelHeight - 72)
