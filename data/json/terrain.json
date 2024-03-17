@@ -25,7 +25,7 @@
             "connects_to": ["plains", "hills", "water", "desert"],
             "can_build": true,
             "symbols": "-",
-            "description": "A flat land tile"
+            "description": "A flat land tile. Everything can be built here"
         },
         {
             "name": "hills",
@@ -35,7 +35,7 @@
             "terrain_below": ["plains"],
             "can_build": true,
             "symbols": "^",
-            "description": "A hilly land tile"
+            "description": "A hilly land tile. Not suitable for fields"
         },
         {
             "name": "water",
@@ -55,7 +55,7 @@
             "terrain_below": ["plains"],
             "can_build": true,
             "symbols": "+",
-            "description": "A desert land tile"
+            "description": "A desert land tile. Not suitable for forestry or agriculture"
         },
 
 
@@ -122,7 +122,7 @@
                 {"resource": "stones", "amount": 1}
             ],
             "symbols": "f",
-            "description": "Can be used by farms to produce food"
+            "description": "Can be used by farms to produce food. Can be placed on plains only"
         },
         {
             "name": "pasture",
@@ -135,7 +135,7 @@
                 {"resource": "wood", "amount": 3}
             ],
             "symbols": "eE",
-            "description": "Can be used by shepherds to produce food"
+            "description": "Can be used by shepherds to produce food. Can be placed on plains and hills"
         },
 
         {
@@ -143,14 +143,14 @@
             "build_on": ["plains", "hills"],
             "can_build": true,
             "symbols": "tT",
-            "description": "Can be used by lumberjacks to produce wood"
+            "description": "Can be used by lumberjacks to produce wood. Can be placed on plains and hills"
         },
         {
             "name": "rock",
             "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "symbols": "rRU",
-            "description": "Can be used by masons to produce stones"
+            "description": "Can be used by masons to produce stones. Can't be placed on water"
         },
 
         {
