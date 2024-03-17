@@ -573,18 +573,18 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 
 	mapsUnlocked := []save.MapLocation{}
 	mapsLocked := []save.MapLocation{}
-	achUnlocked := [][]string{}
-	achLocked := [][]string{}
+	achUnlocked := []save.MapInfo{}
+	achLocked := []save.MapInfo{}
 	cntEnabled := 0
 
 	for _, m := range maps {
-		ach, err := save.LoadMapAchievements(ui.fs, ui.mapsFolder, m)
+		ach, err := save.LoadMapData(ui.fs, ui.mapsFolder, m)
 		if err != nil {
 			log.Fatalf("error loading achievements for map %s: %s", m.Name, err.Error())
 		}
 
 		enabled := true
-		for _, a := range ach {
+		for _, a := range ach.Achievements {
 			a2, ok := achievements.IdMap[a]
 			if !ok {
 				log.Printf("WARNING: Achievement '%s' in map '%s' not found", a, m.Name)
@@ -622,8 +622,8 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 		)
 
 		achieve := ""
-		if len(ach) > 0 {
-			for _, a := range ach {
+		if len(ach.Achievements) > 0 {
+			for _, a := range ach.Achievements {
 				if name, ok := achievements.IdMap[a]; ok {
 					if name.Completed {
 						achieve += fmt.Sprintf("\n - %s", name.Name)
@@ -641,10 +641,14 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 			localText = " (*local)"
 			localMarker = " (*)"
 		}
+		description := ""
+		if len(ach.Description) > 0 {
+			description = ach.Description + "\n\n"
+		}
 
 		label := widget.NewText(
 			widget.TextOpts.ProcessBBCode(true),
-			widget.TextOpts.Text(fmt.Sprintf("%s%s\n\nRequired achievements:\n%s", m.Name, localText, achieve), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Text(fmt.Sprintf("%s%s\n\n%sRequired achievements:\n%s", m.Name, localText, description, achieve), fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 			widget.TextOpts.MaxWidth(360),
 		)
