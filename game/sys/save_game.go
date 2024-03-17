@@ -75,7 +75,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 		println("done.")
 	}
 
-	if evt.ShouldSaveMap || (keysPressed && !shift) {
+	if evt.ShouldSave || (keysPressed && !shift) {
 		evt.ShouldSave = false
 		print("Saving game... ")
 
