@@ -459,6 +459,7 @@
             "can_build": true,
             "can_buy": true,
             "build_radius": 6,
+            "population": 3,
             "requires_range": false,
             "connects_to": ["path", "bridge"],
             "terrain_below": ["building_base"],
@@ -485,7 +486,7 @@
                 {"resource": "stones", "amount": 10}
             ],
             "symbols": "áàâ",
-            "description": "Unlocks 1000 random terrain tiles and conquers land to colonize. Also serves as a small warehouse"
+            "description": "Unlocks 1000 random terrain tiles, conquers land to colonize and serves as a small warehouse.\nProduces 1 food/min per neighboring field or pasture"
         }
     ]
 }
