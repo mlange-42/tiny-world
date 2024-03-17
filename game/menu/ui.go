@@ -8,6 +8,8 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"os"
+	"runtime"
 	"slices"
 	"time"
 
@@ -240,6 +242,11 @@ func (ui *UI) createMainMenuPanel(games []string, fonts *res.Fonts) *widget.Cont
 	achievementsButton := ui.createMainMenuButton("Achievements", fonts, 4)
 	menuContainer.AddChild(achievementsButton)
 
+	if runtime.GOOS != "js" {
+		quitButton := ui.createMainMenuButton("Quit", fonts, -1)
+		menuContainer.AddChild(quitButton)
+	}
+
 	return menuContainer
 }
 
@@ -259,6 +266,10 @@ func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widg
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			if tab < 0 {
+				os.Exit(0)
+				return
+			}
 			ui.selectPage(tab)
 		}),
 	)
