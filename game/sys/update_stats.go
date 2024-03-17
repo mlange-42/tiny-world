@@ -148,7 +148,8 @@ func (s *UpdateStats) Update(world *ecs.World) {
 		randomTerrains.TotalAvailable-randomTerrains.TotalPlaced,
 		randomTerrains.TotalAvailable))
 
-	if tick%interval != 0 {
+	// Do the rest only 3x per second
+	if tick%(interval/3) != 0 {
 		return
 	}
 
