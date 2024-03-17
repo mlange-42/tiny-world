@@ -8,6 +8,8 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"os"
+	"runtime"
 	"slices"
 	"time"
 
@@ -40,9 +42,13 @@ type UI struct {
 
 	sprites         *res.Sprites
 	infoLabel       *widget.Text
-	tabContainer    *widget.TabBook
-	tabs            []*widget.TabBookTab
+	tabContainer    *widget.FlipBook
+	selectedTab     int
+	tabs            []*widget.Container
 	scenarioButtons []*widget.Button
+
+	loadButtonsGroup     *widget.RadioGroup
+	scenarioButtonsGroup *widget.RadioGroup
 
 	empty             *image.NineSlice
 	background        *image.NineSlice
@@ -121,50 +127,18 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		),
 	)
 
-	newWorldTab := widget.NewTabBookTab("New World",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
+	mainTab := ui.createMainMenuPanel(games, fonts)
+	newWorldTab := ui.createNewWorldPanel(games, fonts, start)
+	scenariosTab := ui.createScenariosPanel(games, achievements, fonts, start)
+	loadWorldTab := ui.createLoadPanel(games, fonts, start, restart)
+	achievementTab := ui.createAchievementsPanel(achievements, fonts)
+	ui.tabs = append(ui.tabs, mainTab, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
 
-	scenariosTab := widget.NewTabBookTab("Scenarios",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	scenariosTab.AddChild(ui.createScenariosPanel(games, achievements, fonts, start))
-
-	loadWorldTab := widget.NewTabBookTab("Load World",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start, restart))
-
-	achievementTab := widget.NewTabBookTab("Achievements",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	achievementTab.AddChild(ui.createAchievementsPanel(achievements, fonts))
-
-	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
-
-	img := ui.defaultButtonImage()
-	ui.tabContainer = widget.NewTabBook(
-		widget.TabBookOpts.TabButtonImage(img),
-		widget.TabBookOpts.TabButtonText(fonts.Default, &widget.ButtonTextColor{Idle: ui.sprites.TextColor, Disabled: ui.sprites.TextColor}),
-		widget.TabBookOpts.TabButtonSpacing(0),
-		widget.TabBookOpts.ContainerOpts(
+	ui.tabContainer = widget.NewFlipBook(
+		widget.FlipBookOpts.ContainerOpts(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			)),
 			widget.ContainerOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 					Position: widget.RowLayoutPositionStart,
@@ -172,14 +146,10 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 				}),
 				widget.WidgetOpts.MinSize(panelWidth, panelHeight),
 			),
+			widget.ContainerOpts.BackgroundImage(ui.background),
 		),
-		widget.TabBookOpts.TabButtonOpts(
-			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(60, 0)),
-		),
-		widget.TabBookOpts.Tabs(ui.tabs...),
-		widget.TabBookOpts.InitialTab(ui.tabs[selectedTab]),
 	)
+	ui.selectPage(selectedTab)
 
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
@@ -226,6 +196,12 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	return ui
 }
 
+func (ui *UI) selectPage(idx int) {
+	ui.tabContainer.SetPage(ui.tabs[idx])
+	ui.selectedTab = idx
+	ui.infoLabel.Label = "   "
+}
+
 func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	container := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
@@ -245,21 +221,149 @@ func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 	return container
 }
 
-func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
+func (ui *UI) createMainMenuPanel(games []string, fonts *res.Fonts) *widget.Container {
+	menuContainer := ui.createTabPanel()
+
+	mainLabel := ui.createMainMenuLabel("Main menu", fonts)
+	menuContainer.AddChild(mainLabel)
+
+	newButton := ui.createMainMenuButton("New World", fonts, 1)
+	menuContainer.AddChild(newButton)
+
+	scenariosButton := ui.createMainMenuButton("Scenarios", fonts, 2)
+	menuContainer.AddChild(scenariosButton)
+
+	loadButton := ui.createMainMenuButton("Load World", fonts, 3)
+	menuContainer.AddChild(loadButton)
+	if len(games) == 0 {
+		loadButton.GetWidget().Disabled = true
+	}
+
+	achievementsButton := ui.createMainMenuButton("Achievements", fonts, 4)
+	menuContainer.AddChild(achievementsButton)
+
+	if runtime.GOOS != "js" {
+		quitButton := ui.createMainMenuButton("Quit", fonts, -1)
+		menuContainer.AddChild(quitButton)
+	}
+
+	return menuContainer
+}
+
+func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widget.Button {
+	button := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionCenter,
+				Stretch:  false,
+			}),
+			widget.WidgetOpts.MinSize(200, 0),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			if tab < 0 {
+				os.Exit(0)
+				return
+			}
+			ui.selectPage(tab)
+		}),
+	)
+
+	return button
+}
+
+func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts,
+	click func(args *widget.ButtonClickedEventArgs)) (*widget.Container, *widget.Button) {
+	cols := 2
+	if len(text) == 0 {
+		cols = 1
+	}
+	container := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(cols),
+			widget.GridLayoutOpts.Stretch([]bool{true, true}, []bool{false}),
+			widget.GridLayoutOpts.Spacing(48, 12),
 		)),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
+			widget.WidgetOpts.LayoutData(
+				widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				},
+			),
 		),
 	)
 
-	img := ui.defaultButtonImage()
+	backButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionStart,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Back", fonts.Default, &widget.ButtonTextColor{
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.selectPage(0)
+		}),
+	)
+	container.AddChild(backButton)
+
+	if len(text) == 0 {
+		return container, nil
+	}
+
+	startButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				HorizontalPosition: widget.GridLayoutPositionEnd,
+				VerticalPosition:   widget.GridLayoutPositionStart,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
+			Idle:     ui.sprites.TextColor,
+			Disabled: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(click),
+	)
+	container.AddChild(startButton)
+
+	return container, startButton
+}
+
+func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
+	label := widget.NewText(
+		widget.TextOpts.Text(text, fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				},
+			),
+		),
+	)
+
+	return label
+}
+
+func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
+	menuContainer := ui.createTabPanel()
+
+	newLabel := ui.createMainMenuLabel("New World", fonts)
+	menuContainer.AddChild(newLabel)
 
 	newName := widget.NewTextInput(
 		widget.TextInputOpts.WidgetOpts(
@@ -288,39 +392,26 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 
 	menuContainer.AddChild(newName)
 
-	newButton := widget.NewButton(
-		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionCenter,
-				Stretch:  false,
-			}),
-			widget.WidgetOpts.MinSize(160, 0),
-		),
-		widget.ButtonOpts.Image(img),
-		widget.ButtonOpts.Text("New World", fonts.Default, &widget.ButtonTextColor{
-			Idle:     ui.sprites.TextColor,
-			Disabled: ui.sprites.TextColor,
-		}),
-		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			name := newName.GetText()
-			if len(name) == 0 {
-				ui.infoLabel.Label = "Give your world a name!"
-				return
-			}
-			if slices.Contains(games, name) {
-				ui.infoLabel.Label = "World already exists!"
-				return
-			}
-			if !save.IsValidName(name) {
-				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
-				return
-			}
-			isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
-			start(name, save.MapLocation{}, save.LoadTypeNone, isEditor)
-		}),
-	)
-	menuContainer.AddChild(newButton)
+	click := func(args *widget.ButtonClickedEventArgs) {
+		name := newName.GetText()
+		if len(name) == 0 {
+			ui.infoLabel.Label = "Give your world a name!"
+			return
+		}
+		if slices.Contains(games, name) {
+			ui.infoLabel.Label = "World already exists!"
+			return
+		}
+		if !save.IsValidName(name) {
+			ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+			return
+		}
+		isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
+		start(name, save.MapLocation{}, save.LoadTypeNone, isEditor)
+	}
+
+	buttons, _ := ui.createBackStartButtons("New World", fonts, click)
+	menuContainer.AddChild(buttons)
 
 	editorLabel := widget.NewText(
 		widget.TextOpts.Text(editorModeText, fonts.Default, ui.sprites.TextColor),
@@ -340,32 +431,17 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	start startFunction,
 	restart menuFunction) *widget.Container {
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
-	if len(games) > 0 {
-		worldsLabel := widget.NewText(
-			widget.TextOpts.Text("Load world:", fonts.Default, ui.sprites.TextColor),
-			widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-		)
-		menuContainer.AddChild(worldsLabel)
-	}
+	worldsLabel := ui.createMainMenuLabel("Load World", fonts)
+	menuContainer.AddChild(worldsLabel)
 
 	img := ui.defaultButtonImage()
 
-	scroll, content := ui.createScrollPanel(panelHeight - 72)
+	scroll, content := ui.createScrollPanel(panelHeight - 76)
 
-	for _, game := range games {
+	buttons := make([]widget.RadioGroupElement, len(games))
+	for i, game := range games {
 		contextMenu := widget.NewContainer(
 			widget.ContainerOpts.Layout(widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
@@ -388,11 +464,10 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 				Disabled: ui.sprites.TextColor,
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				start(game, save.MapLocation{}, save.LoadTypeGame, false)
-			}),
+			widget.ButtonOpts.ToggleMode(),
 		)
 		content.AddChild(gameButton)
+		buttons[i] = gameButton
 
 		deleteButton := widget.NewButton(
 			widget.ButtonOpts.WidgetOpts(
@@ -414,17 +489,25 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 					return
 				}
 				menuContainer.RemoveChild(gameButton)
-
-				currTab := ui.tabContainer.Tab()
-				idx := slices.Index(ui.tabs, currTab)
-				restart(idx)
+				restart(ui.selectedTab)
 			}),
 		)
 		contextMenu.AddChild(deleteButton)
-
 	}
 
+	ui.loadButtonsGroup = widget.NewRadioGroup(
+		widget.RadioGroupOpts.Elements(buttons...),
+	)
+
 	menuContainer.AddChild(scroll)
+
+	btn, _ := ui.createBackStartButtons("Load World", fonts,
+		func(args *widget.ButtonClickedEventArgs) {
+			idx := slices.Index(buttons, ui.loadButtonsGroup.Active())
+			start(games[idx], save.MapLocation{}, save.LoadTypeGame, false)
+		},
+	)
+	menuContainer.AddChild(btn)
 
 	return menuContainer
 }
@@ -435,18 +518,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 		panic(err)
 	}
 
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
 	img := ui.defaultButtonImage()
 
@@ -475,14 +547,11 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 		),
 	)
 
-	mapsLabel := widget.NewText(
-		widget.TextOpts.Text("Scenarios:", fonts.Default, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
-	menuContainer.AddChild(newName)
+	mapsLabel := ui.createMainMenuLabel("Scenarios", fonts)
 	menuContainer.AddChild(mapsLabel)
+	menuContainer.AddChild(newName)
 
-	scroll, content := ui.createScrollPanel(panelHeight - 110)
+	scroll, content := ui.createScrollPanel(panelHeight - 113)
 
 	mapsUnlocked := []save.MapLocation{}
 	mapsLocked := []save.MapLocation{}
@@ -520,6 +589,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 	mapsUnlocked = append(mapsUnlocked, mapsLocked...)
 	achUnlocked = append(achUnlocked, achLocked...)
 
+	buttons := make([]widget.RadioGroupElement, len(mapsUnlocked))
 	for i, m := range mapsUnlocked {
 		ach := achUnlocked[i]
 		enabled := i < cntEnabled
@@ -576,57 +646,60 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				name := newName.GetText()
-				if len(name) == 0 {
-					ui.infoLabel.Label = "Give your world a name!"
-					return
-				}
-				if slices.Contains(games, name) {
-					ui.infoLabel.Label = "World already exists!"
-					return
-				}
-				if !save.IsValidName(name) {
-					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
-					return
-				}
-				isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
-				start(name, m, save.LoadTypeMap, isEditor)
-			}),
+			widget.ButtonOpts.ToggleMode(),
 		)
 		newButton.GetWidget().Disabled = !enabled
 		content.AddChild(newButton)
 		ui.scenarioButtons = append(ui.scenarioButtons, newButton)
+		buttons[i] = newButton
 	}
+	ui.scenarioButtonsGroup = widget.NewRadioGroup(
+		widget.RadioGroupOpts.Elements(buttons...),
+	)
 
 	menuContainer.AddChild(scroll)
+
+	btns, btn := ui.createBackStartButtons("Start Scenario", fonts,
+		func(args *widget.ButtonClickedEventArgs) {
+			name := newName.GetText()
+			idx := slices.Index(buttons, ui.scenarioButtonsGroup.Active())
+			if ui.scenarioButtons[idx].GetWidget().Disabled {
+				ui.infoLabel.Label = "Select an unlocked scenario!"
+				return
+			}
+			if len(name) == 0 {
+				ui.infoLabel.Label = "Give your world a name!"
+				return
+			}
+			if slices.Contains(games, name) {
+				ui.infoLabel.Label = "World already exists!"
+				return
+			}
+			if !save.IsValidName(name) {
+				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+				return
+			}
+			isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
+			start(name, mapsUnlocked[idx], save.LoadTypeMap, isEditor)
+		},
+	)
+	if cntEnabled == 0 {
+		btn.GetWidget().Disabled = true
+	}
+	menuContainer.AddChild(btns)
 
 	return menuContainer
 }
 
 func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts *res.Fonts) *widget.Container {
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
 	img := ui.emptyImage()
 
-	label := widget.NewText(
-		widget.TextOpts.Text("Achievements:", fonts.Default, ui.sprites.TextColor),
-		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
-	)
+	label := ui.createMainMenuLabel("Achievements", fonts)
 	menuContainer.AddChild(label)
 
-	scroll, content := ui.createScrollPanel(panelHeight - 72)
+	scroll, content := ui.createScrollPanel(panelHeight - 76)
 
 	achUnlocked := []*achievements.Achievement{}
 	achLocked := []*achievements.Achievement{}
@@ -701,7 +774,29 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 
 	menuContainer.AddChild(scroll)
 
+	buttons, _ := ui.createBackStartButtons("", fonts, nil)
+	menuContainer.AddChild(buttons)
+
 	return menuContainer
+}
+
+func (ui *UI) createTabPanel() *widget.Container {
+	return widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				},
+			),
+			widget.WidgetOpts.MinSize(panelWidth, panelHeight),
+		),
+	)
 }
 
 func deleteGame(folder, game string) error {
