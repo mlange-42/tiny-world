@@ -2,6 +2,7 @@ package sys
 
 import (
 	"log"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -24,6 +25,7 @@ type SaveGame struct {
 
 	ui        generic.Resource[res.UI]
 	saveEvent generic.Resource[res.SaveEvent]
+	saveTime  generic.Resource[res.SaveTime]
 	skip      []generic.Comp
 }
 
@@ -31,6 +33,7 @@ type SaveGame struct {
 func (s *SaveGame) Initialize(world *ecs.World) {
 	s.ui = generic.NewResource[res.UI](world)
 	s.saveEvent = generic.NewResource[res.SaveEvent](world)
+	s.saveTime = generic.NewResource[res.SaveTime](world)
 
 	s.skip = []generic.Comp{generic.T[res.Fonts](),
 		generic.T[res.Screen](),
@@ -79,6 +82,7 @@ func (s *SaveGame) Update(world *ecs.World) {
 		evt.ShouldSave = false
 		print("Saving game... ")
 
+		s.saveTime.Get().Time = time.Now()
 		err := save.SaveWorld(s.SaveFolder, s.Name, world, s.skip)
 		if err != nil {
 			s.ui.Get().SetStatusLabel("Error saving game")

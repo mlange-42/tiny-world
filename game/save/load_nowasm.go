@@ -22,6 +22,19 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize(jsData, world)
 }
 
+func loadSaveTime(folder, name string) (saveTime, error) {
+	jsData, err := os.ReadFile(path.Join(folder, name) + ".json")
+	if err != nil {
+		return saveTime{}, err
+	}
+	helper := saveGame{}
+	err = json.Unmarshal(jsData, &helper)
+	if err != nil {
+		return saveTime{}, err
+	}
+	return helper.Resources.SaveTime, nil
+}
+
 func loadAchievements(file string, completed *[]string) error {
 	jsData, err := os.ReadFile(file)
 	if err != nil {
@@ -30,8 +43,8 @@ func loadAchievements(file string, completed *[]string) error {
 	return json.Unmarshal(jsData, completed)
 }
 
-func listGames(folder string) ([]string, error) {
-	games := []string{}
+func listGames(folder string) ([]SaveGame, error) {
+	games := []SaveGame{}
 
 	files, err := os.ReadDir(folder)
 	if err != nil {
@@ -45,7 +58,14 @@ func listGames(folder string) ([]string, error) {
 		ext := filepath.Ext(file.Name())
 		if ext == ".json" {
 			base := strings.TrimSuffix(file.Name(), ".json")
-			games = append(games, base)
+			info, err := loadSaveTime(folder, base)
+			if err != nil {
+				return nil, err
+			}
+			games = append(games, SaveGame{
+				Name: base,
+				Time: info.Time,
+			})
 		}
 	}
 	return games, nil

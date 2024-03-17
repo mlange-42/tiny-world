@@ -20,6 +20,20 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize([]byte(jsData.String()), world)
 }
 
+func loadSaveTime(folder, name string) (saveTime, error) {
+	_ = folder
+
+	storage := js.Global().Get("localStorage")
+	jsData := storage.Call("getItem", saveGamePrefix+name)
+
+	helper := saveGame{}
+	err := json.Unmarshal([]byte(jsData.String()), &helper)
+	if err != nil {
+		return saveTime{}, err
+	}
+	return helper.Resources.SaveTime, nil
+}
+
 func loadAchievements(file string, completed *[]string) error {
 	_ = file
 
@@ -33,9 +47,9 @@ func loadAchievements(file string, completed *[]string) error {
 	return json.Unmarshal([]byte(jsData.String()), completed)
 }
 
-func listGames(folder string) ([]string, error) {
+func listGames(folder string) ([]SaveGame, error) {
 	_ = folder
-	games := []string{}
+	games := []SaveGame{}
 
 	storage := js.Global().Get("localStorage")
 
@@ -43,7 +57,16 @@ func listGames(folder string) ([]string, error) {
 	for i := 0; i < cnt; i++ {
 		key := storage.Call("key", i).String()
 		if strings.HasPrefix(key, saveGamePrefix) {
-			games = append(games, strings.TrimPrefix(key, saveGamePrefix))
+			name := strings.TrimPrefix(key, saveGamePrefix)
+			info, err := loadSaveTime(folder, name)
+			if err != nil {
+				return nil, err
+			}
+
+			games = append(games, SaveGame{
+				Name: name,
+				Time: info.Time,
+			})
 		}
 	}
 
