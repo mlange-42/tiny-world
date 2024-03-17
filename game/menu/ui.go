@@ -42,7 +42,7 @@ type UI struct {
 	infoLabel       *widget.Text
 	tabContainer    *widget.FlipBook
 	selectedTab     int
-	tabs            []*widget.TabBookTab
+	tabs            []*widget.Container
 	scenarioButtons []*widget.Button
 
 	empty             *image.NineSlice
@@ -122,46 +122,17 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		),
 	)
 
-	newWorldTab := widget.NewTabBookTab("New World",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	newWorldTab.AddChild(ui.createNewWorldPanel(games, fonts, start))
-
-	scenariosTab := widget.NewTabBookTab("Scenarios",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	scenariosTab.AddChild(ui.createScenariosPanel(games, achievements, fonts, start))
-
-	loadWorldTab := widget.NewTabBookTab("Load World",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	loadWorldTab.AddChild(ui.createLoadPanel(games, fonts, start, restart))
-
-	achievementTab := widget.NewTabBookTab("Achievements",
-		widget.ContainerOpts.BackgroundImage(ui.background),
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
-		)),
-	)
-	achievementTab.AddChild(ui.createAchievementsPanel(achievements, fonts))
-
+	newWorldTab := ui.createNewWorldPanel(games, fonts, start)
+	scenariosTab := ui.createScenariosPanel(games, achievements, fonts, start)
+	loadWorldTab := ui.createLoadPanel(games, fonts, start, restart)
+	achievementTab := ui.createAchievementsPanel(achievements, fonts)
 	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
 
 	ui.tabContainer = widget.NewFlipBook(
 		widget.FlipBookOpts.ContainerOpts(
+			widget.ContainerOpts.Layout(widget.NewRowLayout(
+				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			)),
 			widget.ContainerOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 					Position: widget.RowLayoutPositionStart,
@@ -169,6 +140,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 				}),
 				widget.WidgetOpts.MinSize(panelWidth, panelHeight),
 			),
+			widget.ContainerOpts.BackgroundImage(ui.background),
 		),
 	)
 	ui.selectPage(0)
@@ -243,18 +215,7 @@ func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
 }
 
 func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startFunction) *widget.Container {
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
 	img := ui.defaultButtonImage()
 
@@ -337,18 +298,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 	start startFunction,
 	restart menuFunction) *widget.Container {
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
 	if len(games) > 0 {
 		worldsLabel := widget.NewText(
@@ -429,18 +379,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 		panic(err)
 	}
 
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
 	img := ui.defaultButtonImage()
 
@@ -599,18 +538,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 }
 
 func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts *res.Fonts) *widget.Container {
-	menuContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Spacing(5),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-				Position: widget.RowLayoutPositionStart,
-				Stretch:  true,
-			}),
-		),
-	)
+	menuContainer := ui.createTabPanel()
 
 	img := ui.emptyImage()
 
@@ -696,6 +624,25 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 	menuContainer.AddChild(scroll)
 
 	return menuContainer
+}
+
+func (ui *UI) createTabPanel() *widget.Container {
+	return widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(6)),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.RowLayoutData{
+					Position: widget.RowLayoutPositionCenter,
+					Stretch:  true,
+				},
+			),
+			widget.WidgetOpts.MinSize(panelWidth, panelHeight),
+		),
+	)
 }
 
 func deleteGame(folder, game string) error {
