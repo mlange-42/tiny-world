@@ -54,6 +54,7 @@ type UI struct {
 	background        *image.NineSlice
 	backgroundHover   *image.NineSlice
 	backgroundPressed *image.NineSlice
+	textHighlightHex  string
 }
 
 func (ui *UI) UI() *ebitenui.UI {
@@ -70,10 +71,11 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	achievements *achievements.Achievements,
 	start startFunction, restart menuFunction) UI {
 	ui := UI{
-		fs:         f,
-		saveFolder: folder,
-		mapsFolder: mapsFolder,
-		sprites:    sprts,
+		fs:               f,
+		saveFolder:       folder,
+		mapsFolder:       mapsFolder,
+		sprites:          sprts,
+		textHighlightHex: util.ColorToBB(sprts.TextHighlightColor),
 	}
 
 	sp := ui.sprites.Get(ui.sprites.GetIndex(sprites.UiPanel))
@@ -623,7 +625,11 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 		if len(ach) > 0 {
 			for _, a := range ach {
 				if name, ok := achievements.IdMap[a]; ok {
-					achieve += "\n - " + name.Name
+					if name.Completed {
+						achieve += fmt.Sprintf("\n - %s", name.Name)
+					} else {
+						achieve += fmt.Sprintf("\n[color=%s] - %s[/color]", ui.textHighlightHex, name.Name)
+					}
 				}
 			}
 		} else {
@@ -637,6 +643,7 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 		}
 
 		label := widget.NewText(
+			widget.TextOpts.ProcessBBCode(true),
 			widget.TextOpts.Text(fmt.Sprintf("%s%s\n\nRequired achievements:\n%s", m.Name, localText, achieve), fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 			widget.TextOpts.MaxWidth(360),
