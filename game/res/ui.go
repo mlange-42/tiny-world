@@ -55,6 +55,7 @@ const helpPanelHeight = 460
 const statusTimeout = 180
 
 const saveTooltipText = "Save game to disk or local browser storage."
+const randomTilesTooltipText = "Random tiles available/total.\nBuild religious buildings to get more."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
 
@@ -400,7 +401,7 @@ func (ui *UI) createUI() *widget.Container {
 	}
 	innerContainer.AddChild(buildButtonsContainer)
 
-	cont, lab := ui.createLabel("", "Random tiles available/total", ui.sprites.TileWidth*3+16, widget.TextPositionCenter)
+	cont, lab := ui.createLabel("", randomTilesTooltipText, ui.sprites.TileWidth*3+16, widget.TextPositionCenter)
 	ui.randomTilesLabel = lab
 	innerContainer.AddChild(cont)
 
