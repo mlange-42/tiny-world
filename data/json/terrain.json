@@ -348,7 +348,7 @@
                 {"resource": "stones", "amount": 15}
             ],
             "consumption": [
-                {"resource": "stones", "amount": 1}
+                {"resource": "wood", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
