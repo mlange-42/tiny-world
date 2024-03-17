@@ -21,7 +21,7 @@ Further, terrain is not only placed by clicking, but also by dragging the mouse.
 Saving a game in editor mode is like saving the editor session. Saving the map means to export it in the [Map Format](#map-format) for use as a scenario.
 
 In a final step, random terrain frequencies for the scenario,
-as well as required achievement, can be tweaked by editing the exported scenario.
+as well as required achievement and the map description can be tweaked by editing the exported scenario.
 
 ## Map Format
 
@@ -30,7 +30,8 @@ A small example map is shown below.
 * The 1st line contains frequencies of random terrains.
 * The second line contains the number of initially placable trains.
 * The 3rd line contains a list of required achievements, separated by spaces.
-* The 4th line contains the relative coordinates of the starting position, from the top-left corner (0,0).
+* Subsequent lines contain the map description, up to the first line that starts with `----`.
+* The 1st line after the delimiter `----` contains the relative coordinates of the starting position, from the top-left corner (0,0).
 * All further lines are the actual map.
 
 Terrain characters are defined in [`data/json/terrain.json`](https://github.com/mlange-42/tiny-world/blob/main/data/json/terrain.json).
@@ -40,6 +41,10 @@ Achievements are defined in [`data/json/achievements.json`](https://github.com/m
 1r 20- 6^ 6~ 1+ 6t
 500
 play-the-game
+Description of the map.
+Can be an arbitrary number of lines.
+Terminated by a line starting with ----
+----
 8 8
 ......---------~....
 ....-----------~-...
