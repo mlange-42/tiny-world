@@ -6,14 +6,18 @@
 
 * The game can be played on pre-defined, embedded maps/scenarios (#168)
 * The game can be played on user-created maps/scenarios (#171)
+* Adds six scenarios (#168, #207, #221, #226)
 * Adds achievements that are required to unlock maps/scenarios (#187, #194, #195, #196, #203)
-* Ads a map editor mode for easier scenario creation (#223)
+* Adds a map editor mode for easier scenario creation (#223)
+* Adds hills terrain, which allows no farming (#218)
+* Adds shepherds and pastures for food production on hills (#218)
+* Limits the total number of placable terrain tiles / natural features (#231)
+* Adds churches and monasteries that unlock more tiles (#231)
 
 ### Game rules
 
 * Haulers stay in buildings for a second before continuing (#163)
-* Adds hills terrain, which allows no farming (#218)
-* Adds shepherds and pastures for food production on hills (#218)
+* Watermill consumes 1 wood, like windmill, instead of 1 stone (#33)
 
 ### Usability
 
