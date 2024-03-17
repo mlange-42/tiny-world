@@ -219,5 +219,70 @@
                 "number": 25
             }
         ]
+    },
+    {
+        "id": "pastor",
+        "name": "Pastor",
+        "icon": "church",
+        "description": "Own a church.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["church"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "abbot",
+        "name": "Abbot",
+        "icon": "monastery",
+        "description": "Own a monastery.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "bishop",
+        "name": "Bishop",
+        "icon": "monastery",
+        "description": "Own 5 monasteries.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "cardinal",
+        "name": "Cardinal",
+        "icon": "monastery",
+        "description": "Own 10 monasteries.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "pope",
+        "name": "Pope",
+        "icon": "monastery",
+        "description": "Own 25 monasteries.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 25
+            }
+        ]
     }
 ]
