@@ -485,7 +485,7 @@
                 {"resource": "stones", "amount": 5}
             ],
             "symbols": "áàâ",
-            "description": "Unlocks 1000 random terrain tiles, conquers land to colonize and serves as a small warehouse.\nProduces 1 food/min per neighboring field or pasture"
+            "description": "Unlocks 1000 random terrain tiles, conquers land and serves as a small warehouse. Produces 1 food/min per neighboring field or pasture"
         }
     ]
 }
