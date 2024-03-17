@@ -27,7 +27,7 @@ func loadSaveTime(folder, name string) (saveTime, error) {
 	if err != nil {
 		return saveTime{}, err
 	}
-	helper := saveGame{}
+	helper := saveGameInfo{}
 	err = json.Unmarshal(jsData, &helper)
 	if err != nil {
 		return saveTime{}, err

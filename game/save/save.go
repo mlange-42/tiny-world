@@ -1,7 +1,9 @@
 package save
 
 import (
+	"encoding/json"
 	"fmt"
+	"image"
 	"regexp"
 	"strings"
 
@@ -11,8 +13,6 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
-
-const mapDescriptionDelimiter = "----"
 
 func SaveWorld(folder, name string, world *ecs.World, skip []generic.Comp) error {
 	js, err := as.Serialize(world,
@@ -45,14 +45,12 @@ func DeleteGame(folder, name string) error {
 }
 
 func SaveMap(folder, name string, world *ecs.World) error {
-	b := strings.Builder{}
-
 	rules := ecs.GetResource[res.Rules](world)
 	bounds := ecs.GetResource[res.WorldBounds](world)
 	terrain := ecs.GetResource[res.Terrain](world)
 	landUse := ecs.GetResource[res.LandUse](world)
 
-	terrains := map[rune]int{}
+	terrains := map[string]int{}
 
 	for _, t := range rules.RandomTerrains {
 		var tp terr.TerrainPair
@@ -65,31 +63,18 @@ func SaveMap(folder, name string, world *ecs.World) error {
 		if !ok {
 			return fmt.Errorf("symbol not found for %s/%s", terr.Properties[tp.Terrain].Name, terr.Properties[tp.LandUse].Name)
 		}
-		if cnt, ok := terrains[sym]; ok {
-			terrains[sym] = cnt + 1
+		symStr := string(sym)
+		if cnt, ok := terrains[symStr]; ok {
+			terrains[symStr] = cnt + 1
 		} else {
-			terrains[sym] = 1
+			terrains[symStr] = 1
 		}
 	}
 
-	symbols := []string{}
-	for sym, cnt := range terrains {
-		symbols = append(symbols, fmt.Sprintf("%d%s", cnt, string(sym)))
-	}
-	b.WriteString(strings.Join(symbols, " "))
-	b.WriteString("\n")
+	center := image.Pt(terrain.Width()/2-bounds.Min.X, terrain.Height()/2-bounds.Min.Y)
 
-	b.WriteString(fmt.Sprintf("%d\n", rules.InitialRandomTerrains))
-
-	// Space for required achievements
-	b.WriteString("\n")
-
-	// Delimiter for map description
-	b.WriteString(mapDescriptionDelimiter + "\n")
-
-	cx, cy := terrain.Width()/2, terrain.Height()/2
-	b.WriteString(fmt.Sprintf("%d %d\n", cx-bounds.Min.X, cy-bounds.Min.Y))
-
+	rows := make([]string, bounds.Dy()+1)
+	b := strings.Builder{}
 	for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x <= bounds.Max.X; x++ {
 			ter := terrain.Get(x, y)
@@ -103,8 +88,22 @@ func SaveMap(folder, name string, world *ecs.World) error {
 			}
 			b.WriteRune(sym)
 		}
-		b.WriteString("\n")
+		rows[y-bounds.Min.Y] = b.String()
+		b.Reset()
 	}
 
-	return saveMapToFile(folder, name, b.String())
+	mapJs := mapJs{
+		Terrains:              terrains,
+		Center:                center,
+		InitialRandomTerrains: rules.InitialRandomTerrains,
+		Achievements:          []string{},
+		Description:           []string{},
+		Map:                   rows,
+	}
+	jsData, err := json.MarshalIndent(mapJs, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return saveMapToFile(folder, name, string(jsData))
 }

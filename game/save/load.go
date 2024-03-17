@@ -9,46 +9,10 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/maps"
-)
-
-type LoadType uint8
-
-type MapLocation struct {
-	Name       string
-	IsEmbedded bool
-}
-
-type SaveGame struct {
-	Name string
-	Time time.Time
-}
-
-type saveGame struct {
-	Resources saveGameResources
-}
-
-type saveGameResources struct {
-	SaveTime saveTime `json:"res.SaveTime"`
-}
-
-type saveTime struct {
-	Time time.Time
-}
-
-type MapInfo struct {
-	Achievements []string
-	Description  string
-}
-
-const (
-	LoadTypeNone LoadType = iota
-	LoadTypeGame
-	LoadTypeMap
 )
 
 func LoadWorld(world *ecs.World, folder, name string) error {
