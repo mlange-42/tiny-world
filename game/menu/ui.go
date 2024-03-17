@@ -197,6 +197,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 func (ui *UI) selectPage(idx int) {
 	ui.tabContainer.SetPage(ui.tabs[idx])
 	ui.selectedTab = idx
+	ui.infoLabel.Label = "   "
 }
 
 func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
@@ -265,7 +266,8 @@ func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, tab int) *widg
 	return button
 }
 
-func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts, click func(args *widget.ButtonClickedEventArgs)) *widget.Container {
+func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts,
+	click func(args *widget.ButtonClickedEventArgs)) (*widget.Container, *widget.Button) {
 	cols := 2
 	if len(text) == 0 {
 		cols = 1
@@ -306,7 +308,7 @@ func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts, click func(a
 	container.AddChild(backButton)
 
 	if len(text) == 0 {
-		return container
+		return container, nil
 	}
 
 	startButton := widget.NewButton(
@@ -326,7 +328,7 @@ func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts, click func(a
 	)
 	container.AddChild(startButton)
 
-	return container
+	return container, startButton
 }
 
 func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
@@ -397,7 +399,7 @@ func (ui *UI) createNewWorldPanel(games []string, fonts *res.Fonts, start startF
 		start(name, save.MapLocation{}, save.LoadTypeNone, isEditor)
 	}
 
-	buttons := ui.createBackStartButtons("New World", fonts, click)
+	buttons, _ := ui.createBackStartButtons("New World", fonts, click)
 	menuContainer.AddChild(buttons)
 
 	editorLabel := widget.NewText(
@@ -488,7 +490,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 
 	menuContainer.AddChild(scroll)
 
-	btn := ui.createBackStartButtons("Load World", fonts,
+	btn, _ := ui.createBackStartButtons("Load World", fonts,
 		func(args *widget.ButtonClickedEventArgs) {
 			idx := slices.Index(buttons, ui.loadButtonsGroup.Active())
 			start(games[idx], save.MapLocation{}, save.LoadTypeGame, false)
@@ -646,10 +648,14 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 
 	menuContainer.AddChild(scroll)
 
-	btn := ui.createBackStartButtons("Start Scenario", fonts,
+	btns, btn := ui.createBackStartButtons("Start Scenario", fonts,
 		func(args *widget.ButtonClickedEventArgs) {
 			name := newName.GetText()
 			idx := slices.Index(buttons, ui.scenarioButtonsGroup.Active())
+			if ui.scenarioButtons[idx].GetWidget().Disabled {
+				ui.infoLabel.Label = "Select an unlocked scenario!"
+				return
+			}
 			if len(name) == 0 {
 				ui.infoLabel.Label = "Give your world a name!"
 				return
@@ -666,7 +672,10 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 			start(name, mapsUnlocked[idx], save.LoadTypeMap, isEditor)
 		},
 	)
-	menuContainer.AddChild(btn)
+	if cntEnabled == 0 {
+		btn.GetWidget().Disabled = true
+	}
+	menuContainer.AddChild(btns)
 
 	return menuContainer
 }
@@ -754,7 +763,7 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 
 	menuContainer.AddChild(scroll)
 
-	buttons := ui.createBackStartButtons("", fonts, nil)
+	buttons, _ := ui.createBackStartButtons("", fonts, nil)
 	menuContainer.AddChild(buttons)
 
 	return menuContainer
