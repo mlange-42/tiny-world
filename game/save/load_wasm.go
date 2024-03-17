@@ -26,7 +26,7 @@ func loadSaveTime(folder, name string) (saveTime, error) {
 	storage := js.Global().Get("localStorage")
 	jsData := storage.Call("getItem", saveGamePrefix+name)
 
-	helper := saveGame{}
+	helper := saveGameInfo{}
 	err := json.Unmarshal([]byte(jsData.String()), &helper)
 	if err != nil {
 		return saveTime{}, err
