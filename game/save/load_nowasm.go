@@ -84,8 +84,8 @@ func listMapsLocal(folder string) ([]MapLocation, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name())
-		if ext == ".asc" {
-			base := strings.TrimSuffix(file.Name(), ".asc")
+		if ext == ".json" {
+			base := strings.TrimSuffix(file.Name(), ".json")
 			maps = append(maps, MapLocation{Name: base, IsEmbedded: false})
 		}
 	}
@@ -93,7 +93,7 @@ func listMapsLocal(folder string) ([]MapLocation, error) {
 }
 
 func loadMapLocal(folder string, name string) (string, error) {
-	mapData, err := os.ReadFile(path.Join(folder, name) + ".asc")
+	mapData, err := os.ReadFile(path.Join(folder, name) + ".json")
 	if err != nil {
 		return "", err
 	}

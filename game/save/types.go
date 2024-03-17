@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const mapDescriptionDelimiter = "----"
-
 type LoadType uint8
 
 const (
@@ -40,6 +38,11 @@ type saveTime struct {
 type MapInfo struct {
 	Achievements []string
 	Description  string
+}
+
+type mapInfoJs struct {
+	Achievements []string `json:"achievements"`
+	Description  []string `json:"description"`
 }
 
 type mapJs struct {
