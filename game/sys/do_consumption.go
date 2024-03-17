@@ -59,6 +59,7 @@ func (s *DoConsumption) Update(world *ecs.World) {
 			cons.Countdown[i] -= int16(c)
 			if cons.Countdown[i] < 0 {
 				if prod.Resource == resource.Resource(i) && prod.Stock > 0 {
+					cons.Countdown[i] += int16(update.Countdown)
 					prod.Stock--
 				} else if stock.Res[i] > 0 {
 					cons.Countdown[i] += int16(update.Countdown)
