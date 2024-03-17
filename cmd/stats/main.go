@@ -17,8 +17,8 @@ func main() {
 		log.Fatal("Please specify a map file!")
 	}
 	file := os.Args[1]
-	if !strings.HasSuffix(file, ".asc") {
-		file += ".asc"
+	if !strings.HasSuffix(file, ".json") {
+		file += ".json"
 	}
 	mapStr, err := os.ReadFile(file)
 	if err != nil {

@@ -57,7 +57,7 @@ func deleteGame(folder, name string) error {
 }
 
 func saveMapToFile(folder, name string, mapData string) error {
-	file := path.Join(folder, name) + ".asc"
+	file := path.Join(folder, name) + ".json"
 	dir := filepath.Dir(file)
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {

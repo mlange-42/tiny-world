@@ -1,54 +1,17 @@
 package save
 
 import (
+	"encoding/json"
 	"fmt"
-	"image"
 	"io/fs"
 	"path"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/maps"
-)
-
-type LoadType uint8
-
-type MapLocation struct {
-	Name       string
-	IsEmbedded bool
-}
-
-type SaveGame struct {
-	Name string
-	Time time.Time
-}
-
-type saveGame struct {
-	Resources saveGameResources
-}
-
-type saveGameResources struct {
-	SaveTime saveTime `json:"res.SaveTime"`
-}
-
-type saveTime struct {
-	Time time.Time
-}
-
-type MapInfo struct {
-	Achievements []string
-	Description  string
-}
-
-const (
-	LoadTypeNone LoadType = iota
-	LoadTypeGame
-	LoadTypeMap
 )
 
 func LoadWorld(world *ecs.World, folder, name string) error {
@@ -94,61 +57,26 @@ func LoadMap(f fs.FS, folder string, mapLoc MapLocation) (maps.Map, error) {
 }
 
 func ParseMap(mapStr string) (maps.Map, error) {
-	var result [][]rune
-	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
+	helper := mapJs{}
+	err := json.Unmarshal([]byte(mapStr), &helper)
+	if err != nil {
+		return maps.Map{}, nil
+	}
 
-	terrainParts := strings.Split(lines[0], " ")
 	terrains := []rune{}
-	for _, p := range terrainParts {
-		rn := []rune(p)
-		sym := rn[len(rn)-1]
-		cnt, err := strconv.Atoi(string(rn[:len(rn)-1]))
-		if err != nil {
-			panic(fmt.Sprintf("can't convert to integer in map symbols: `%s`", string(rn[:len(rn)-1])))
+	for tStr, cnt := range helper.Terrains {
+		rn := []rune(tStr)
+		if len(rn) > 1 {
+			return maps.Map{}, fmt.Errorf("symbols must be single runes. Got '%s'", tStr)
 		}
+		sym := rn[0]
 		for i := 0; i < cnt; i++ {
 			terrains = append(terrains, sym)
 		}
 	}
 
-	randTerr, err := strconv.Atoi(lines[1])
-	if err != nil {
-		panic(fmt.Sprintf("can't convert to integer in map initial random terrains: `%s`", lines[1]))
-	}
-
-	ach := strings.Split(lines[2], " ")
-	achievements := []string{}
-	for _, a := range ach {
-		if a != "" {
-			achievements = append(achievements, a)
-		}
-	}
-
-	description := []string{}
-	lineIdx := 3
-	for {
-		line := lines[lineIdx]
-		lineIdx++
-		if strings.HasPrefix(line, mapDescriptionDelimiter) {
-			break
-		}
-		description = append(description, line)
-	}
-
-	sizeLine := lines[lineIdx]
-	parts := strings.Split(sizeLine, " ")
-	cx, err := strconv.Atoi(parts[0])
-	if err != nil {
-		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[0]))
-	}
-	cy, err := strconv.Atoi(parts[1])
-	if err != nil {
-		panic(fmt.Sprintf("can't convert to integer: `%s`", parts[1]))
-	}
-
-	lines = lines[lineIdx+1:]
-
-	for _, s := range lines {
+	var result [][]rune
+	for _, s := range helper.Map {
 		if len(s) > 0 {
 			runes := []rune(s)
 			result = append(result, runes)
@@ -158,10 +86,10 @@ func ParseMap(mapStr string) (maps.Map, error) {
 	return maps.Map{
 		Data:                  result,
 		Terrains:              terrains,
-		InitialRandomTerrains: randTerr,
-		Center:                image.Pt(cx, cy),
-		Achievements:          achievements,
-		Description:           strings.Join(description, "\n"),
+		InitialRandomTerrains: helper.InitialRandomTerrains,
+		Center:                helper.Center,
+		Achievements:          helper.Achievements,
+		Description:           strings.Join(helper.Description, "\n"),
 	}, nil
 }
 
@@ -170,29 +98,13 @@ func LoadMapData(f fs.FS, folder string, mapLoc MapLocation) (MapInfo, error) {
 	if err != nil {
 		return MapInfo{}, err
 	}
-
-	lines := strings.Split(strings.ReplaceAll(mapStr, "\r\n", "\n"), "\n")
-
-	ach := strings.Split(lines[2], " ")
-	achievements := []string{}
-	for _, a := range ach {
-		if a != "" {
-			achievements = append(achievements, a)
-		}
+	helper := mapInfoJs{}
+	err = json.Unmarshal([]byte(mapStr), &helper)
+	if err != nil {
+		return MapInfo{}, nil
 	}
 
-	description := []string{}
-	lineIdx := 3
-	for {
-		line := lines[lineIdx]
-		lineIdx++
-		if strings.HasPrefix(line, mapDescriptionDelimiter) {
-			break
-		}
-		description = append(description, line)
-	}
-
-	return MapInfo{Achievements: achievements, Description: strings.Join(description, "\n")}, nil
+	return MapInfo{Achievements: helper.Achievements, Description: strings.Join(helper.Description, "\n")}, nil
 }
 
 func ListMaps(f fs.FS, folder string) ([]MapLocation, error) {
@@ -209,7 +121,7 @@ func ListMaps(f fs.FS, folder string) ([]MapLocation, error) {
 
 func loadMap(f fs.FS, folder string, mapLoc MapLocation) (string, error) {
 	if mapLoc.IsEmbedded {
-		mapData, err := fs.ReadFile(f, path.Join("data", folder, mapLoc.Name)+".asc")
+		mapData, err := fs.ReadFile(f, path.Join("data", folder, mapLoc.Name)+".json")
 		if err != nil {
 			return "", err
 		}
@@ -233,8 +145,8 @@ func listMapsEmbed(f fs.FS, folder string) ([]MapLocation, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name())
-		if ext == ".asc" {
-			base := strings.TrimSuffix(file.Name(), ".asc")
+		if ext == ".json" {
+			base := strings.TrimSuffix(file.Name(), ".json")
 			maps = append(maps, MapLocation{Name: base, IsEmbedded: true})
 		}
 	}
