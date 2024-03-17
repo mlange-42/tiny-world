@@ -425,7 +425,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 
 	img := ui.defaultButtonImage()
 
-	scroll, content := ui.createScrollPanel(panelHeight - 72)
+	scroll, content := ui.createScrollPanel(panelHeight - 76)
 
 	buttons := make([]widget.RadioGroupElement, len(games))
 	for i, game := range games {
@@ -538,7 +538,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 	menuContainer.AddChild(mapsLabel)
 	menuContainer.AddChild(newName)
 
-	scroll, content := ui.createScrollPanel(panelHeight - 110)
+	scroll, content := ui.createScrollPanel(panelHeight - 113)
 
 	mapsUnlocked := []save.MapLocation{}
 	mapsLocked := []save.MapLocation{}
@@ -576,6 +576,7 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 	mapsUnlocked = append(mapsUnlocked, mapsLocked...)
 	achUnlocked = append(achUnlocked, achLocked...)
 
+	buttons := make([]widget.RadioGroupElement, len(mapsUnlocked))
 	for i, m := range mapsUnlocked {
 		ach := achUnlocked[i]
 		enabled := i < cntEnabled
@@ -632,30 +633,40 @@ func (ui *UI) createScenariosPanel(games []string, achievements *achievements.Ac
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
 			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				name := newName.GetText()
-				if len(name) == 0 {
-					ui.infoLabel.Label = "Give your world a name!"
-					return
-				}
-				if slices.Contains(games, name) {
-					ui.infoLabel.Label = "World already exists!"
-					return
-				}
-				if !save.IsValidName(name) {
-					ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
-					return
-				}
-				isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
-				start(name, m, save.LoadTypeMap, isEditor)
-			}),
+			widget.ButtonOpts.ToggleMode(),
 		)
 		newButton.GetWidget().Disabled = !enabled
 		content.AddChild(newButton)
 		ui.scenarioButtons = append(ui.scenarioButtons, newButton)
+		buttons[i] = newButton
 	}
+	ui.scenarioButtonsGroup = widget.NewRadioGroup(
+		widget.RadioGroupOpts.Elements(buttons...),
+	)
 
 	menuContainer.AddChild(scroll)
+
+	btn := ui.createBackStartButtons("Start Scenario", fonts,
+		func(args *widget.ButtonClickedEventArgs) {
+			name := newName.GetText()
+			idx := slices.Index(buttons, ui.scenarioButtonsGroup.Active())
+			if len(name) == 0 {
+				ui.infoLabel.Label = "Give your world a name!"
+				return
+			}
+			if slices.Contains(games, name) {
+				ui.infoLabel.Label = "World already exists!"
+				return
+			}
+			if !save.IsValidName(name) {
+				ui.infoLabel.Label = "Use only letters, numbers,\nspaces, '-' and '_'!"
+				return
+			}
+			isEditor := ebiten.IsKeyPressed(ebiten.KeyShift)
+			start(name, mapsUnlocked[idx], save.LoadTypeMap, isEditor)
+		},
+	)
+	menuContainer.AddChild(btn)
 
 	return menuContainer
 }
@@ -668,7 +679,7 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 	label := ui.createMainMenuLabel("Achievements", fonts)
 	menuContainer.AddChild(label)
 
-	scroll, content := ui.createScrollPanel(panelHeight - 72)
+	scroll, content := ui.createScrollPanel(panelHeight - 76)
 
 	achUnlocked := []*achievements.Achievement{}
 	achLocked := []*achievements.Achievement{}
