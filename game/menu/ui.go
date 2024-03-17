@@ -40,7 +40,8 @@ type UI struct {
 
 	sprites         *res.Sprites
 	infoLabel       *widget.Text
-	tabContainer    *widget.TabBook
+	tabContainer    *widget.FlipBook
+	selectedTab     int
 	tabs            []*widget.TabBookTab
 	scenarioButtons []*widget.Button
 
@@ -159,12 +160,8 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 
 	ui.tabs = append(ui.tabs, newWorldTab, scenariosTab, loadWorldTab, achievementTab)
 
-	img := ui.defaultButtonImage()
-	ui.tabContainer = widget.NewTabBook(
-		widget.TabBookOpts.TabButtonImage(img),
-		widget.TabBookOpts.TabButtonText(fonts.Default, &widget.ButtonTextColor{Idle: ui.sprites.TextColor, Disabled: ui.sprites.TextColor}),
-		widget.TabBookOpts.TabButtonSpacing(0),
-		widget.TabBookOpts.ContainerOpts(
+	ui.tabContainer = widget.NewFlipBook(
+		widget.FlipBookOpts.ContainerOpts(
 			widget.ContainerOpts.WidgetOpts(
 				widget.WidgetOpts.LayoutData(widget.RowLayoutData{
 					Position: widget.RowLayoutPositionStart,
@@ -173,13 +170,8 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 				widget.WidgetOpts.MinSize(panelWidth, panelHeight),
 			),
 		),
-		widget.TabBookOpts.TabButtonOpts(
-			widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
-			widget.ButtonOpts.WidgetOpts(widget.WidgetOpts.MinSize(60, 0)),
-		),
-		widget.TabBookOpts.Tabs(ui.tabs...),
-		widget.TabBookOpts.InitialTab(ui.tabs[selectedTab]),
 	)
+	ui.selectPage(0)
 
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
@@ -224,6 +216,11 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	ui.ui = &eui
 
 	return ui
+}
+
+func (ui *UI) selectPage(idx int) {
+	ui.tabContainer.SetPage(ui.tabs[idx])
+	ui.selectedTab = idx
 }
 
 func (ui *UI) createIconContainer(t terr.Terrain) *widget.Container {
@@ -414,10 +411,7 @@ func (ui *UI) createLoadPanel(games []string, fonts *res.Fonts,
 					return
 				}
 				menuContainer.RemoveChild(gameButton)
-
-				currTab := ui.tabContainer.Tab()
-				idx := slices.Index(ui.tabs, currTab)
-				restart(idx)
+				restart(ui.selectedTab)
 			}),
 		)
 		contextMenu.AddChild(deleteButton)
