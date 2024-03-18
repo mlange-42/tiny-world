@@ -22,6 +22,7 @@ type Achievement struct {
 	Name        string
 	Description string
 	Icon        string
+	IconIndex   int
 	Conditions  []Condition
 	Completed   bool
 }
@@ -113,6 +114,7 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 				ID:          achieve.ID,
 				Name:        achieve.Name,
 				Icon:        achieve.Icon,
+				IconIndex:   achieve.IconIndex,
 				Description: achieve.Description,
 				Conditions:  conditions,
 			},
@@ -255,6 +257,7 @@ type achievementJs struct {
 	ID          string        `json:"id"`
 	Name        string        `json:"name"`
 	Icon        string        `json:"icon"`
+	IconIndex   int           `json:"icon_index"`
 	Description string        `json:"description"`
 	Conditions  []conditionJs `json:"conditions"`
 }
