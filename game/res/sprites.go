@@ -207,5 +207,5 @@ func (s *Sprites) GetMultiTileIndex(idx int, dirs terr.Directions, frame int, ra
 		sIdx := (rand%vars)*inf.AnimFrames + (frame/inf.AnimSpeed)%inf.AnimFrames
 		return inf.Index[sIdx]
 	}
-	return idx
+	return inf.Index[0]
 }

@@ -763,9 +763,10 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 		var icon *ebiten.Image
 		if terr.IsTerrainName(ach.Icon) {
 			t := terr.ToTerrain(ach.Icon)
-			icon = ui.createTerrainImage(t, 1)
+			icon = ui.createTerrainImage(t, ach.IconIndex, 1)
 		} else {
-			icon = ui.sprites.Get(ui.sprites.GetIndex(ach.Icon))
+			idx := ui.sprites.GetIndex(ach.Icon)
+			icon = ui.sprites.GetSprite(ui.sprites.GetMultiTileIndex(idx, terr.Directions(ach.IconIndex), 0, 0))
 		}
 
 		graphic := widget.NewGraphic(
@@ -849,7 +850,7 @@ func (ui *UI) emptyImage() *widget.ButtonImage {
 }
 
 func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
-	img := ui.createTerrainImage(terrain, 3)
+	img := ui.createTerrainImage(terrain, 0, 3)
 
 	graphic := widget.NewGraphic(
 		widget.GraphicOpts.WidgetOpts(
@@ -865,14 +866,13 @@ func (ui *UI) createTerrainGraphic(terrain terr.Terrain) *widget.Graphic {
 	return graphic
 }
 
-func (ui *UI) createTerrainImage(t terr.Terrain, scale int) *ebiten.Image {
+func (ui *UI) createTerrainImage(t terr.Terrain, tileIdx int, scale int) *ebiten.Image {
 	props := &terr.Properties[t]
 
 	bx, by := ui.sprites.TileWidth, ui.sprites.TileWidth
 
 	img := ebiten.NewImage(bx*scale, by*scale)
 
-	idx := ui.sprites.GetTerrainIndex(t)
 	height := 0
 
 	for _, tr := range props.TerrainBelow {
@@ -888,7 +888,9 @@ func (ui *UI) createTerrainImage(t terr.Terrain, scale int) *ebiten.Image {
 		height = info2.Height
 	}
 
-	sp1 := ui.sprites.GetRand(idx, 0, 0)
+	idx := ui.sprites.GetTerrainIndex(t)
+	subIdx := ui.sprites.GetMultiTileIndex(idx, terr.Directions(tileIdx), 0, 0)
+	sp1 := ui.sprites.GetSprite(subIdx)
 	op := ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, float64(ui.sprites.TileWidth-sp1.Bounds().Dy()-height))
 	op.GeoM.Scale(float64(scale), float64(scale))
