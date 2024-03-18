@@ -12,6 +12,7 @@ import (
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/maps"
+	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 func LoadWorld(world *ecs.World, folder, name string) error {
@@ -70,6 +71,20 @@ func ParseMap(mapStr string) (maps.Map, error) {
 			return maps.Map{}, fmt.Errorf("symbols must be single runes. Got '%s'", tStr)
 		}
 		sym := rn[0]
+		t, ok := terr.SymbolToTerrain[sym]
+		if !ok {
+			return maps.Map{}, fmt.Errorf("symbol not found: '%s'", tStr)
+		}
+		var ter terr.Terrain
+		if t.LandUse != terr.Air {
+			ter = t.LandUse
+		} else {
+			ter = t.Terrain
+		}
+		props := &terr.Properties[ter]
+		if props.TerrainBits.Contains(terr.CanBuy) || !props.TerrainBits.Contains(terr.CanBuild) {
+			return maps.Map{}, fmt.Errorf("terrain '%s' ('%s') is not a natural feature", props.Name, tStr)
+		}
 		for i := 0; i < cnt; i++ {
 			terrains = append(terrains, sym)
 		}
