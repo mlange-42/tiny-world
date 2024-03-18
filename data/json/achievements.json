@@ -78,6 +78,34 @@
         ]
     },
     {
+        "id": "poineer",
+        "name": "Pioneer",
+        "icon": "bridge",
+        "icon_index": 5,
+        "description": "Own 5 bridges.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["bridge"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "civil-engineer",
+        "name": "Civil Engineer",
+        "icon": "bridge",
+        "icon_index": 5,
+        "description": "Own 10 bridges.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["bridge"],
+                "number": 10
+            }
+        ]
+    },
+    {
         "id": "granary",
         "name": "Granary",
         "icon": "field",
@@ -164,6 +192,19 @@
             {
                 "type": "terrain",
                 "ids": ["mason"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "miller-guild",
+        "name": "Miller Guild",
+        "icon": "watermill",
+        "description": "Own 10 mills.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["watermill", "windmill"],
                 "number": 10
             }
         ]
