@@ -54,14 +54,14 @@ jobs:
         run: GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build .
       - name: Compress binaries
         run: |
-          tar -czf tiny-world.tar.gz tiny-world.exe
+          zip -r tiny-world.zip tiny-world.exe
         shell: bash
       - name: Upload binaries
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: tiny-world.tar.gz
-          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-windows-amd64.tar.gz
+          file: tiny-world.zip
+          asset_name: tiny-world-${{ env.RELEASE_VERSION }}-windows-amd64.zip
           tag: ${{ github.ref }}
 
   build-macos-arm64:
@@ -83,6 +83,7 @@ jobs:
           mkdir -p tiny-world.app
           cp -r .github/tiny-world.app/Contents tiny-world.app/Contents
           mkdir -p tiny-world.app/Contents/MacOS
+          chmod u+x tiny-world
           mv tiny-world tiny-world.app/Contents/MacOS/tiny-world
         shell: bash
       - name: Compress binaries
@@ -116,6 +117,7 @@ jobs:
           mkdir -p tiny-world.app
           cp -r .github/tiny-world.app/Contents tiny-world.app/Contents
           mkdir -p tiny-world.app/Contents/MacOS
+          chmod u+x tiny-world
           mv tiny-world tiny-world.app/Contents/MacOS/tiny-world
       - name: Compress binaries
         run: |

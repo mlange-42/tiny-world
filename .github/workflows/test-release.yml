@@ -56,13 +56,13 @@ jobs:
         run: GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build .
       - name: Compress binaries
         run: |
-          tar -czf tiny-world.tar.gz tiny-world.exe
+          zip -r tiny-world.zip tiny-world.exe
         shell: bash
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tiny-world-windows-amd64.tar.gz
-          path: tiny-world.tar.gz
+          name: tiny-world-windows-amd64.zip
+          path: tiny-world.zip
 
   build-macos-arm64:
     name: MacOS arm64 build
@@ -83,6 +83,7 @@ jobs:
           mkdir -p tiny-world.app
           cp -r .github/tiny-world.app/Contents tiny-world.app/Contents
           mkdir -p tiny-world.app/Contents/MacOS
+          chmod u+x tiny-world
           mv tiny-world tiny-world.app/Contents/MacOS/tiny-world
         shell: bash
       - name: Compress binaries
@@ -114,6 +115,7 @@ jobs:
           mkdir -p tiny-world.app
           cp -r .github/tiny-world.app/Contents tiny-world.app/Contents
           mkdir -p tiny-world.app/Contents/MacOS
+          chmod u+x tiny-world
           mv tiny-world tiny-world.app/Contents/MacOS/tiny-world
         shell: bash
       - name: Compress binaries
