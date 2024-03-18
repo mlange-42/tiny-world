@@ -7,10 +7,12 @@ import (
 	"syscall/js"
 )
 
-// TODO change to pattern to match saveMapPrefix, on the next save-game breaking change.
-const saveGamePrefix = "tiny-world-save-"
-const saveMapPrefix = "mlange-42/tiny-world/maps/"
-const achievementsKey = "mlange-42/tiny-world/achievements"
+// Prefices for browser localStorage keys
+const (
+	saveGamePrefix  = "mlange-42/tiny-world/save/"
+	saveMapPrefix   = "mlange-42/tiny-world/maps/"
+	achievementsKey = "mlange-42/tiny-world/achievements"
+)
 
 func saveToFile(folder, name string, jsData []byte) error {
 	_ = folder
