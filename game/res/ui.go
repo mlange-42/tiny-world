@@ -438,7 +438,7 @@ func (ui *UI) CreateRandomButtons(randomTerrains int) {
 				continue
 			}
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, _, id := ui.createButton(terr.Terrain(i), true, randSprite)
+			button, _, id := ui.createButton(terr.Terrain(i), prop.TerrainBits.Contains(terr.IsTerrain), randSprite)
 
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
