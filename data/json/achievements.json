@@ -1,0 +1,288 @@
+[
+    {
+        "id": "play-the-game",
+        "name": "Play the Game",
+        "icon": "plains",
+        "description": "Play the game at least once.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["warehouse"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "landscape-architect",
+        "name": "Landscape Architect",
+        "icon": "water",
+        "description": "Build a map with 1000 tiles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["plains", "hills", "desert", "water"],
+                "number": 1000
+            }
+        ]
+    },
+    {
+        "id": "wood-gnome",
+        "name": "Wood Gnome",
+        "icon": "tree",
+        "description": "Build a map with 250 trees.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["tree"],
+                "number": 250
+            }
+        ]
+    },
+    {
+        "id": "small-manufacturer",
+        "name": "Small Manufacturer",
+        "icon": "warehouse",
+        "description": "Produce 100 resources per minute.",
+        "conditions": [
+            {
+                "type": "production",
+                "ids": ["food", "wood", "stones"],
+                "number": 100
+            }
+        ]
+    },
+    {
+        "id": "large-manufacturer",
+        "name": "Large Manufacturer",
+        "icon": "warehouse",
+        "description": "Produce 250 resources per minute.",
+        "conditions": [
+            {
+                "type": "production",
+                "ids": ["food", "wood", "stones"],
+                "number": 250
+            }
+        ]
+    },
+    {
+        "id": "trader",
+        "name": "Trader",
+        "icon": "warehouse",
+        "description": "Own 5 warehouses.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["warehouse"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "granary",
+        "name": "Granary",
+        "icon": "field",
+        "description": "Own 100 fields.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["field"],
+                "number": 100
+            }
+        ]
+    },
+    {
+        "id": "pastoralism",
+        "name": "Pastoralism",
+        "icon": "pasture",
+        "description": "Own 100 pastures.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["pasture"],
+                "number": 100
+            }
+        ]
+    },
+    {
+        "id": "farmer-guild",
+        "name": "Farmer Guild",
+        "icon": "farm",
+        "description": "Own 10 farms.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["farm"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "shepherd-guild",
+        "name": "Shepherd Guild",
+        "icon": "shepherd",
+        "description": "Own 10 shepherds.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["shepherd"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "fisherman-guild",
+        "name": "Fisherman Guild",
+        "icon": "fisherman",
+        "description": "Own 10 fishermen.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["fisherman"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "lumberjack-guild",
+        "name": "Lumberjack Guild",
+        "icon": "lumberjack",
+        "description": "Own 10 lumberjacks.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["lumberjack"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "mason-guild",
+        "name": "Mason Guild",
+        "icon": "mason",
+        "description": "Own 10 masons.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["mason"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "knight",
+        "name": "Knight",
+        "icon": "castle",
+        "description": "Own a castle.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "earl",
+        "name": "Earl",
+        "icon": "castle",
+        "description": "Own 5 castles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "duke",
+        "name": "Duke",
+        "icon": "castle",
+        "description": "Own 10 castles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "king",
+        "name": "King",
+        "icon": "castle",
+        "description": "Own 25 castles.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["castle"],
+                "number": 25
+            }
+        ]
+    },
+    {
+        "id": "pastor",
+        "name": "Pastor",
+        "icon": "church",
+        "description": "Own a church.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["church"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "abbot",
+        "name": "Abbot",
+        "icon": "monastery",
+        "description": "Own a monastery.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 1
+            }
+        ]
+    },
+    {
+        "id": "bishop",
+        "name": "Bishop",
+        "icon": "monastery",
+        "description": "Own 5 monasteries.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 5
+            }
+        ]
+    },
+    {
+        "id": "cardinal",
+        "name": "Cardinal",
+        "icon": "monastery",
+        "description": "Own 10 monasteries.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 10
+            }
+        ]
+    },
+    {
+        "id": "pope",
+        "name": "Pope",
+        "icon": "monastery",
+        "description": "Own 25 monasteries.",
+        "conditions": [
+            {
+                "type": "terrain",
+                "ids": ["monastery"],
+                "number": 25
+            }
+        ]
+    }
+]

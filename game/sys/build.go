@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -9,6 +10,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
@@ -26,6 +28,8 @@ type Build struct {
 	update          generic.Resource[res.UpdateInterval]
 	ui              generic.Resource[res.UI]
 	factory         generic.Resource[res.EntityFactory]
+	editor          generic.Resource[res.EditorMode]
+	randTerrains    generic.Resource[res.RandomTerrains]
 
 	radiusFilter    generic.Filter2[comp.Tile, comp.BuildRadius]
 	warehouseFilter generic.Filter1[comp.Warehouse]
@@ -45,6 +49,8 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.ui = generic.NewResource[res.UI](world)
 	s.factory = generic.NewResource[res.EntityFactory](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
+	s.randTerrains = generic.NewResource[res.RandomTerrains](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 	s.warehouseFilter = *generic.NewFilter1[comp.Warehouse]()
@@ -57,7 +63,8 @@ func (s *Build) Update(world *ecs.World) {
 		ui.ClearSelection()
 		return
 	}
-	if s.checkAbort() {
+	isEditor := s.editor.Get().IsEditor
+	if s.checkAbort(isEditor) {
 		return
 	}
 	buildable := s.buildable.Get()
@@ -69,36 +76,54 @@ func (s *Build) Update(world *ecs.World) {
 
 	p := &terr.Properties[sel.BuildType]
 	if p.TerrainBits.Contains(terr.RequiresRange) && buildable.Get(cursor.X, cursor.Y) == 0 {
+		ui.SetStatusLabel("Outside of controlled area.")
 		return
 	}
 
 	fac := s.factory.Get()
 	rules := s.rules.Get()
 	stock := s.stock.Get()
+	randTerr := s.randTerrains.Get()
 	landUse := s.landUse.Get()
+
+	if !isEditor {
+		if !stock.CanPay(p.BuildCost) {
+			ui.SetStatusLabel("Not enough resources.")
+			return
+		}
+		if p.TerrainBits.Contains(terr.CanBuild) && !p.TerrainBits.Contains(terr.CanBuy) {
+			if randTerr.TotalPlaced >= randTerr.TotalAvailable {
+				ui.SetStatusLabel("No more random terrains available.")
+				return
+			}
+		}
+	}
 
 	if sel.BuildType == terr.Bulldoze {
 		luHere := landUse.Get(cursor.X, cursor.Y)
 		luProps := &terr.Properties[luHere]
 
-		if luProps.TerrainBits.Contains(terr.IsWarehouse) && s.isLastWarehouse(world) {
+		if luProps.TerrainBits.Contains(terr.IsWarehouse) && s.isLastWarehouse(stock, luHere) {
+			ui.SetStatusLabel("Can't destroy last warehouse.")
 			return
 		}
 
 		if luProps.TerrainBits.Contains(terr.CanBuild) {
 			fac.RemoveLandUse(world, cursor.X, cursor.Y)
 
-			stock.Pay(p.BuildCost)
-			ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
+			if !isEditor {
+				stock.Pay(p.BuildCost)
+			}
+			ui.ReplaceButton(stock, rules, randTerr, s.time.Get().RenderTick, image.Pt(x, y))
 		}
 		return
 	}
 
-	if !stock.CanPay(p.BuildCost) {
-		return
-	}
-	if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
-		return
+	if !isEditor {
+		if p.Population > 0 && stock.Population+int(p.Population) > stock.MaxPopulation {
+			ui.SetStatusLabel("Population limit reached.")
+			return
+		}
 	}
 
 	terrain := s.terrain.Get()
@@ -106,14 +131,24 @@ func (s *Build) Update(world *ecs.World) {
 	luHere := landUse.Get(cursor.X, cursor.Y)
 	if p.TerrainBits.Contains(terr.IsTerrain) {
 		canBuild := luHere == terr.Air
-		canBuild = canBuild &&
-			(p.BuildOn.Contains(terrHere) || (sel.AllowRemove && terrHere != terr.Air && terrHere != sel.BuildType))
-		if !canBuild {
+		if terrHere == terr.Air {
+			ui.SetStatusLabel("Can only add next to existing terrain.")
 			return
 		}
-		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
+		canBuild = canBuild &&
+			(p.BuildOn.Contains(terrHere) || (sel.AllowRemove && terrHere != sel.BuildType))
+		if !canBuild {
+			ui.SetStatusLabel("Terrain already occupied.")
+			return
+		}
+		fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite, sel.Randomize)
 	} else {
+		if terrHere == terr.Air || terrHere == terr.Buildable {
+			ui.SetStatusLabel("No terrain here.")
+			return
+		}
 		if !p.BuildOn.Contains(terrHere) {
+			ui.SetStatusLabel(fmt.Sprintf("Can't build this on %s", terr.Properties[terrHere].Name))
 			return
 		}
 
@@ -122,25 +157,32 @@ func (s *Build) Update(world *ecs.World) {
 			if luHere != terr.Air {
 				fac.RemoveLandUse(world, cursor.X, cursor.Y)
 			}
-			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite)
+			fac.Set(world, cursor.X, cursor.Y, sel.BuildType, sel.RandSprite, sel.Randomize)
 		} else {
+			ui.SetStatusLabel("Terrain already occupied.")
 			return
 		}
 	}
 
-	stock.Pay(p.BuildCost)
-	ui.ReplaceButton(stock, rules, s.time.Get().RenderTick, image.Pt(x, y))
+	if !isEditor {
+		stock.Pay(p.BuildCost)
+	}
+	ui.ReplaceButton(stock, rules, randTerr, s.time.Get().RenderTick, image.Pt(x, y))
 }
 
 // Finalize the system
 func (s *Build) Finalize(world *ecs.World) {}
 
-func (s *Build) checkAbort() bool {
-	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-		return true
+func (s *Build) checkAbort(isEditor bool) bool {
+	if isEditor {
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+			return true
+		}
+	} else {
+		if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+			return true
+		}
 	}
-
-	sel := s.selection.Get()
 
 	ui := s.ui.Get()
 	x, y := ebiten.CursorPosition()
@@ -148,6 +190,7 @@ func (s *Build) checkAbort() bool {
 		return true
 	}
 
+	sel := s.selection.Get()
 	p := &terr.Properties[sel.BuildType]
 	if sel.BuildType != terr.Bulldoze && !p.TerrainBits.Contains(terr.CanBuild) {
 		return true
@@ -155,9 +198,12 @@ func (s *Build) checkAbort() bool {
 	return false
 }
 
-func (s *Build) isLastWarehouse(world *ecs.World) bool {
-	query := s.warehouseFilter.Query(world)
-	count := query.Count()
-	query.Close()
-	return count <= 1
+func (s *Build) isLastWarehouse(stock *res.Stock, building terr.Terrain) bool {
+	storage := terr.Properties[building].Storage
+	for i := range resource.Properties {
+		if stock.Cap[i] <= int(storage[i]) {
+			return true
+		}
+	}
+	return false
 }

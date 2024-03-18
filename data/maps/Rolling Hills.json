@@ -1,0 +1,50 @@
+{
+  "terrains": {
+    "-": 50,
+    "^": 20,
+    "o": 1,
+    "t": 20,
+    "~": 6
+  },
+  "map": [
+    "TTTTT---TTTT-------ttt-TTT",
+    "TTTt-----TT-------tTTT--TT",
+    "TT----t-----------TTt-----",
+    "TT---TTT----------TT----~~",
+    "ó----TT------ttT^-----~~~-",
+    "----tTT--TT-ttTT------~t-t",
+    "---TTT--TTT-TTTT-----t~--T",
+    "--TTTT--TT--TTT---^--~~-TT",
+    "---TT------TTó---TT--~t-TT",
+    "-----------TT--TTT---~t--T",
+    "---------T--ó--T^----~~~--",
+    "tt------TT---------T^--~--",
+    "tTT----TT---A-----TTT--~--",
+    "TTT----TT-------óTTT--~~--",
+    "TTT-----T^------------~---",
+    "TT--~~~~---------~~~~t~---",
+    "---~~--~~~----t~~~--~~~--ó",
+    "~~~~--T--~t~~~~~---------T",
+    "-----TTT-~~~--------Tó---T",
+    "---TTTTT--------^--TT-----",
+    "T--TTt-óó-----TTT-TTt-----",
+    "TT-----------TTT---TT----T",
+    "TT-----------TT---TTT--ó-T",
+    "TT-TT-------TTT---TT----TT",
+    "-TTTT-------T^----T----TTT",
+    "-^TT------------------TTTT"
+  ],
+  "achievements": [
+    "landscape-architect",
+    "shepherd-guild"
+  ],
+  "description": [
+    "A small-ish (25x25) map with lots of hills and trees, and a river.",
+    "Available random tiles: 500."
+  ],
+  "center": {
+    "X": 12,
+    "Y": 12
+  },
+  "initial_terrains": 500
+}

@@ -1,0 +1,50 @@
+{
+  "terrains": {
+    "-": 40,
+    "^": 1,
+    "o": 1,
+    "t": 25,
+    "~": 6
+  },
+  "map": [
+    "............---............",
+    "........-----t-----........",
+    "......---tttttttto---......",
+    ".....--t~~~tt~~tto-t--.....",
+    "....--ttttttt~~ttttt~--....",
+    "...--tttttttttttt^^t~~--...",
+    "..-~~ttt~~~ttt--tt-tt~t--..",
+    "..-~~ttt~~~ttt---tttt~tt-..",
+    ".--ttttttttttt---t~tttttt-.",
+    ".-tttto^-----tttttttttttt-.",
+    ".-tttto--ttt--t~~ttt^^t~~-.",
+    ".-tt~tt-t~~tt-t~~ttt^-t~~-.",
+    "--tt~tt-tttttt--tottt--tt--",
+    "--tt~t----tttA---ttt~t--tt-",
+    "---tttttt-tttt-----t~t--t--",
+    ".--t-tt~~tttttt--ttttt~-t-.",
+    ".-tTttt~~tttoottt~~ttt--t-.",
+    ".-tTott~~~~too-tt~~tt--t--.",
+    ".-tto-t~~~~tt--tt~~ttttt--.",
+    "..-tt-tttttttttttttttttt-..",
+    "..--tt----tTt~~t--t~~ttt-..",
+    "...--tttt-^^t~~t--ttttt-...",
+    "....--tt~t^^ttttttttt--....",
+    ".....--t~tTttttttttt--.....",
+    "......---ttt-ttttt---......",
+    "........-----t-----........",
+    "............---............"
+  ],
+  "achievements": [
+    "wood-gnome"
+  ],
+  "description": [
+    "A small-ish (27x27) map with a swampy forest full of ponds.",
+    "Available random tiles: 500."
+  ],
+  "center": {
+    "X": 13,
+    "Y": 13
+  },
+  "initial_terrains": 500
+}

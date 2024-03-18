@@ -3,6 +3,7 @@ package terr
 import (
 	"fmt"
 	"io/fs"
+	"strings"
 
 	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/resource"
@@ -54,7 +55,7 @@ var Default Terrain
 var Bulldoze Terrain
 var FirstBuilding Terrain
 
-type Terrains uint32
+type Terrains uint64
 
 var Buildings Terrains
 var Paths Terrains
@@ -75,7 +76,7 @@ func (d *Terrains) Unset(dir Terrain) {
 	*d &= ^(1 << dir)
 }
 
-// Contains checks whether all the argument's bits are contained in this Subscription.
+// Contains checks whether all the argument's bits are contained in this mask.
 func (d Terrains) Contains(dir Terrain) bool {
 	bits := Terrains(1 << dir)
 	return (bits & d) == bits
@@ -101,6 +102,10 @@ func Prepare(f fs.FS, file string) {
 
 	props := []TerrainProps{}
 	for i, t := range propsHelper.Terrains {
+		if i >= 64 {
+			panic("supports only 64 terrain types")
+		}
+
 		cost := []ResourceAmount{}
 		for _, cst := range t.BuildCost {
 			id, ok := resource.ResourceID(cst.Resource)
@@ -121,21 +126,21 @@ func Prepare(f fs.FS, file string) {
 			}
 		}
 
-		var terrBelow Terrain
-		if t.TerrainBelow != "" {
-			terrBelow = toTerrain(idLookup, t.TerrainBelow)
+		var terrBelow []Terrain
+		for _, tr := range t.TerrainBelow {
+			terrBelow = append(terrBelow, ToTerrain(tr))
 		}
 		var requiredTerrain Terrain
 		if t.Production.RequiredTerrain != "" {
-			requiredTerrain = toTerrain(idLookup, t.Production.RequiredTerrain)
+			requiredTerrain = ToTerrain(t.Production.RequiredTerrain)
 		}
 		var productionTerrain Terrains
 		if len(t.Production.ProductionTerrain) > 0 {
-			productionTerrain = toTerrains(idLookup, t.Production.ProductionTerrain...)
+			productionTerrain = ToTerrains(t.Production.ProductionTerrain...)
 		}
 		var suppTerrain Terrain
 		if t.PopulationSupport.RequiredTerrain != "" {
-			suppTerrain = toTerrain(idLookup, t.PopulationSupport.RequiredTerrain)
+			suppTerrain = ToTerrain(t.PopulationSupport.RequiredTerrain)
 		}
 
 		storage := make([]uint8, len(resource.Properties))
@@ -158,6 +163,9 @@ func Prepare(f fs.FS, file string) {
 		symbols := []rune(t.Symbols)
 		if len(symbols) != len(t.BuildOn) {
 			panic(fmt.Sprintf("length of `symbols` not equal to length of `build_on` in %s", t.Name))
+		}
+		if strings.Contains(t.Symbols, " ") {
+			panic(fmt.Sprintf("disallowed map symbol ' ' (Space) in %s", t.Name))
 		}
 
 		bits := TerrainBits(0)
@@ -187,17 +195,18 @@ func Prepare(f fs.FS, file string) {
 		}
 
 		p := TerrainProps{
-			Name:         t.Name,
-			TerrainBits:  bits,
-			BuildOn:      toTerrains(idLookup, t.BuildOn...),
-			TerrainBelow: terrBelow,
-			ConnectsTo:   toTerrains(idLookup, t.ConnectsTo...),
-			BuildRadius:  t.BuildRadius,
-			Population:   t.Population,
-			Symbols:      symbols,
-			Description:  t.Description,
-			BuildCost:    cost,
-			Storage:      storage,
+			Name:            t.Name,
+			TerrainBits:     bits,
+			BuildOn:         ToTerrains(t.BuildOn...),
+			TerrainBelow:    terrBelow,
+			UnlocksTerrains: t.UnlocksTerrains,
+			ConnectsTo:      ToTerrains(t.ConnectsTo...),
+			BuildRadius:     t.BuildRadius,
+			Population:      t.Population,
+			Symbols:         symbols,
+			Description:     t.Description,
+			BuildCost:       cost,
+			Storage:         storage,
 			Production: Production{
 				Resource:          prodRes,
 				MaxProduction:     t.Production.MaxProduction,
@@ -210,8 +219,8 @@ func Prepare(f fs.FS, file string) {
 				BasePopulation:  t.PopulationSupport.BasePopulation,
 				MaxPopulation:   t.PopulationSupport.MaxPopulation,
 				RequiredTerrain: suppTerrain,
-				BonusTerrain:    toTerrains(idLookup, t.PopulationSupport.BonusTerrain...),
-				MalusTerrain:    toTerrains(idLookup, t.PopulationSupport.MalusTerrain...),
+				BonusTerrain:    ToTerrains(t.PopulationSupport.BonusTerrain...),
+				MalusTerrain:    ToTerrains(t.PopulationSupport.MalusTerrain...),
 			},
 		}
 
@@ -226,11 +235,11 @@ func Prepare(f fs.FS, file string) {
 	}
 
 	// TODO: better error messages. Panics with "unknown terrain ''"
-	Air = toTerrain(idLookup, propsHelper.ZeroTerrain)
-	Buildable = toTerrain(idLookup, propsHelper.Buildable)
-	Default = toTerrain(idLookup, propsHelper.Default)
-	FirstBuilding = toTerrain(idLookup, propsHelper.FirstBuilding)
-	Bulldoze = toTerrain(idLookup, propsHelper.Bulldoze)
+	Air = ToTerrain(propsHelper.ZeroTerrain)
+	Buildable = ToTerrain(propsHelper.Buildable)
+	Default = ToTerrain(propsHelper.Default)
+	FirstBuilding = ToTerrain(propsHelper.FirstBuilding)
+	Bulldoze = ToTerrain(propsHelper.Bulldoze)
 
 	SymbolToTerrain = map[rune]TerrainPair{}
 	TerrainToSymbol = map[TerrainPair]rune{}
@@ -278,7 +287,8 @@ type TerrainProps struct {
 	BuildOn           Terrains
 	ConnectsTo        Terrains
 	TerrainBits       TerrainBits
-	TerrainBelow      Terrain
+	TerrainBelow      []Terrain
+	UnlocksTerrains   uint16
 	BuildRadius       uint8
 	Population        uint8
 	Description       string
@@ -297,11 +307,12 @@ type terrainPropsJs struct {
 	IsBridge          bool                `json:"is_bridge"`
 	IsBuilding        bool                `json:"is_building"`
 	IsWarehouse       bool                `json:"is_warehouse"`
+	UnlocksTerrains   uint16              `json:"unlocks_terrains"`
 	BuildRadius       uint8               `json:"build_radius"`
 	Population        uint8               `json:"population"`
 	BuildOn           []string            `json:"build_on,omitempty"`
 	RequiresRange     bool                `json:"requires_range"`
-	TerrainBelow      string              `json:"terrain_below"`
+	TerrainBelow      []string            `json:"terrain_below"`
 	ConnectsTo        []string            `json:"connects_to,omitempty"`
 	CanBuild          bool                `json:"can_build"`
 	CanBuy            bool                `json:"can_buy"`
@@ -365,10 +376,10 @@ type props struct {
 	Terrains      []terrainPropsJs `json:"terrains"`
 }
 
-func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {
+func ToTerrains(terr ...string) Terrains {
 	var ret Terrains
 	for _, t := range terr {
-		id, ok := lookup[t]
+		id, ok := idLookup[t]
 		if !ok {
 			panic(fmt.Sprintf("unknown terrain '%s'", t))
 		}
@@ -377,10 +388,15 @@ func toTerrains(lookup map[string]Terrain, terr ...string) Terrains {
 	return ret
 }
 
-func toTerrain(lookup map[string]Terrain, t string) Terrain {
-	id, ok := lookup[t]
+func ToTerrain(t string) Terrain {
+	id, ok := idLookup[t]
 	if !ok {
 		panic(fmt.Sprintf("unknown terrain '%s'", t))
 	}
 	return id
+}
+
+func IsTerrainName(t string) bool {
+	_, ok := idLookup[t]
+	return ok
 }

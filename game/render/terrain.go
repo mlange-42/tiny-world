@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -53,7 +54,7 @@ type Terrain struct {
 	pathMapper    generic.Map1[comp.Path]
 	haulerMapper  generic.Map2[comp.Hauler, comp.HaulerSprite]
 	spriteMapper  generic.Map1[comp.RandomSprite]
-	landUseMapper generic.Map2[comp.Production, comp.RandomSprite]
+	landUseMapper generic.Map4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite]
 
 	font font.Face
 }
@@ -81,7 +82,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.pathMapper = generic.NewMap1[comp.Path](world)
 	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
 	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
-	s.landUseMapper = generic.NewMap2[comp.Production, comp.RandomSprite](world)
+	s.landUseMapper = generic.NewMap4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite](world)
 
 	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
 
@@ -130,6 +131,7 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 
 	showBuildable := sel.BuildType != terr.Air ||
 		(s.landUse.Contains(cursor.X, cursor.Y) && terr.Properties[s.landUse.Get(cursor.X, cursor.Y)].BuildRadius > 0)
+	buildRadius := terr.Properties[sel.BuildType].BuildRadius
 
 	for i := mapBounds.Min.X; i < mapBounds.Max.X; i++ {
 		for j := mapBounds.Min.Y; j < mapBounds.Max.Y; j++ {
@@ -149,12 +151,17 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 				if showBuildable {
 					buildHere := s.buildable.Get(i, j) > 0
 					buildMask, notBuildMask := s.buildable.NeighborsMask(i, j)
-					if (buildHere && notBuildMask > 0) || (!buildHere && buildMask > 0) {
-						if buildHere {
-							_ = s.drawBorderSprite(img, s.borderInner, buildMask, &point, height, &off)
-						} else {
-							_ = s.drawBorderSprite(img, s.borderOuter, notBuildMask, &point, height, &off)
-						}
+
+					if buildRadius > 0 {
+						buildHere = buildHere || s.inRadius(cursor.X, cursor.Y, i, j, int(buildRadius))
+						in, out := s.radiusMask(cursor.X, cursor.Y, i, j, int(buildRadius))
+						buildMask = buildMask | in
+						notBuildMask = notBuildMask & out
+					}
+					if buildHere && notBuildMask > 0 {
+						_ = s.drawBorderSprite(img, s.borderInner, buildMask, &point, height, &off)
+					} else if !buildHere && buildMask > 0 {
+						_ = s.drawBorderSprite(img, s.borderOuter, notBuildMask, &point, height, &off)
 					}
 				}
 			}
@@ -162,12 +169,36 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			lu := s.landUse.Get(i, j)
 			if lu != terr.Air {
 				luE := s.landUseE.Get(i, j)
-				prod, randTile := s.landUseMapper.Get(luE)
+				prod, cons, pop, randTile := s.landUseMapper.Get(luE)
 				_ = s.drawSprite(img, s.terrain, s.landUse, i, j, lu, &point, height, &off,
 					randTile, terr.Properties[lu].TerrainBelow, cursor.X, cursor.Y, sel.BuildType)
-				if prod != nil &&
-					(prod.Amount == 0 || prod.Stock >= terr.Properties[lu].Storage[prod.Resource]) {
+
+				noProd := prod != nil && prod.Amount == 0
+				noStorage := prod != nil && prod.Stock >= terr.Properties[lu].Storage[prod.Resource]
+				noPop := pop != nil && pop.Pop == 0
+				if noProd || noStorage || noPop {
 					_ = s.drawSimpleSprite(img, s.warningMarker, &point, height, &off)
+					if sel.BuildType == terr.Air && cursor.X == i && cursor.Y == j {
+						if noProd {
+							if !prod.HasRequired {
+								req := terr.Properties[lu].Production.RequiredTerrain
+								ui.SetStatusLabel(fmt.Sprintf("No production - requires %s.", terr.Properties[req].Name))
+							} else if !cons.IsSatisfied {
+								ui.SetStatusLabel("No production - consumption needs not satisfied.")
+							} else {
+								ui.SetStatusLabel("No production - no terrain to use.")
+							}
+						} else if noPop {
+							if pop.HasRequired {
+								ui.SetStatusLabel("No population support - no terrain to use.")
+							} else {
+								req := terr.Properties[lu].PopulationSupport.RequiredTerrain
+								ui.SetStatusLabel(fmt.Sprintf("No population support - requires %s.", terr.Properties[req].Name))
+							}
+						} else if noStorage {
+							ui.SetStatusLabel("No production - storage is full.")
+						}
+					}
 				}
 			}
 
@@ -185,6 +216,38 @@ func (s *Terrain) UpdateUI(world *ecs.World) {
 			}
 		}
 	}
+}
+
+func (s *Terrain) inRadius(x1, y1, x2, y2, rad int) bool {
+	dx, dy := x1-x2, y1-y2
+	return dx*dx+dy*dy <= rad*rad
+}
+
+func (s *Terrain) radiusMask(x1, y1, x2, y2, rad int) (terr.Directions, terr.Directions) {
+	positive := terr.Directions(0)
+	negative := terr.Directions(0)
+
+	if s.inRadius(x1, y1, x2, y2-1, rad) {
+		positive.Set(terr.N)
+	} else {
+		negative.Set(terr.N)
+	}
+	if s.inRadius(x1, y1, x2+1, y2, rad) {
+		positive.Set(terr.E)
+	} else {
+		negative.Set(terr.E)
+	}
+	if s.inRadius(x1, y1, x2, y2+1, rad) {
+		positive.Set(terr.S)
+	} else {
+		negative.Set(terr.S)
+	}
+	if s.inRadius(x1, y1, x2-1, y2, rad) {
+		positive.Set(terr.W)
+	} else {
+		negative.Set(terr.W)
+	}
+	return positive, negative
 }
 
 // PostUpdateUI the system
@@ -376,16 +439,16 @@ func (s *Terrain) drawCursorSprite(img *ebiten.Image,
 func (s *Terrain) drawSprite(img *ebiten.Image, terrain *res.Terrain, landUse *res.LandUse,
 	x, y int, t terr.Terrain, point *image.Point, height int,
 	camOffset *image.Point, randSprite *comp.RandomSprite,
-	below terr.Terrain,
+	below []terr.Terrain,
 	cursorX, cursorY int, cursorTerr terr.Terrain) int {
 
 	idx := s.sprites.GetTerrainIndex(t)
 	info := s.sprites.GetInfo(idx)
 
-	if below != terr.Air {
+	for _, tr := range below {
 		height = s.drawSprite(img, terrain, landUse,
-			x, y, below, point, height,
-			camOffset, randSprite, terr.Air, cursorX, cursorY, cursorTerr)
+			x, y, tr, point, height,
+			camOffset, randSprite, nil, cursorX, cursorY, cursorTerr)
 	}
 
 	var sp *ebiten.Image

@@ -166,7 +166,8 @@ func (s *Haul) Update(world *ecs.World) {
 
 		home, tp, prod := s.homeMap.Get(haul.Home)
 		if terr.Properties[landUse.Get(target.X, target.Y)].TerrainBits.Contains(terr.IsWarehouse) {
-			stock.Res[haul.Hauls] += int(terr.Properties[tp.Terrain].Production.HaulCapacity)
+			amount := int(terr.Properties[tp.Terrain].Production.HaulCapacity)
+			stock.AddResources(haul.Hauls, amount)
 
 			path, ok := s.aStar.FindPath(target, *home)
 			if !ok {

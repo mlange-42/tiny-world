@@ -3,6 +3,7 @@ package res
 import (
 	"fmt"
 	stdimage "image"
+	"image/color"
 	"math"
 	"math/rand"
 	"time"
@@ -46,12 +47,15 @@ const helpText = "Tiny World Help" +
 	" - Pan: Arrows, WASD or middle mouse button\n" +
 	" - Zoom: +/- or mouse wheel\n" +
 	" - Pause/resume: Space\n" +
-	" - Game speed: PageUp / PageDown\n" +
+	" - Game speed: [/] (square brackets)\n" +
 	" - Toggle fullscreen: F11"
 
-const helpTooltipWidth = 800
+const helpPanelWidth = 680
+const helpPanelHeight = 460
+const statusTimeout = 4 * 60
 
 const saveTooltipText = "Save game to disk or local browser storage."
+const randomTilesTooltipText = "Random tiles available/total.\nBuild religious buildings to get more."
 
 const tooltipSpecial = "\n(*) Can be placed over existing tiles."
 
@@ -65,17 +69,21 @@ type randomButton struct {
 
 // UI resource.Represents the complete game UI.
 type UI struct {
-	// Initial random terrains, if any.
-	RandomTerrains []randomTerrain
+	ui             *ebitenui.UI
+	sprites        *Sprites
+	saveEvent      *SaveEvent
+	editor         *EditorMode
+	randomTerrains *RandomTerrains
 
-	ui              *ebitenui.UI
-	sprites         *Sprites
-	saveEvent       *SaveEvent
-	resourceLabels  []*widget.Text
-	populationLabel *widget.Text
-	timerLabel      *widget.Text
-	speedLabel      *widget.Text
-	terrainButtons  []*widget.Button
+	resourceLabels   []*widget.Text
+	populationLabel  *widget.Text
+	timerLabel       *widget.Text
+	speedLabel       *widget.Text
+	randomTilesLabel *widget.Text
+	statusLabel      *widget.Button
+	statusTimer      int
+
+	terrainButtons []terrainButton
 
 	animMapper generic.Map1[comp.CardAnimation]
 
@@ -92,6 +100,7 @@ type UI struct {
 	buttonPressedSprite  int
 	buttonDisabledSprite int
 
+	empty             *image.NineSlice
 	background        *image.NineSlice
 	backgroundHover   *image.NineSlice
 	backgroundPressed *image.NineSlice
@@ -103,21 +112,45 @@ type UI struct {
 	buttonSize stdimage.Point
 }
 
-type randomTerrain struct {
-	Terrain     terr.Terrain
-	AllowRemove bool
+type terrainButton struct {
+	Button  *widget.Button
+	Tooltip *widget.Text
 }
 
 func (ui *UI) UI() *ebitenui.UI {
 	return ui.ui
 }
 
-func (ui *UI) SetResourceLabel(id resource.Resource, text string) {
-	ui.resourceLabels[id].Label = text
+func (ui *UI) Update() {
+	ui.UI().Update()
 }
 
-func (ui *UI) SetPopulationLabel(text string) {
+func (ui *UI) Draw(screen *ebiten.Image) {
+	ui.statusTimer--
+	if ui.statusTimer == 0 {
+		ui.statusLabel.GetWidget().Visibility = widget.Visibility_Hide
+	}
+
+	ui.UI().Draw(screen)
+}
+
+func (ui *UI) SetResourceLabel(id resource.Resource, text string, warning bool) {
+	label := ui.resourceLabels[id]
+	label.Label = text
+	if warning {
+		label.Color = ui.sprites.TextHighlightColor
+	} else {
+		label.Color = ui.sprites.TextColor
+	}
+}
+
+func (ui *UI) SetPopulationLabel(text string, warning bool) {
 	ui.populationLabel.Label = text
+	if warning {
+		ui.populationLabel.Color = ui.sprites.TextHighlightColor
+	} else {
+		ui.populationLabel.Color = ui.sprites.TextColor
+	}
 }
 
 func (ui *UI) SetTimerLabel(text string) {
@@ -128,12 +161,36 @@ func (ui *UI) SetSpeedLabel(text string) {
 	ui.speedLabel.Label = text
 }
 
-func (ui *UI) SetButtonEnabled(id terr.Terrain, enabled bool) {
+func (ui *UI) SetRandomTilesLabel(text string) {
+	ui.randomTilesLabel.Label = text
+}
+
+func (ui *UI) SetStatusLabel(text string) {
+	ui.statusLabel.Text().Label = text
+	ui.statusLabel.GetWidget().Visibility = widget.Visibility_Show
+	ui.statusTimer = statusTimeout
+}
+
+func (ui *UI) EnableButton(id terr.Terrain) {
 	button := ui.terrainButtons[id]
-	if button == nil {
+	if button.Button == nil {
 		return
 	}
-	button.GetWidget().Disabled = !enabled
+	w := button.Button.GetWidget()
+	if w.Disabled {
+		w.Disabled = false
+		button.Tooltip.Label = ""
+	}
+}
+
+func (ui *UI) DisableButton(id terr.Terrain, message string) {
+	button := ui.terrainButtons[id]
+	if button.Button == nil {
+		return
+	}
+	w := button.Button.GetWidget()
+	w.Disabled = true
+	button.Tooltip.Label = "\n" + message
 }
 
 func (ui *UI) MouseInside(x, y int) bool {
@@ -150,14 +207,18 @@ func (ui *UI) MouseInside(x, y int) bool {
 	return false
 }
 
-func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites, save *SaveEvent) UI {
+func NewUI(world *ecs.World,
+	selection *Selection, fonts *Fonts, sprts *Sprites,
+	randomTerrains *RandomTerrains, save *SaveEvent, editor *EditorMode) UI {
 	ui := UI{
-		randomButtons: map[int]randomButton{},
-		selection:     selection,
-		fonts:         fonts,
-		idPool:        util.NewIntPool[int](8),
-		sprites:       sprts,
-		saveEvent:     save,
+		randomButtons:  map[int]randomButton{},
+		selection:      selection,
+		fonts:          fonts,
+		idPool:         util.NewIntPool[int](8),
+		sprites:        sprts,
+		saveEvent:      save,
+		editor:         editor,
+		randomTerrains: randomTerrains,
 
 		specialCardSprite:    sprts.GetIndex(sprites.SpecialCardMarker),
 		buttonIdleSprite:     sprts.GetIndex(sprites.Button),
@@ -182,13 +243,12 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 	w = sp.Bounds().Dx()
 	ui.backgroundPressed = image.NewNineSliceSimple(sp, w/4, w/2)
 
+	ui.empty = image.NewNineSliceColor(color.Transparent)
+
 	ui.prepareButtons()
 
 	rootContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewGridLayout(
-			widget.GridLayoutOpts.Columns(2),
-			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
-		)),
+		widget.ContainerOpts.Layout(widget.NewStackedLayout()),
 	)
 
 	hudContainer := ui.createHUD()
@@ -196,6 +256,12 @@ func NewUI(world *ecs.World, selection *Selection, fonts *Fonts, sprts *Sprites,
 
 	uiContainer := ui.createUI()
 	rootContainer.AddChild(uiContainer)
+
+	menu := ui.createMenu()
+	rootContainer.AddChild(menu)
+
+	status := ui.createStatusBar()
+	rootContainer.AddChild(status)
 
 	eui := ebitenui.UI{
 		Container: rootContainer,
@@ -211,12 +277,12 @@ func (ui *UI) createRandomButton(rules *Rules, index int) {
 	allowRemove := terr.Properties[t].TerrainBits.Contains(terr.IsTerrain) &&
 		rand.Float64() < rules.SpecialCardProbability
 
-	button, id := ui.createButton(t, allowRemove, randSprite)
+	button, _, id := ui.createButton(t, allowRemove, randSprite)
 	ui.randomContainers[index].AddChild(button)
 	ui.randomButtons[id] = randomButton{t, randSprite, allowRemove, button, index}
 }
 
-func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target stdimage.Point) bool {
+func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, randTerrains *RandomTerrains, renderTick int64, target stdimage.Point) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
 		ui.animMapper.NewWith(&comp.CardAnimation{
@@ -226,6 +292,11 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target
 			RandSprite: bt.RandomSprite,
 			StartTick:  renderTick,
 		})
+		if ui.editor.IsEditor {
+			return true
+		}
+
+		randTerrains.TotalPlaced++
 
 		ui.randomContainers[bt.Index].RemoveChild(bt.Button)
 		delete(ui.randomButtons, id)
@@ -237,14 +308,14 @@ func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, renderTick int64, target
 		// Try at the same index first
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Index == bt.Index && bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
-				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
+				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, false, bt2.AllowRemove)
 				return true
 			}
 		}
 		// Try to find any
 		for id2, bt2 := range ui.randomButtons {
 			if bt2.Terrain == bt.Terrain && bt2.AllowRemove == bt.AllowRemove {
-				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, bt2.AllowRemove)
+				ui.selectTerrain(bt2.Button, bt2.Terrain, id2, bt2.RandomSprite, false, bt2.AllowRemove)
 				return true
 			}
 		}
@@ -274,11 +345,11 @@ func (ui *UI) ReplaceAllButtons(rules *Rules) {
 
 func (ui *UI) createUI() *widget.Container {
 	anchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
+			widget.AnchorLayoutOpts.Padding(widget.Insets{Top: 48}),
+		)),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionEnd,
-			}),
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
 		),
 	)
 
@@ -288,7 +359,7 @@ func (ui *UI) createUI() *widget.Container {
 			widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 				widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.RowLayoutOpts.Spacing(24),
+				widget.RowLayoutOpts.Spacing(6),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
@@ -306,49 +377,47 @@ func (ui *UI) createUI() *widget.Container {
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
-				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.GridLayoutOpts.Spacing(4, 4),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(2)),
+				widget.GridLayoutOpts.Spacing(8, 8),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionEnd,
-				VerticalPosition:   widget.AnchorLayoutPositionCenter,
-				StretchHorizontal:  false,
-				StretchVertical:    false,
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
 
-	ui.terrainButtons = make([]*widget.Button, len(terr.Properties))
+	ui.terrainButtons = make([]terrainButton, len(terr.Properties))
 	for i := range terr.Properties {
 		canBuy := terr.Properties[i].TerrainBits.Contains(terr.CanBuy)
 		if !canBuy && i != int(terr.Bulldoze) {
 			continue
 		}
-		button, _ := ui.createButton(terr.Terrain(i), false)
-		ui.terrainButtons[i] = button
+		button, tooltip, _ := ui.createButton(terr.Terrain(i), false)
+		ui.terrainButtons[i] = terrainButton{Button: button, Tooltip: tooltip}
 		buildButtonsContainer.AddChild(button)
 	}
 	innerContainer.AddChild(buildButtonsContainer)
+
+	cont, lab := ui.createLabel("", randomTilesTooltipText, ui.sprites.TileWidth*3+16, widget.TextPositionCenter)
+	ui.randomTilesLabel = lab
+	innerContainer.AddChild(cont)
 
 	ui.randomButtonsContainer = widget.NewContainer(
 		widget.ContainerOpts.Layout(
 			widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(3),
-				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(4)),
-				widget.GridLayoutOpts.Spacing(4, 4),
+				widget.GridLayoutOpts.Padding(widget.NewInsetsSimple(2)),
+				widget.GridLayoutOpts.Spacing(8, 8),
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionEnd,
-				VerticalPosition:   widget.AnchorLayoutPositionCenter,
-				StretchHorizontal:  false,
-				StretchVertical:    false,
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
 			}),
-			widget.WidgetOpts.MinSize(40, 10),
 		),
 	)
 	innerContainer.AddChild(ui.randomButtonsContainer)
@@ -360,39 +429,61 @@ func (ui *UI) createUI() *widget.Container {
 }
 
 func (ui *UI) CreateRandomButtons(randomTerrains int) {
-	ui.randomContainers = make([]*widget.Container, randomTerrains)
-	if len(ui.RandomTerrains) == 0 {
-		for i := 0; i < randomTerrains; i++ {
+	ui.randomContainers = make([]*widget.Container, 0)
+	if ui.editor.IsEditor {
+		idx := 0
+		for i := range terr.Properties {
+			prop := &terr.Properties[i]
+			if !prop.TerrainBits.Contains(terr.CanBuild) || prop.TerrainBits.Contains(terr.CanBuy) {
+				continue
+			}
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, id := ui.createButton(terr.Default, false, randSprite)
+			button, _, id := ui.createButton(terr.Terrain(i), true, randSprite)
 
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
 			container.AddChild(button)
-			ui.randomContainers[i] = container
+			ui.randomContainers = append(ui.randomContainers, container)
+			ui.randomButtonsContainer.AddChild(container)
+			ui.randomButtons[id] = randomButton{terr.Default, randSprite, true, button, idx}
+
+			idx++
+		}
+	} else if len(ui.randomTerrains.Terrains) == 0 {
+		for i := 0; i < randomTerrains; i++ {
+			randSprite := uint16(rand.Int31n(math.MaxUint16))
+			button, _, id := ui.createButton(terr.Default, false, randSprite)
+
+			container := widget.NewContainer(widget.ContainerOpts.Layout(
+				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
+			container.AddChild(button)
+			ui.randomContainers = append(ui.randomContainers, container)
 			ui.randomButtonsContainer.AddChild(container)
 			ui.randomButtons[id] = randomButton{terr.Default, randSprite, false, button, i}
 		}
 		ui.updateRandomTerrains()
 	} else {
-		for i, t := range ui.RandomTerrains {
+		for i, t := range ui.randomTerrains.Terrains {
+			rem := ui.randomTerrains.AllowRemove[i]
 			randSprite := uint16(rand.Int31n(math.MaxUint16))
-			button, id := ui.createButton(t.Terrain, t.AllowRemove, randSprite)
+			button, _, id := ui.createButton(t, rem, randSprite)
 
 			container := widget.NewContainer(widget.ContainerOpts.Layout(
 				widget.NewGridLayout(widget.GridLayoutOpts.Columns(1))))
 			container.AddChild(button)
-			ui.randomContainers[i] = container
+			ui.randomContainers = append(ui.randomContainers, container)
 			ui.randomButtonsContainer.AddChild(container)
-			ui.randomButtons[id] = randomButton{t.Terrain, randSprite, t.AllowRemove, button, i}
+			ui.randomButtons[id] = randomButton{t, randSprite, rem, button, i}
 		}
 	}
 }
 
 func (ui *UI) updateRandomTerrains() {
-	ui.RandomTerrains = ui.RandomTerrains[:0]
+	ui.randomTerrains.Terrains = ui.randomTerrains.Terrains[:0]
+	ui.randomTerrains.AllowRemove = ui.randomTerrains.AllowRemove[:0]
 	for _, bt := range ui.randomButtons {
-		ui.RandomTerrains = append(ui.RandomTerrains, randomTerrain{bt.Terrain, bt.AllowRemove})
+		ui.randomTerrains.Terrains = append(ui.randomTerrains.Terrains, bt.Terrain)
+		ui.randomTerrains.AllowRemove = append(ui.randomTerrains.AllowRemove, bt.AllowRemove)
 	}
 }
 
@@ -400,55 +491,57 @@ func (ui *UI) createHUD() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
-		),
-	)
-
-	topBar := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewGridLayout(
-			widget.GridLayoutOpts.Columns(2),
-			widget.GridLayoutOpts.Stretch([]bool{false, true}, []bool{true}),
-		)),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
-				HorizontalPosition: widget.AnchorLayoutPositionCenter,
-				VerticalPosition:   widget.AnchorLayoutPositionStart,
-				StretchHorizontal:  true,
-				StretchVertical:    false,
-			}),
-			widget.WidgetOpts.MinSize(30, 30),
-		),
-	)
-
-	menu := ui.createMenu()
-
-	innerAnchor := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
-		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionCenter,
-				VerticalPosition:   widget.GridLayoutPositionStart,
-			}),
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
 		),
 	)
 
 	info := ui.createInfo()
-	innerAnchor.AddChild(info)
+	anchor.AddChild(info)
 
-	topBar.AddChild(menu)
-	topBar.AddChild(innerAnchor)
+	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget())
 
-	anchor.AddChild(topBar)
+	return anchor
+}
 
-	ui.mouseBlockers = append(ui.mouseBlockers, info.GetWidget(), menu.GetWidget())
+func (ui *UI) createStatusBar() *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
+		),
+	)
+
+	ui.statusLabel = widget.NewButton(
+		widget.ButtonOpts.Text("", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(4)),
+		widget.ButtonOpts.TextPosition(widget.TextPositionCenter, widget.TextPositionCenter),
+		widget.ButtonOpts.Image(ui.simpleButtonImage()),
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionCenter,
+				VerticalPosition:   widget.AnchorLayoutPositionEnd,
+			}),
+			widget.WidgetOpts.MinSize(600, 30),
+		),
+	)
+	ui.statusLabel.GetWidget().Visibility = widget.Visibility_Hide
+	anchor.AddChild(ui.statusLabel)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, ui.statusLabel.GetWidget())
 
 	return anchor
 }
 
 func (ui *UI) createMenu() *widget.Container {
+	anchor := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
+		),
+	)
+
 	menuContainer := widget.NewContainer(
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
@@ -458,9 +551,9 @@ func (ui *UI) createMenu() *widget.Container {
 			),
 		),
 		widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
-				HorizontalPosition: widget.GridLayoutPositionStart,
-				VerticalPosition:   widget.GridLayoutPositionStart,
+			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+				HorizontalPosition: widget.AnchorLayoutPositionStart,
+				VerticalPosition:   widget.AnchorLayoutPositionStart,
 			}),
 		),
 	)
@@ -490,41 +583,42 @@ func (ui *UI) createMenu() *widget.Container {
 
 	ui.mouseBlockers = append(ui.mouseBlockers, menuButton.GetWidget())
 
-	helpTooltipContainer := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
-		)),
-		widget.ContainerOpts.AutoDisableChildren(),
-		widget.ContainerOpts.BackgroundImage(ui.background),
-	)
+	scroll, helpTooltipContainer := ui.createScrollPanel(helpPanelHeight)
+
 	helpLabel := widget.NewText(
 		widget.TextOpts.ProcessBBCode(true),
 		widget.TextOpts.Text(helpText, ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
-		widget.TextOpts.MaxWidth(helpTooltipWidth),
+		widget.TextOpts.MaxWidth(helpPanelWidth),
 	)
 	helpTooltipContainer.AddChild(helpLabel)
 
 	helpButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
-			widget.WidgetOpts.ToolTip(widget.NewToolTip(
-				widget.ToolTipOpts.Content(helpTooltipContainer),
-				widget.ToolTipOpts.Offset(stdimage.Point{-5, 5}),
-				widget.ToolTipOpts.Position(widget.TOOLTIP_POS_WIDGET),
-				widget.ToolTipOpts.Delay(time.Millisecond*300),
-			)),
+			widget.WidgetOpts.ContextMenu(scroll),
+			widget.WidgetOpts.ContextMenuCloseMode(widget.CLICK_OUT),
 		),
-		widget.ButtonOpts.Image(ui.nonButtonImage()),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
 		widget.ButtonOpts.Text("?", ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			if args.Button.GetWidget().ContextMenu != nil {
+				cx, cy := ebiten.CursorPosition()
+				args.Button.GetWidget().FireContextMenuEvent(nil, stdimage.Pt(cx, cy))
+			}
+		}),
 	)
+	ui.mouseBlockers = append(ui.mouseBlockers, helpButton.GetWidget())
 
 	menuContainer.AddChild(menuButton)
 	menuContainer.AddChild(helpButton)
-	return menuContainer
+
+	anchor.AddChild(menuContainer)
+
+	ui.mouseBlockers = append(ui.mouseBlockers, menuContainer.GetWidget())
+	return anchor
 }
 
 func (ui *UI) createMainMenu() *widget.Container {
@@ -575,6 +669,23 @@ func (ui *UI) createMainMenu() *widget.Container {
 		}),
 	)
 
+	saveMapButton := widget.NewButton(
+		widget.ButtonOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+		widget.ButtonOpts.Image(ui.defaultButtonImage()),
+		widget.ButtonOpts.Text("Save map", ui.fonts.Default, &widget.ButtonTextColor{
+			Idle: ui.sprites.TextColor,
+		}),
+		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
+		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
+			ui.saveEvent.ShouldSaveMap = true
+		}),
+	)
+
 	saveAndQuitButton := widget.NewButton(
 		widget.ButtonOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -611,6 +722,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 	)
 
 	contextMenu.AddChild(saveButton)
+	contextMenu.AddChild(saveMapButton)
 	contextMenu.AddChild(saveAndQuitButton)
 	contextMenu.AddChild(quitButton)
 
@@ -653,7 +765,7 @@ func (ui *UI) createInfo() *widget.Container {
 	infoContainer.AddChild(cont)
 	ui.timerLabel = lab
 
-	cont, lab = ui.createLabel("", "Game speed.\nControl with PageUp/PageDown/Space.", 35, widget.TextPositionEnd)
+	cont, lab = ui.createLabel("", "Game speed.\nControl with [/] (square brackets) and Space.", 35, widget.TextPositionEnd)
 	infoContainer.AddChild(cont)
 	ui.speedLabel = lab
 
@@ -795,8 +907,8 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 
 	height := 0
 
-	if props.TerrainBelow != terr.Air {
-		idx2 := ui.sprites.GetTerrainIndex(props.TerrainBelow)
+	for _, tr := range props.TerrainBelow {
+		idx2 := ui.sprites.GetTerrainIndex(tr)
 		info2 := ui.sprites.GetInfo(idx2)
 
 		sp2 := ui.sprites.Get(idx2)
@@ -848,7 +960,7 @@ func (ui *UI) createButtonImage(t terr.Terrain, randSprite uint16, allowRemove b
 	}
 }
 
-func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ...uint16) (*widget.Button, int) {
+func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ...uint16) (*widget.Button, *widget.Text, int) {
 	id := ui.idPool.Get()
 
 	tooltipContainer := widget.NewContainer(
@@ -869,11 +981,18 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
+	warningLabel := widget.NewText(
+		widget.TextOpts.Text("", ui.fonts.Default, ui.sprites.TextHighlightColor),
+		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
+		widget.TextOpts.MaxWidth(360),
+	)
 	tooltipContainer.AddChild(label)
+	tooltipContainer.AddChild(warningLabel)
 
 	bImage := ui.buttonImages[terrain]
 	var randSpriteVal uint16 = 0
-	if len(randSprite) > 0 {
+	randomize := len(randSprite) == 0
+	if !randomize {
 		bImage = ui.createButtonImage(terrain, randSprite[0], allowRemove)
 		randSpriteVal = randSprite[0]
 	}
@@ -896,31 +1015,31 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		widget.ButtonOpts.Image(&bImage),
 
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			ui.selectTerrain(args.Button, terrain, id, randSpriteVal, allowRemove)
+			ui.selectTerrain(args.Button, terrain, id, randSpriteVal, randomize, allowRemove)
 		}),
 	)
 
-	return button, id
+	return button, warningLabel, id
 }
 
-func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, allowRemove bool) {
+func (ui *UI) selectTerrain(button *widget.Button, terrain terr.Terrain, id int, randSprite uint16, randomize bool, allowRemove bool) {
 	for _, bt := range ui.terrainButtons {
-		if bt != nil {
-			bt.SetState(widget.WidgetUnchecked)
+		if bt.Button != nil {
+			bt.Button.SetState(widget.WidgetUnchecked)
 		}
 	}
 	for _, bt := range ui.randomButtons {
 		bt.Button.SetState(widget.WidgetUnchecked)
 	}
 
-	ui.selection.SetBuild(terrain, id, randSprite, allowRemove)
+	ui.selection.SetBuild(terrain, id, randSprite, randomize || ui.editor.IsEditor, allowRemove)
 	button.SetState(widget.WidgetChecked)
 }
 
 func (ui *UI) ClearSelection() {
 	for _, bt := range ui.terrainButtons {
-		if bt != nil {
-			bt.SetState(widget.WidgetUnchecked)
+		if bt.Button != nil {
+			bt.Button.SetState(widget.WidgetUnchecked)
 		}
 	}
 	for _, bt := range ui.randomButtons {
@@ -937,10 +1056,90 @@ func (ui *UI) defaultButtonImage() *widget.ButtonImage {
 	}
 }
 
-func (ui *UI) nonButtonImage() *widget.ButtonImage {
+func (ui *UI) simpleButtonImage() *widget.ButtonImage {
 	return &widget.ButtonImage{
 		Idle:    ui.background,
 		Hover:   ui.background,
 		Pressed: ui.background,
 	}
+}
+
+func (ui *UI) createScrollPanel(height int) (*widget.Container, *widget.Container) {
+	rootContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(ui.background),
+		// the container will use an grid layout to layout its ScrollableContainer and Slider
+		widget.ContainerOpts.Layout(widget.NewGridLayout(
+			widget.GridLayoutOpts.Columns(2),
+			widget.GridLayoutOpts.Spacing(2, 0),
+			widget.GridLayoutOpts.Stretch([]bool{true, false}, []bool{true}),
+		)),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
+				Position: widget.RowLayoutPositionStart,
+				Stretch:  true,
+			}),
+		),
+	)
+
+	content := widget.NewContainer(
+		widget.ContainerOpts.Layout(widget.NewRowLayout(
+			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
+			widget.RowLayoutOpts.Spacing(5),
+			widget.RowLayoutOpts.Padding(widget.NewInsetsSimple(12)),
+		)),
+	)
+
+	scrollContainer := widget.NewScrollContainer(
+		widget.ScrollContainerOpts.Content(content),
+		widget.ScrollContainerOpts.StretchContentWidth(),
+		widget.ScrollContainerOpts.Padding(widget.NewInsetsSimple(2)),
+		widget.ScrollContainerOpts.Image(&widget.ScrollContainerImage{
+			Idle: ui.background,
+			Mask: ui.background,
+		}),
+		widget.ScrollContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(widget.GridLayoutData{
+				MaxHeight: height,
+			}),
+		),
+	)
+	rootContainer.AddChild(scrollContainer)
+
+	//Create a function to return the page size used by the slider
+	pageSizeFunc := func() int {
+		return int(math.Round(float64(scrollContainer.ViewRect().Dy()) / float64(content.GetWidget().Rect.Dy()) * 1000))
+	}
+
+	vSlider := widget.NewSlider(
+		widget.SliderOpts.Direction(widget.DirectionVertical),
+		widget.SliderOpts.MinMax(0, 1000),
+		widget.SliderOpts.PageSizeFunc(pageSizeFunc),
+		widget.SliderOpts.ChangedHandler(func(args *widget.SliderChangedEventArgs) {
+			scrollContainer.ScrollTop = float64(args.Slider.Current) / 1000
+		}),
+		widget.SliderOpts.Images(
+			&widget.SliderTrackImage{
+				Idle:  ui.empty,
+				Hover: ui.empty,
+			},
+			&widget.ButtonImage{
+				Idle:    ui.backgroundPressed,
+				Hover:   ui.backgroundPressed,
+				Pressed: ui.backgroundPressed,
+			},
+		),
+	)
+	//Set the slider's position if the scrollContainer is scrolled by other means than the slider
+	scrollContainer.GetWidget().ScrolledEvent.AddHandler(func(args interface{}) {
+		a := args.(*widget.WidgetScrolledEventArgs)
+		p := pageSizeFunc() / 3
+		if p < 1 {
+			p = 1
+		}
+		vSlider.Current -= int(math.Round(a.Y * float64(p)))
+	})
+
+	rootContainer.AddChild(vSlider)
+
+	return rootContainer, content
 }

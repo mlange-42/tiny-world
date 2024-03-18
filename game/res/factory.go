@@ -2,6 +2,7 @@ package res
 
 import (
 	"image"
+	"math"
 	"math/rand"
 
 	"github.com/mlange-42/arche/ecs"
@@ -14,13 +15,14 @@ import (
 type EntityFactory struct {
 	landUseBuilder    generic.Map4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite]
 	productionBuilder generic.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite]
-	warehouseBuilder  generic.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite]
 	pathBuilder       generic.Map4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite]
 
 	radiusMapper            generic.Map1[comp.BuildRadius]
 	consumptionMapper       generic.Map1[comp.Consumption]
 	populationMapper        generic.Map1[comp.Population]
 	populationSupportMapper generic.Map1[comp.PopulationSupport]
+	unlockMapper            generic.Map1[comp.UnlocksTerrain]
+	warehouseMapper         generic.Map1[comp.Warehouse]
 
 	terrain         generic.Resource[Terrain]
 	terrainEntities generic.Resource[TerrainEntities]
@@ -37,13 +39,14 @@ func NewEntityFactory(world *ecs.World) EntityFactory {
 	return EntityFactory{
 		landUseBuilder:    generic.NewMap4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite](world),
 		productionBuilder: generic.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite](world),
-		warehouseBuilder:  generic.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Warehouse, comp.RandomSprite](world),
 		pathBuilder:       generic.NewMap4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite](world),
 
 		radiusMapper:            generic.NewMap1[comp.BuildRadius](world),
 		consumptionMapper:       generic.NewMap1[comp.Consumption](world),
 		populationMapper:        generic.NewMap1[comp.Population](world),
 		populationSupportMapper: generic.NewMap1[comp.PopulationSupport](world),
+		warehouseMapper:         generic.NewMap1[comp.Warehouse](world),
+		unlockMapper:            generic.NewMap1[comp.UnlocksTerrain](world),
 
 		terrain:         generic.NewResource[Terrain](world),
 		terrainEntities: generic.NewResource[TerrainEntities](world),
@@ -61,17 +64,6 @@ func (f *EntityFactory) createLandUse(pos image.Point, t terr.Terrain, randSprit
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(f.update.Get().Interval)},
-		&comp.RandomSprite{Rand: randSprite},
-	)
-	return e
-}
-
-func (f *EntityFactory) createWarehouse(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
-	e := f.warehouseBuilder.NewWith(
-		&comp.Tile{Point: pos},
-		&comp.Terrain{Terrain: t},
-		&comp.UpdateTick{Tick: rand.Int63n(f.update.Get().Interval)},
-		&comp.Warehouse{},
 		&comp.RandomSprite{Rand: randSprite},
 	)
 	return e
@@ -102,9 +94,7 @@ func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *
 func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
 	props := &terr.Properties[t]
 	var e ecs.Entity
-	if props.TerrainBits.Contains(terr.IsWarehouse) {
-		e = f.createWarehouse(pos, t, randSprite)
-	} else if props.TerrainBits.Contains(terr.IsPath) {
+	if props.TerrainBits.Contains(terr.IsPath) {
 		e = f.createPath(pos, t, randSprite)
 	} else {
 		prod := props.Production
@@ -140,12 +130,21 @@ func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint1
 	if props.PopulationSupport.MaxPopulation > 0 {
 		f.populationSupportMapper.Add(e)
 	}
+	if props.UnlocksTerrains > 0 {
+		f.unlockMapper.Add(e)
+	}
+	if props.TerrainBits.Contains(terr.IsWarehouse) {
+		f.warehouseMapper.Add(e)
+	}
 
 	return e
 }
 
 // Set creates an entity of the given terrain type, placing it in the world and updating the game grids.
-func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16) ecs.Entity {
+func (f *EntityFactory) Set(world *ecs.World, x, y int, value terr.Terrain, randSprite uint16, randomize bool) ecs.Entity {
+	if randomize {
+		randSprite = uint16(rand.Int31n(math.MaxUint16))
+	}
 	if !terr.Properties[value].TerrainBits.Contains(terr.IsTerrain) {
 		f.landUse.Get().Set(x, y, value)
 		e := f.create(image.Pt(x, y), value, randSprite)

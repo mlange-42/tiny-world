@@ -5,6 +5,7 @@ import (
 	"github.com/mlange-42/arche/generic"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
+	"github.com/mlange-42/tiny-world/game/resource"
 )
 
 // DoConsumption system.
@@ -13,8 +14,9 @@ type DoConsumption struct {
 	time   generic.Resource[res.GameTick]
 	update generic.Resource[res.UpdateInterval]
 	stock  generic.Resource[res.Stock]
+	editor generic.Resource[res.EditorMode]
 
-	filter generic.Filter2[comp.UpdateTick, comp.Consumption]
+	filter generic.Filter3[comp.UpdateTick, comp.Production, comp.Consumption]
 }
 
 // Initialize the system
@@ -23,8 +25,9 @@ func (s *DoConsumption) Initialize(world *ecs.World) {
 	s.time = generic.NewResource[res.GameTick](world)
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 
-	s.filter = *generic.NewFilter2[comp.UpdateTick, comp.Consumption]()
+	s.filter = *generic.NewFilter3[comp.UpdateTick, comp.Production, comp.Consumption]()
 }
 
 // Update the system
@@ -32,6 +35,7 @@ func (s *DoConsumption) Update(world *ecs.World) {
 	if s.speed.Get().Pause {
 		return
 	}
+	isEditor := s.editor.Get().IsEditor
 
 	stock := s.stock.Get()
 	tick := s.time.Get().Tick
@@ -40,17 +44,24 @@ func (s *DoConsumption) Update(world *ecs.World) {
 
 	query := s.filter.Query(world)
 	for query.Next() {
-		up, cons := query.Get()
+		up, prod, cons := query.Get()
 
 		if up.Tick != tickMod {
 			continue
 		}
 
 		cons.IsSatisfied = true
+		if isEditor {
+			continue
+		}
+
 		for i, c := range cons.Amount {
 			cons.Countdown[i] -= int16(c)
 			if cons.Countdown[i] < 0 {
-				if stock.Res[i] > 0 {
+				if prod.Resource == resource.Resource(i) && prod.Stock > 0 {
+					cons.Countdown[i] += int16(update.Countdown)
+					prod.Stock--
+				} else if stock.Res[i] > 0 {
 					cons.Countdown[i] += int16(update.Countdown)
 					stock.Res[i]--
 				} else {

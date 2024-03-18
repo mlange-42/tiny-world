@@ -2,6 +2,7 @@ package sys
 
 import (
 	"math"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -13,13 +14,15 @@ import (
 // GameControls system.
 type GameControls struct {
 	PauseKey      ebiten.Key
-	SlowerKey     ebiten.Key
-	FasterKey     ebiten.Key
+	SlowerKey     rune
+	FasterKey     rune
 	FullscreenKey ebiten.Key
 
 	speed     generic.Resource[res.GameSpeed]
 	update    generic.Resource[res.UpdateInterval]
 	prevSpeed int8
+
+	inputChars []rune
 }
 
 // Initialize the system
@@ -44,12 +47,17 @@ func (s *GameControls) Update(world *ecs.World) {
 	if inpututil.IsKeyJustPressed(s.PauseKey) {
 		speed.Pause = !speed.Pause
 	}
-	if inpututil.IsKeyJustPressed(s.SlowerKey) && speed.Speed > speed.MinSpeed {
+
+	s.inputChars = ebiten.AppendInputChars(s.inputChars)
+
+	if speed.Speed > speed.MinSpeed && slices.Contains(s.inputChars, s.SlowerKey) {
 		speed.Speed -= 1
 	}
-	if inpututil.IsKeyJustPressed(s.FasterKey) && speed.Speed < speed.MaxSpeed {
+	if speed.Speed < speed.MaxSpeed && slices.Contains(s.inputChars, s.FasterKey) {
 		speed.Speed += 1
 	}
+
+	s.inputChars = s.inputChars[:0]
 
 	if s.prevSpeed != speed.Speed {
 		ebiten.SetTPS(int(math.Pow(2, float64(speed.Speed)) * float64(update.Interval)))

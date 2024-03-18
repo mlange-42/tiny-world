@@ -1,7 +1,7 @@
 {
     "zero_terrain": "air",
     "buildable": "buildable",
-    "default": "grass",
+    "default": "plains",
     "first_building": "warehouse",
     "bulldoze": "bulldoze",
     "terrains": [
@@ -19,20 +19,30 @@
             "description": "Bulldoze buildings, trees and rocks"
         },
         {
-            "name": "grass",
+            "name": "plains",
             "is_terrain": true,
             "build_on": ["buildable"],
-            "connects_to": ["grass", "water", "desert"],
+            "connects_to": ["plains", "hills", "water", "desert"],
             "can_build": true,
             "symbols": "-",
-            "description": "A basic land tile"
+            "description": "A flat land tile. Everything can be built here"
+        },
+        {
+            "name": "hills",
+            "is_terrain": true,
+            "build_on": ["buildable"],
+            "connects_to": ["hills"],
+            "terrain_below": ["plains"],
+            "can_build": true,
+            "symbols": "^",
+            "description": "A hilly land tile. Not suitable for fields"
         },
         {
             "name": "water",
             "is_terrain": true,
             "build_on": ["buildable"],
             "connects_to": ["water"],
-            "terrain_below": "grass",
+            "terrain_below": ["plains"],
             "can_build": true,
             "symbols": "~",
             "description": "A land tile with water. Can be used by fisherman"
@@ -42,10 +52,10 @@
             "is_terrain": true,
             "build_on": ["buildable"],
             "connects_to": ["desert"],
-            "terrain_below": "grass",
+            "terrain_below": ["plains"],
             "can_build": true,
             "symbols": "+",
-            "description": "A desert land tile"
+            "description": "A desert land tile. Not suitable for forestry or agriculture"
         },
 
 
@@ -57,19 +67,26 @@
             "can_buy": false
         },
         {
+            "name": "fence",
+            "build_on": [],
+            "connects_to": ["pasture", "shepherd"],
+            "can_build": false,
+            "can_buy": false
+        },
+        {
             "name": "path",
             "is_path": true,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "connects_to": [
-                "path", "bridge", "farm", "fisherman", "lumberjack", "mason",
-                "warehouse", "tower", "castle", "windmill", "watermill"
+                "path", "bridge", "farm", "shepherd", "fisherman", "lumberjack", "mason",
+                "warehouse", "tower", "castle", "windmill", "watermill", "church", "monastery"
             ],
             "can_build": true,
             "can_buy": true,
             "build_cost": [
                 {"resource": "wood", "amount": 1}
             ],
-            "symbols": "pP",
+            "symbols": "'´`",
             "description": "A path. Required by all buildings"
         },
         {
@@ -77,8 +94,8 @@
             "is_bridge": true,
             "build_on": ["water"],
             "connects_to": [
-                "path", "farm", "fisherman", "lumberjack", "mason",
-                "warehouse", "tower", "castle", "windmill", "watermill"
+                "path", "farm", "shepherd", "fisherman", "lumberjack", "mason",
+                "warehouse", "tower", "castle", "windmill", "watermill", "church", "monastery"
             ],
             "can_build": true,
             "can_buy": true,
@@ -90,13 +107,13 @@
                 {"resource": "wood", "amount": 2},
                 {"resource": "stones", "amount": 1}
             ],
-            "symbols": "b",
+            "symbols": "\"",
             "description": "A path over water. Can bridge a single water tile only"
         },
 
         {
             "name": "field",
-            "build_on": ["grass"],
+            "build_on": ["plains"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
@@ -104,34 +121,47 @@
                 {"resource": "wood", "amount": 1},
                 {"resource": "stones", "amount": 1}
             ],
-            "symbols": "f",
-            "description": "Can be used by farms to produce food"
+            "symbols": "%",
+            "description": "Can be used by farms to produce food. Can be placed on plains only"
+        },
+        {
+            "name": "pasture",
+            "build_on": ["plains", "hills"],
+            "terrain_below": ["fence"],
+            "can_build": true,
+            "can_buy": true,
+            "requires_range": true,
+            "build_cost": [
+                {"resource": "wood", "amount": 3}
+            ],
+            "symbols": "pP",
+            "description": "Can be used by shepherds to produce food. Can be placed on plains and hills"
         },
 
         {
             "name": "tree",
-            "build_on": ["grass"],
+            "build_on": ["plains", "hills"],
             "can_build": true,
-            "symbols": "t",
-            "description": "Can be used by lumberjacks to produce wood"
+            "symbols": "tT",
+            "description": "Can be used by lumberjacks to produce wood. Can be placed on plains and hills"
         },
         {
             "name": "rock",
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
-            "symbols": "rR",
-            "description": "Can be used by masons to produce stones"
+            "symbols": "oóò",
+            "description": "Can be used by masons to produce stones. Can't be placed on water"
         },
 
         {
             "name": "farm",
             "is_building": true,
-            "build_on": ["grass"],
+            "build_on": ["plains", "hills"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 5},
@@ -150,21 +180,51 @@
             "consumption": [
                 {"resource": "food", "amount": 1}
             ],
-            "symbols": "F",
+            "symbols": "fF",
             "description": "Produces 1 food/min per neighboring field"
         },
         {
-            "name": "fisherman",
+            "name": "shepherd",
             "is_building": true,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base", "fence"],
             "population": 1,
             "build_cost": [
-                {"resource": "wood", "amount": 3}
+                {"resource": "wood", "amount": 6}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 5,
+                "required_terrain": "path",
+                "production_terrain": ["pasture"],
+                "haul_capacity": 2
+            },
+            "consumption": [
+                {"resource": "food", "amount": 1}
+            ],
+            "symbols": "sś",
+            "description": "Produces 1 food/min per neighboring pasture"
+        },
+        {
+            "name": "fisherman",
+            "is_building": true,
+            "build_on": ["plains", "hills", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "requires_range": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": ["building_base"],
+            "population": 1,
+            "build_cost": [
+                {"resource": "wood", "amount": 3},
+                {"resource": "stones", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
@@ -179,18 +239,18 @@
             "consumption": [
                 {"resource": "food", "amount": 1}
             ],
-            "symbols": "iI",
+            "symbols": "iíì",
             "description": "Produces 1 food/min per neighboring water"
         },
         {
             "name": "lumberjack",
             "is_building": true,
-            "build_on": ["grass"],
+            "build_on": ["plains", "hills"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 2},
@@ -209,18 +269,18 @@
             "consumption": [
                 {"resource": "food", "amount": 5}
             ],
-            "symbols": "l",
+            "symbols": "lł",
             "description": "Produces 1 wood/min per neighboring tree"
         },
         {
             "name": "mason",
             "is_building": true,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 10}
@@ -238,19 +298,19 @@
             "consumption": [
                 {"resource": "food", "amount": 5}
             ],
-            "symbols": "mM",
+            "symbols": "nńñ",
             "description": "Produces 1 stone/min per neighboring rock"
         },
         {
             "name": "windmill",
             "is_building": true,
             "is_warehouse": true,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "build_cost": [
                 {"resource": "wood", "amount": 15},
                 {"resource": "stones", "amount": 10}
@@ -266,29 +326,29 @@
                 "max_population": 8,
                 "required_terrain": "path",
                 "malus_terrain": [
-                    "tree", "farm", "lumberjack", "mason", "windmill", "watermill",
-                    "tower", "castle", "warehouse"
+                    "tree", "farm", "shepherd", "lumberjack", "mason", "windmill", "watermill",
+                    "tower", "castle", "warehouse", "church", "monastery"
                 ]
             },
-            "symbols": "wW",
+            "symbols": "LŁĹ",
             "description": "Increases the population limit by one per neighboring tile without trees or buildings. Stores some food and is a drop-off point for it"
         },
         {
             "name": "watermill",
             "is_building": true,
             "is_warehouse": true,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["water"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "build_cost": [
                 {"resource": "wood", "amount": 10},
                 {"resource": "stones", "amount": 15}
             ],
             "consumption": [
-                {"resource": "stones", "amount": 1}
+                {"resource": "wood", "amount": 1}
             ],
             "storage": [
                 {"resource": "food", "amount": 5}
@@ -299,19 +359,19 @@
                 "required_terrain": "path",
                 "bonus_terrain": ["water"]
             },
-            "symbols": "aA",
+            "symbols": "rŕř",
             "description": "Increases the population limit by one per neighboring water tile. Stores some food and is a drop-off point for it"
         },
         {
             "name": "warehouse",
             "is_building": true,
             "is_warehouse": true,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "can_buy": true,
             "requires_range": true,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "build_cost": [
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}
@@ -321,19 +381,19 @@
                 {"resource": "wood", "amount": 25},
                 {"resource": "stones", "amount": 25}
             ],
-            "symbols": "hH",
+            "symbols": "AÁÀ",
             "description": "Stores resources and is a drop-off point for haulers"
         },
         {
             "name": "tower",
             "is_building": true,
             "build_radius": 6,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "can_buy": true,
             "requires_range": false,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "population": 1,
             "build_cost": [
                 {"resource": "wood", "amount": 15},
@@ -344,19 +404,19 @@
                 {"resource": "wood", "amount": 1},
                 {"resource": "stones", "amount": 1}
             ],
-            "symbols": "oO",
+            "symbols": "OÓÒ",
             "description": "Conquers land to colonize"
         },
         {
             "name": "castle",
             "is_building": true,
             "build_radius": 12,
-            "build_on": ["grass", "desert"],
+            "build_on": ["plains", "hills", "desert"],
             "can_build": true,
             "can_buy": true,
             "requires_range": false,
             "connects_to": ["path", "bridge"],
-            "terrain_below": "building_base",
+            "terrain_below": ["building_base"],
             "population": 3,
             "build_cost": [
                 {"resource": "wood", "amount": 50},
@@ -367,8 +427,65 @@
                 {"resource": "wood", "amount": 3},
                 {"resource": "stones", "amount": 3}
             ],
-            "symbols": "cC",
+            "symbols": "cćĉ",
             "description": "Conquers land to colonize"
+        },
+        {
+            "name": "church",
+            "is_building": true,
+            "build_on": ["plains", "hills", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "requires_range": true,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": ["building_base"],
+            "unlocks_terrains": 250,
+            "build_cost": [
+                {"resource": "wood", "amount": 20},
+                {"resource": "stones", "amount": 10}
+            ],
+            "consumption": [
+                {"resource": "wood", "amount": 1}
+            ],
+            "symbols": "uúù",
+            "description": "Unlocks 200 random terrain tiles"
+        },
+        {
+            "name": "monastery",
+            "is_building": true,
+            "is_warehouse": true,
+            "build_on": ["plains", "hills", "desert"],
+            "can_build": true,
+            "can_buy": true,
+            "build_radius": 6,
+            "population": 3,
+            "requires_range": false,
+            "connects_to": ["path", "bridge"],
+            "terrain_below": ["building_base"],
+            "unlocks_terrains": 1000,
+            "build_cost": [
+                {"resource": "wood", "amount": 50},
+                {"resource": "stones", "amount": 50}
+            ],
+            "production": {
+                "resource": "food",
+                "max_production": 7,
+                "required_terrain": "path",
+                "production_terrain": ["field", "pasture"],
+                "haul_capacity": 2
+            },
+            "consumption": [
+                {"resource": "food", "amount": 3},
+                {"resource": "wood", "amount": 1},
+                {"resource": "stones", "amount": 1}
+            ],
+            "storage": [
+                {"resource": "food", "amount": 5},
+                {"resource": "wood", "amount": 5},
+                {"resource": "stones", "amount": 5}
+            ],
+            "symbols": "áàâ",
+            "description": "Unlocks 1000 random terrain tiles, conquers land and serves as a small warehouse. Produces 1 food/min per neighboring field or pasture"
         }
     ]
 }

@@ -1,12 +1,12 @@
 package save
 
 import (
+	"encoding/json"
 	"fmt"
+	"image"
 	"regexp"
 	"strings"
 
-	"github.com/mlange-42/arche-model/model"
-	"github.com/mlange-42/arche-model/resource"
 	as "github.com/mlange-42/arche-serde"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
@@ -14,27 +14,10 @@ import (
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
-func SaveWorld(folder, name string, world *ecs.World) error {
+func SaveWorld(folder, name string, world *ecs.World, skip []generic.Comp) error {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
-			generic.T[res.Fonts](),
-			generic.T[res.Screen](),
-			generic.T[res.EntityFactory](),
-			generic.T[res.Sprites](),
-			generic.T[res.Terrain](),
-			generic.T[res.TerrainEntities](),
-			generic.T[res.LandUse](),
-			generic.T[res.LandUseEntities](),
-			generic.T[res.Buildable](),
-			generic.T[res.SaveEvent](),
-			generic.T[res.UpdateInterval](),
-			generic.T[res.GameSpeed](),
-			generic.T[res.Selection](),
-			generic.T[res.Mouse](),
-			generic.T[res.View](),
-			generic.T[resource.Termination](),
-			generic.T[resource.Rand](),
-			generic.T[model.Systems](),
+			skip...,
 		),
 	)
 	if err != nil {
@@ -42,6 +25,10 @@ func SaveWorld(folder, name string, world *ecs.World) error {
 	}
 
 	return saveToFile(folder, name, js)
+}
+
+func SaveAchievements(file string, completed []string) error {
+	return saveAchievements(file, completed)
 }
 
 func IsValidName(name string) bool {
@@ -58,12 +45,12 @@ func DeleteGame(folder, name string) error {
 }
 
 func SaveMap(folder, name string, world *ecs.World) error {
-	b := strings.Builder{}
-
 	rules := ecs.GetResource[res.Rules](world)
 	bounds := ecs.GetResource[res.WorldBounds](world)
 	terrain := ecs.GetResource[res.Terrain](world)
 	landUse := ecs.GetResource[res.LandUse](world)
+
+	terrains := map[string]int{}
 
 	for _, t := range rules.RandomTerrains {
 		var tp terr.TerrainPair
@@ -76,13 +63,18 @@ func SaveMap(folder, name string, world *ecs.World) error {
 		if !ok {
 			return fmt.Errorf("symbol not found for %s/%s", terr.Properties[tp.Terrain].Name, terr.Properties[tp.LandUse].Name)
 		}
-		b.WriteRune(sym)
+		symStr := string(sym)
+		if cnt, ok := terrains[symStr]; ok {
+			terrains[symStr] = cnt + 1
+		} else {
+			terrains[symStr] = 1
+		}
 	}
-	b.WriteString("\n")
 
-	cx, cy := terrain.Width()/2, terrain.Height()/2
-	b.WriteString(fmt.Sprintf("%d %d\n", cx-bounds.Min.X, cy-bounds.Min.Y))
+	center := image.Pt(terrain.Width()/2-bounds.Min.X, terrain.Height()/2-bounds.Min.Y)
 
+	rows := make([]string, bounds.Dy()+1)
+	b := strings.Builder{}
 	for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x <= bounds.Max.X; x++ {
 			ter := terrain.Get(x, y)
@@ -96,8 +88,22 @@ func SaveMap(folder, name string, world *ecs.World) error {
 			}
 			b.WriteRune(sym)
 		}
-		b.WriteString("\n")
+		rows[y-bounds.Min.Y] = b.String()
+		b.Reset()
 	}
 
-	return saveMapToFile(folder, name, b.String())
+	mapJs := mapJs{
+		Terrains:              terrains,
+		Center:                center,
+		InitialRandomTerrains: rules.InitialRandomTerrains,
+		Achievements:          []string{},
+		Description:           []string{},
+		Map:                   rows,
+	}
+	jsData, err := json.MarshalIndent(mapJs, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return saveMapToFile(folder, name, string(jsData))
 }

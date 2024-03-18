@@ -3,6 +3,7 @@
 package save
 
 import (
+	"encoding/json"
 	"os"
 	"path"
 	"path/filepath"
@@ -21,8 +22,29 @@ func loadWorld(world *ecs.World, folder, name string) error {
 	return serde.Deserialize(jsData, world)
 }
 
-func listGames(folder string) ([]string, error) {
-	games := []string{}
+func loadSaveTime(folder, name string) (saveTime, error) {
+	jsData, err := os.ReadFile(path.Join(folder, name) + ".json")
+	if err != nil {
+		return saveTime{}, err
+	}
+	helper := saveGameInfo{}
+	err = json.Unmarshal(jsData, &helper)
+	if err != nil {
+		return saveTime{}, err
+	}
+	return helper.Resources.SaveTime, nil
+}
+
+func loadAchievements(file string, completed *[]string) error {
+	jsData, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsData, completed)
+}
+
+func listGames(folder string) ([]SaveGame, error) {
+	games := []SaveGame{}
 
 	files, err := os.ReadDir(folder)
 	if err != nil {
@@ -36,7 +58,14 @@ func listGames(folder string) ([]string, error) {
 		ext := filepath.Ext(file.Name())
 		if ext == ".json" {
 			base := strings.TrimSuffix(file.Name(), ".json")
-			games = append(games, base)
+			info, err := loadSaveTime(folder, base)
+			if err != nil {
+				return nil, err
+			}
+			games = append(games, SaveGame{
+				Name: base,
+				Time: info.Time,
+			})
 		}
 	}
 	return games, nil
@@ -55,8 +84,8 @@ func listMapsLocal(folder string) ([]MapLocation, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name())
-		if ext == ".asc" {
-			base := strings.TrimSuffix(file.Name(), ".asc")
+		if ext == ".json" {
+			base := strings.TrimSuffix(file.Name(), ".json")
 			maps = append(maps, MapLocation{Name: base, IsEmbedded: false})
 		}
 	}
@@ -64,7 +93,7 @@ func listMapsLocal(folder string) ([]MapLocation, error) {
 }
 
 func loadMapLocal(folder string, name string) (string, error) {
-	mapData, err := os.ReadFile(path.Join(folder, name) + ".asc")
+	mapData, err := os.ReadFile(path.Join(folder, name) + ".json")
 	if err != nil {
 		return "", err
 	}

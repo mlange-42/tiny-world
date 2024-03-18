@@ -2,6 +2,7 @@
     "world_size": 1024,
     "initial_build_radius": 12,
     "initial_population": 10,
+    "initial_random_terrains": 1000,
     "initial_resources": [
         {"resource": "food", "amount": 25},
         {"resource": "wood", "amount": 25},
@@ -10,8 +11,9 @@
     "random_terrains_count": 6,
     "special_card_probability": 0.05,
     "random_terrains": [
-        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
-        "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass",
+        "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains",
+        "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains", "plains",
+        "hills", "hills", "hills", "hills",
         "water", "water", "water", "water", "water", "water",
         "desert",
         "tree", "tree", "tree", "tree", "tree", "tree",

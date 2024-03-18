@@ -16,6 +16,7 @@ type DoProduction struct {
 	update  generic.Resource[res.UpdateInterval]
 	stock   generic.Resource[res.Stock]
 	landUse generic.Resource[res.LandUse]
+	editor  generic.Resource[res.EditorMode]
 
 	filter        generic.Filter4[comp.Terrain, comp.Tile, comp.UpdateTick, comp.Production]
 	markerBuilder generic.Map2[comp.Tile, comp.ProductionMarker]
@@ -30,6 +31,7 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 	s.update = generic.NewResource[res.UpdateInterval](world)
 	s.stock = generic.NewResource[res.Stock](world)
 	s.landUse = generic.NewResource[res.LandUse](world)
+	s.editor = generic.NewResource[res.EditorMode](world)
 
 	s.filter = *generic.NewFilter4[comp.Terrain, comp.Tile, comp.UpdateTick, comp.Production]()
 	s.markerBuilder = generic.NewMap2[comp.Tile, comp.ProductionMarker](world)
@@ -37,7 +39,7 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 
 // Update the system
 func (s *DoProduction) Update(world *ecs.World) {
-	if s.speed.Get().Pause {
+	if s.speed.Get().Pause || s.editor.Get().IsEditor {
 		return
 	}
 

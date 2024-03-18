@@ -1,6 +1,8 @@
 package menu
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mlange-42/arche/ecs"
 	"github.com/mlange-42/arche/generic"
 )
@@ -18,6 +20,13 @@ func (s *UpdateUI) Initialize(world *ecs.World) {
 // Update the system
 func (s *UpdateUI) Update(world *ecs.World) {
 	ui := s.ui.Get()
+
+	if ebiten.IsKeyPressed(ebiten.KeyShift) &&
+		ebiten.IsKeyPressed(ebiten.KeyControl) &&
+		ebiten.IsKeyPressed(ebiten.KeyAlt) &&
+		inpututil.IsKeyJustPressed(ebiten.KeyU) {
+		ui.UnlockAll()
+	}
 
 	ui.UI().Update()
 }

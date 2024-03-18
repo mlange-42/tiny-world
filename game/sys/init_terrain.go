@@ -27,9 +27,9 @@ func (s *InitTerrain) Initialize(world *ecs.World) {
 	bounds.Min = image.Pt(x-1, y-1)
 	bounds.Max = image.Pt(x+1, y+1)
 
-	fac.Set(world, x, y, terr.Default, 0)
+	fac.Set(world, x, y, terr.Default, 0, true)
 
-	warehouse := fac.Set(world, x, y, terr.FirstBuilding, 0)
+	warehouse := fac.Set(world, x, y, terr.FirstBuilding, 0, true)
 	radiusMapper.Assign(warehouse, &comp.BuildRadius{Radius: uint8(rules.InitialBuildRadius)})
 
 	fac.SetBuildable(x, y, rules.InitialBuildRadius, true)

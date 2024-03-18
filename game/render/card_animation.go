@@ -52,8 +52,8 @@ func (s *CardAnimation) UpdateUI(world *ecs.World) {
 		op.GeoM.Reset()
 		op.GeoM.Translate(float64(point.X), float64(point.Y))
 
-		if below != terr.Air {
-			bIdx := sprites.GetTerrainIndex(below)
+		for _, tr := range below {
+			bIdx := sprites.GetTerrainIndex(tr)
 			sp := sprites.Get(bIdx)
 			img.DrawImage(sp, &op)
 		}
