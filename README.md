@@ -15,21 +15,9 @@ Made with [Ebitengine](https://github.com/hajimehoshi/ebiten) and the [Arche](ht
 You can play Tiny World [on itch.io](https://mlange-42.itch.io/tiny-world),
 or the development version [here](https://mlange-42.github.io/tiny-world/).
 
-### Precompiled binaries
+### Run locally
 
-You can download precompiled binaries for Linux and Windows from the [Releases](https://github.com/mlange-42/tiny-world/releases).
-
-### Build from source
-
-Clone the repository and build or run the game with [Go](https://go.dev):
-
-```shell
-git clone https://github.com/mlange-42/tiny-world.git
-cd tiny-world
-go run .
-```
-
-For building on Unix systems, `libgl1-mesa-dev` and `xorg-dev` are required.
+Please check the [installation guide here](INSTALL.md).
 
 ## Playing
 

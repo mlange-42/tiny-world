@@ -4,3 +4,8 @@
 /save/
 /maps/
 /user/
+
+# macOS binary
+./tiny-world
+
+.idea
