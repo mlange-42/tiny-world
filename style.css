@@ -1,0 +1,49 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: #050505;
+    color: #FFFFFF;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+}
+
+p {
+    margin: 0px 0px 16px 0px;
+}
+
+a {
+    color: #FFFFFF;
+}
+
+#iframe {
+    max-width: 100%;
+    margin-bottom: -6px;
+}
+
+a:visited {
+    color: #c0c0c0;
+}
+
+.tt {
+    font-family: 'Lucida Console', monospace;
+    font-size: 90%;
+    color: #c0c0c0;
+}
+
+#canvas-container {
+    display: inline-block;
+    border: solid white 2px;
+    min-width: 0px;
+    max-width: 90%;
+    overflow: auto;
+}
+
+#canvas {
+    max-width: 100%;
+}
