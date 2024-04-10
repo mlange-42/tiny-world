@@ -77,6 +77,7 @@ func (s *Haul) Update(world *ecs.World) {
 
 	update := s.update.Get()
 	landUse := s.landUse.Get()
+	landUseE := s.landUseE.Get()
 	stock := s.stock.Get()
 
 	prodQuery := s.prodFilter.Query(world)
@@ -179,7 +180,9 @@ func (s *Haul) Update(world *ecs.World) {
 			haul.PathFraction = uint8(update.Interval/2) + 1
 			*tile = target
 
-			continue
+			if haul.Home != landUseE.Get(target.X, target.Y) {
+				continue
+			}
 		}
 
 		prod.IsHauling = false

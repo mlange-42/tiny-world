@@ -1,5 +1,11 @@
 # Changelog
 
+## [[v0.2.1]](https://github.com/mlange-42/tiny-world/compare/v0.2.0...v0.2.1)
+
+### Bugfixes
+
+* Fix infinite hauling and food over-production by monasteries (#266)
+
 ## [[v0.2.0]](https://github.com/mlange-42/tiny-world/compare/v0.1.0...v0.2.0)
 
 ### Game features
