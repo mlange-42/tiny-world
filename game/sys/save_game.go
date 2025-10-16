@@ -6,10 +6,9 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mlange-42/arche-model/model"
-	"github.com/mlange-42/arche-model/resource"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark-tools/app"
+	"github.com/mlange-42/ark-tools/resource"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/res/achievements"
 	"github.com/mlange-42/tiny-world/game/save"
@@ -23,38 +22,38 @@ type SaveGame struct {
 
 	MainMenuFunc func()
 
-	ui        generic.Resource[res.UI]
-	saveEvent generic.Resource[res.SaveEvent]
-	saveTime  generic.Resource[res.SaveTime]
-	skip      []generic.Comp
+	ui        ecs.Resource[res.UI]
+	saveEvent ecs.Resource[res.SaveEvent]
+	saveTime  ecs.Resource[res.SaveTime]
+	skip      []ecs.Comp
 }
 
 // Initialize the system
 func (s *SaveGame) Initialize(world *ecs.World) {
-	s.ui = generic.NewResource[res.UI](world)
-	s.saveEvent = generic.NewResource[res.SaveEvent](world)
-	s.saveTime = generic.NewResource[res.SaveTime](world)
+	s.ui = ecs.NewResource[res.UI](world)
+	s.saveEvent = ecs.NewResource[res.SaveEvent](world)
+	s.saveTime = ecs.NewResource[res.SaveTime](world)
 
-	s.skip = []generic.Comp{generic.T[res.Fonts](),
-		generic.T[res.Screen](),
-		generic.T[res.EntityFactory](),
-		generic.T[res.Sprites](),
-		generic.T[res.Terrain](),
-		generic.T[res.TerrainEntities](),
-		generic.T[res.LandUse](),
-		generic.T[res.LandUseEntities](),
-		generic.T[res.Buildable](),
-		generic.T[res.SaveEvent](),
-		generic.T[res.UpdateInterval](),
-		generic.T[res.GameSpeed](),
-		generic.T[res.Selection](),
-		generic.T[achievements.Achievements](),
-		generic.T[res.Mouse](),
-		generic.T[res.View](),
-		generic.T[res.UI](),
-		generic.T[resource.Termination](),
-		generic.T[resource.Rand](),
-		generic.T[model.Systems](),
+	s.skip = []ecs.Comp{ecs.C[res.Fonts](),
+		ecs.C[res.Screen](),
+		ecs.C[res.EntityFactory](),
+		ecs.C[res.Sprites](),
+		ecs.C[res.Terrain](),
+		ecs.C[res.TerrainEntities](),
+		ecs.C[res.LandUse](),
+		ecs.C[res.LandUseEntities](),
+		ecs.C[res.Buildable](),
+		ecs.C[res.SaveEvent](),
+		ecs.C[res.UpdateInterval](),
+		ecs.C[res.GameSpeed](),
+		ecs.C[res.Selection](),
+		ecs.C[achievements.Achievements](),
+		ecs.C[res.Mouse](),
+		ecs.C[res.View](),
+		ecs.C[res.UI](),
+		ecs.C[resource.Termination](),
+		ecs.C[resource.Rand](),
+		ecs.C[app.Systems](),
 	}
 }
 

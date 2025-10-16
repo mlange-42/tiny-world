@@ -1,8 +1,7 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
@@ -10,24 +9,24 @@ import (
 
 // DoConsumption system.
 type DoConsumption struct {
-	speed  generic.Resource[res.GameSpeed]
-	time   generic.Resource[res.GameTick]
-	update generic.Resource[res.UpdateInterval]
-	stock  generic.Resource[res.Stock]
-	editor generic.Resource[res.EditorMode]
+	speed  ecs.Resource[res.GameSpeed]
+	time   ecs.Resource[res.GameTick]
+	update ecs.Resource[res.UpdateInterval]
+	stock  ecs.Resource[res.Stock]
+	editor ecs.Resource[res.EditorMode]
 
-	filter generic.Filter3[comp.UpdateTick, comp.Production, comp.Consumption]
+	filter *ecs.Filter3[comp.UpdateTick, comp.Production, comp.Consumption]
 }
 
 // Initialize the system
 func (s *DoConsumption) Initialize(world *ecs.World) {
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.time = generic.NewResource[res.GameTick](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.stock = generic.NewResource[res.Stock](world)
-	s.editor = generic.NewResource[res.EditorMode](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.time = ecs.NewResource[res.GameTick](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.stock = ecs.NewResource[res.Stock](world)
+	s.editor = ecs.NewResource[res.EditorMode](world)
 
-	s.filter = *generic.NewFilter3[comp.UpdateTick, comp.Production, comp.Consumption]()
+	s.filter = s.filter.New(world)
 }
 
 // Update the system
@@ -42,7 +41,7 @@ func (s *DoConsumption) Update(world *ecs.World) {
 	update := s.update.Get()
 	tickMod := tick % update.Interval
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		up, prod, cons := query.Get()
 

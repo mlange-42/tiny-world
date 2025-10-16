@@ -1,21 +1,20 @@
 package render
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // UI is a system to render the user interface.
 type UI struct {
-	screen generic.Resource[res.Screen]
-	ui     generic.Resource[res.UI]
+	screen ecs.Resource[res.Screen]
+	ui     ecs.Resource[res.UI]
 }
 
 // InitializeUI the system
 func (s *UI) InitializeUI(world *ecs.World) {
-	s.ui = generic.NewResource[res.UI](world)
-	s.screen = generic.NewResource[res.Screen](world)
+	s.ui = ecs.NewResource[res.UI](world)
+	s.screen = s.screen.New(world)
 }
 
 // UpdateUI the system

@@ -98,7 +98,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	}
 
 	ui.infoLabel = widget.NewText(
-		widget.TextOpts.Text("   ", fonts.Default, ui.sprites.TextHighlightColor),
+		widget.TextOpts.Text("   ", &fonts.Default, ui.sprites.TextHighlightColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -157,7 +157,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Spacing(5),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 24}),
+			widget.RowLayoutOpts.Padding(&widget.Insets{Top: 24}),
 		)),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
@@ -168,7 +168,7 @@ func NewUI(f fs.FS, folder, mapsFolder string, selectedTab int, sprts *res.Sprit
 	)
 
 	titleLabel := widget.NewText(
-		widget.TextOpts.Text("Tiny World", fonts.Title, ui.sprites.TextColor),
+		widget.TextOpts.Text("Tiny World", &fonts.Title, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -282,7 +282,7 @@ func (ui *UI) createMainMenuButton(text string, fonts *res.Fonts, click func(arg
 			widget.WidgetOpts.MinSize(240, 0),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text(text, &fonts.Default, &widget.ButtonTextColor{
 			Idle:     ui.sprites.TextColor,
 			Disabled: ui.sprites.TextColor,
 		}),
@@ -323,7 +323,7 @@ func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts,
 			}),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Back", fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Back", &fonts.Default, &widget.ButtonTextColor{
 			Idle:     ui.sprites.TextColor,
 			Disabled: ui.sprites.TextColor,
 		}),
@@ -346,7 +346,7 @@ func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts,
 			}),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text(text, fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text(text, &fonts.Default, &widget.ButtonTextColor{
 			Idle:     ui.sprites.TextColor,
 			Disabled: ui.sprites.TextColor,
 		}),
@@ -360,7 +360,7 @@ func (ui *UI) createBackStartButtons(text string, fonts *res.Fonts,
 
 func (ui *UI) createMainMenuLabel(text string, fonts *res.Fonts) *widget.Text {
 	label := widget.NewText(
-		widget.TextOpts.Text(text, fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(text, &fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionCenter),
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(
@@ -389,7 +389,7 @@ func (ui *UI) createNewWorldPanel(games []save.SaveGame, fonts *res.Fonts, start
 			}),
 		),
 		widget.TextInputOpts.Placeholder("World name"),
-		widget.TextInputOpts.Face(fonts.Default),
+		widget.TextInputOpts.Face(&fonts.Default),
 		widget.TextInputOpts.Image(&widget.TextInputImage{
 			Idle:     ui.background,
 			Disabled: ui.backgroundHover,
@@ -401,9 +401,7 @@ func (ui *UI) createNewWorldPanel(games []save.SaveGame, fonts *res.Fonts, start
 			DisabledCaret: ui.sprites.TextColor,
 		}),
 		widget.TextInputOpts.Padding(widget.NewInsetsSimple(5)),
-		widget.TextInputOpts.CaretOpts(
-			widget.CaretOpts.Size(fonts.Default, 2),
-		),
+		widget.TextInputOpts.CaretWidth(2),
 	)
 
 	menuContainer.AddChild(newName)
@@ -432,7 +430,7 @@ func (ui *UI) createNewWorldPanel(games []save.SaveGame, fonts *res.Fonts, start
 	menuContainer.AddChild(buttons)
 
 	editorLabel := widget.NewText(
-		widget.TextOpts.Text(editorModeText, fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(editorModeText, &fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionCenter, widget.TextPositionEnd),
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.RowLayoutData{
@@ -477,7 +475,7 @@ func (ui *UI) createLoadPanel(games []save.SaveGame, fonts *res.Fonts,
 				widget.WidgetOpts.ContextMenu(contextMenu),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(game.Name, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(game.Name, &fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: ui.sprites.TextColor,
 			}),
@@ -496,7 +494,7 @@ func (ui *UI) createLoadPanel(games []save.SaveGame, fonts *res.Fonts,
 				widget.WidgetOpts.ContextMenu(contextMenu),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(fmt.Sprintf("Delete '%s'", game), fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(fmt.Sprintf("Delete '%s'", game), &fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: ui.sprites.TextColor,
 			}),
@@ -548,7 +546,7 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 			}),
 		),
 		widget.TextInputOpts.Placeholder("World name"),
-		widget.TextInputOpts.Face(fonts.Default),
+		widget.TextInputOpts.Face(&fonts.Default),
 		widget.TextInputOpts.Image(&widget.TextInputImage{
 			Idle:     ui.background,
 			Disabled: ui.background,
@@ -560,9 +558,7 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 			DisabledCaret: ui.sprites.TextColor,
 		}),
 		widget.TextInputOpts.Padding(widget.NewInsetsSimple(5)),
-		widget.TextInputOpts.CaretOpts(
-			widget.CaretOpts.Size(fonts.Default, 2),
-		),
+		widget.TextInputOpts.CaretWidth(2),
 	)
 
 	mapsLabel := ui.createMainMenuLabel("Scenarios", fonts)
@@ -615,7 +611,7 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 		tooltipContainer := widget.NewContainer(
 			widget.ContainerOpts.Layout(widget.NewRowLayout(
 				widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-				widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+				widget.RowLayoutOpts.Padding(&widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
 			)),
 			widget.ContainerOpts.AutoDisableChildren(),
 			widget.ContainerOpts.BackgroundImage(ui.background),
@@ -648,7 +644,8 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 
 		label := widget.NewText(
 			widget.TextOpts.ProcessBBCode(true),
-			widget.TextOpts.Text(fmt.Sprintf("%s%s\n\n%sRequired achievements:\n%s", m.Name, localText, description, achieve), fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Text(fmt.Sprintf("%s%s\n\n%sRequired achievements:\n%s", m.Name, localText, description, achieve),
+				&fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 			widget.TextOpts.MaxWidth(360),
 		)
@@ -668,7 +665,7 @@ func (ui *UI) createScenariosPanel(games []save.SaveGame, achievements *achievem
 				)),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(m.Name+localMarker, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(m.Name+localMarker, &fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: color.NRGBA{180, 180, 180, 255},
 			}),
@@ -784,7 +781,7 @@ func (ui *UI) createAchievementsPanel(achieves *achievements.Achievements, fonts
 				widget.WidgetOpts.LayoutData(widget.GridLayoutData{}),
 			),
 			widget.ButtonOpts.Image(img),
-			widget.ButtonOpts.Text(name+"\n"+ach.Description, fonts.Default, &widget.ButtonTextColor{
+			widget.ButtonOpts.Text(name+"\n"+ach.Description, &fonts.Default, &widget.ButtonTextColor{
 				Idle:     ui.sprites.TextColor,
 				Disabled: color.NRGBA{120, 120, 120, 255},
 			}),

@@ -1,49 +1,48 @@
 package res
 
 import (
+	"bytes"
 	"io/fs"
 	"log"
 
-	"github.com/hajimehoshi/ebiten/v2/text"
-	"golang.org/x/image/font"
-	"golang.org/x/image/font/opentype"
-	"golang.org/x/image/font/sfnt"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 const fontFile = "data/fonts/LessRoundBox.ttf"
 
 // Fonts resource for access to UI fonts.
 type Fonts struct {
-	Default font.Face
-	Title   font.Face
+	Default text.Face
+	Title   text.Face
 }
 
 func NewFonts(fSys fs.FS) Fonts {
-	content, err := fs.ReadFile(fSys, fontFile)
+	data, err := fs.ReadFile(fSys, fontFile)
+	if err != nil {
+		panic(err)
+	}
+	reader := bytes.NewReader(data)
+	source, err := text.NewGoTextFaceSource(reader)
 	if err != nil {
 		log.Fatal("error loading font file: ", err)
 	}
-	tt, err := opentype.Parse(content)
-	if err != nil {
-		log.Fatal(err)
+	defaultFace := text.GoTextFace{
+		Source: source,
+		Size:   22,
 	}
-
-	defaultFace, err := makeSize(tt, 22)
-	if err != nil {
-		log.Fatal(err)
-	}
-	titleFace, err := makeSize(tt, 48)
-	if err != nil {
-		log.Fatal(err)
+	titleFace := text.GoTextFace{
+		Source: source,
+		Size:   48,
 	}
 
 	return Fonts{
-		Default: defaultFace,
-		Title:   titleFace,
+		Default: &defaultFace,
+		Title:   &titleFace,
 	}
 }
 
-func makeSize(tt *sfnt.Font, size int) (font.Face, error) {
+/*
+func makeSize(tt *sfnt.Font, size int) (text.Face, error) {
 	const dpi = 72
 	fontFace, err := opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    float64(size),
@@ -56,3 +55,4 @@ func makeSize(tt *sfnt.Font, size int) (font.Face, error) {
 	fontFace = text.FaceWithLineHeight(fontFace, float64(size))
 	return fontFace, nil
 }
+*/

@@ -3,18 +3,17 @@ package menu
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 )
 
 // UpdateUI system.
 type UpdateUI struct {
-	ui generic.Resource[UI]
+	ui ecs.Resource[UI]
 }
 
 // Initialize the system
 func (s *UpdateUI) Initialize(world *ecs.World) {
-	s.ui = generic.NewResource[UI](world)
+	s.ui = s.ui.New(world)
 }
 
 // Update the system

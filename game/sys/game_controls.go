@@ -6,8 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
@@ -18,8 +17,8 @@ type GameControls struct {
 	FasterKey     rune
 	FullscreenKey ebiten.Key
 
-	speed     generic.Resource[res.GameSpeed]
-	update    generic.Resource[res.UpdateInterval]
+	speed     ecs.Resource[res.GameSpeed]
+	update    ecs.Resource[res.UpdateInterval]
 	prevSpeed int8
 
 	inputChars []rune
@@ -27,8 +26,8 @@ type GameControls struct {
 
 // Initialize the system
 func (s *GameControls) Initialize(world *ecs.World) {
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
 
 	speed := s.speed.Get()
 	update := s.update.Get()
@@ -51,10 +50,10 @@ func (s *GameControls) Update(world *ecs.World) {
 	s.inputChars = ebiten.AppendInputChars(s.inputChars)
 
 	if speed.Speed > speed.MinSpeed && slices.Contains(s.inputChars, s.SlowerKey) {
-		speed.Speed -= 1
+		speed.Speed--
 	}
 	if speed.Speed < speed.MaxSpeed && slices.Contains(s.inputChars, s.FasterKey) {
-		speed.Speed += 1
+		speed.Speed++
 	}
 
 	s.inputChars = s.inputChars[:0]

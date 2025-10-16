@@ -3,8 +3,7 @@ package sys
 import (
 	"math"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/nav"
 	"github.com/mlange-42/tiny-world/game/res"
@@ -15,20 +14,20 @@ import (
 
 // Haul system.
 type Haul struct {
-	speed    generic.Resource[res.GameSpeed]
-	update   generic.Resource[res.UpdateInterval]
-	stock    generic.Resource[res.Stock]
-	landUse  generic.Resource[res.LandUse]
-	landUseE generic.Resource[res.LandUseEntities]
+	speed    ecs.Resource[res.GameSpeed]
+	update   ecs.Resource[res.UpdateInterval]
+	stock    ecs.Resource[res.Stock]
+	landUse  ecs.Resource[res.LandUse]
+	landUseE ecs.Resource[res.LandUseEntities]
 
-	prodFilter      generic.Filter3[comp.Tile, comp.Terrain, comp.Production]
-	warehouseFilter generic.Filter2[comp.Tile, comp.Terrain]
-	filter          generic.Filter2[comp.Tile, comp.Hauler]
+	prodFilter      *ecs.Filter3[comp.Tile, comp.Terrain, comp.Production]
+	warehouseFilter *ecs.Filter2[comp.Tile, comp.Terrain]
+	filter          *ecs.Filter2[comp.Tile, comp.Hauler]
 
-	haulerMap     generic.Map2[comp.Tile, comp.Hauler]
-	homeMap       generic.Map3[comp.Tile, comp.Terrain, comp.Production]
-	haulerBuilder generic.Map3[comp.Tile, comp.Hauler, comp.HaulerSprite]
-	productionMap generic.Map2[comp.Terrain, comp.Production]
+	haulerMap     *ecs.Map2[comp.Tile, comp.Hauler]
+	homeMap       *ecs.Map3[comp.Tile, comp.Terrain, comp.Production]
+	haulerBuilder *ecs.Map3[comp.Tile, comp.Hauler, comp.HaulerSprite]
+	productionMap *ecs.Map2[comp.Terrain, comp.Production]
 
 	aStar nav.AStar
 
@@ -41,24 +40,24 @@ type Haul struct {
 
 // Initialize the system
 func (s *Haul) Initialize(world *ecs.World) {
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.stock = generic.NewResource[res.Stock](world)
-	s.landUse = generic.NewResource[res.LandUse](world)
-	s.landUseE = generic.NewResource[res.LandUseEntities](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.stock = ecs.NewResource[res.Stock](world)
+	s.landUse = ecs.NewResource[res.LandUse](world)
+	s.landUseE = ecs.NewResource[res.LandUseEntities](world)
 
-	s.prodFilter = *generic.NewFilter3[comp.Tile, comp.Terrain, comp.Production]()
-	s.warehouseFilter = *generic.NewFilter2[comp.Tile, comp.Terrain]().With(generic.T[comp.Warehouse]())
-	s.filter = *generic.NewFilter2[comp.Tile, comp.Hauler]()
+	s.prodFilter = s.prodFilter.New(world)
+	s.warehouseFilter = s.warehouseFilter.New(world).With(ecs.C[comp.Warehouse]())
+	s.filter = s.filter.New(world)
 
-	s.haulerMap = generic.NewMap2[comp.Tile, comp.Hauler](world)
-	s.homeMap = generic.NewMap3[comp.Tile, comp.Terrain, comp.Production](world)
-	s.haulerBuilder = generic.NewMap3[comp.Tile, comp.Hauler, comp.HaulerSprite](world)
-	s.productionMap = generic.NewMap2[comp.Terrain, comp.Production](world)
+	s.haulerMap = s.haulerMap.New(world)
+	s.homeMap = s.homeMap.New(world)
+	s.haulerBuilder = s.haulerBuilder.New(world)
+	s.productionMap = s.productionMap.New(world)
 
 	s.aStar = nav.NewAStar(s.landUse.Get())
 
-	spritesRes := generic.NewResource[res.Sprites](world)
+	spritesRes := ecs.NewResource[res.Sprites](world)
 	spr := spritesRes.Get()
 
 	s.haulerSprites = make([]int, len(terr.Properties))
@@ -80,7 +79,7 @@ func (s *Haul) Update(world *ecs.World) {
 	landUseE := s.landUseE.Get()
 	stock := s.stock.Get()
 
-	prodQuery := s.prodFilter.Query(world)
+	prodQuery := s.prodFilter.Query()
 	for prodQuery.Next() {
 		tile, tp, prod := prodQuery.Get()
 		if prod.Stock < terr.Properties[tp.Terrain].Production.HaulCapacity || prod.IsHauling {
@@ -89,7 +88,7 @@ func (s *Haul) Update(world *ecs.World) {
 		s.toCreate = append(s.toCreate, markerEntry{Tile: *tile, Resource: prod.Resource, Home: prodQuery.Entity()})
 	}
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		tile, haul := query.Get()
 
@@ -110,7 +109,7 @@ func (s *Haul) Update(world *ecs.World) {
 	}
 
 	if len(s.toCreate) > 0 {
-		query := s.warehouseFilter.Query(world)
+		query := s.warehouseFilter.Query()
 		for query.Next() {
 			tile, ter := query.Get()
 			storage := terr.Properties[ter.Terrain].Storage
@@ -141,7 +140,7 @@ func (s *Haul) Update(world *ecs.World) {
 		tp, prod := s.productionMap.Get(entry.Home)
 		prod.Stock -= terr.Properties[tp.Terrain].Production.HaulCapacity
 		prod.IsHauling = true
-		s.haulerBuilder.NewWith(
+		s.haulerBuilder.NewEntity(
 			&entry.Tile,
 			&comp.Hauler{
 				Hauls:        entry.Resource,

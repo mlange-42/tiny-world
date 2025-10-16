@@ -7,14 +7,13 @@ import (
 	"regexp"
 	"strings"
 
-	as "github.com/mlange-42/arche-serde"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	as "github.com/mlange-42/ark-serde"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
-func SaveWorld(folder, name string, world *ecs.World, skip []generic.Comp) error {
+func SaveWorld(folder, name string, world *ecs.World, skip []ecs.Comp) error {
 	js, err := as.Serialize(world,
 		as.Opts.SkipResources(
 			skip...,

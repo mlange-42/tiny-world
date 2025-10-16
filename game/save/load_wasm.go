@@ -7,8 +7,8 @@ import (
 	"strings"
 	"syscall/js"
 
-	serde "github.com/mlange-42/arche-serde"
-	"github.com/mlange-42/arche/ecs"
+	serde "github.com/mlange-42/ark-serde"
+	"github.com/mlange-42/ark/ecs"
 )
 
 func loadWorld(world *ecs.World, folder, name string) error {

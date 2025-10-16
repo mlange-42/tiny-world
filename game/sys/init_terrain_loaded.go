@@ -1,8 +1,7 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
@@ -21,8 +20,8 @@ func (s *InitTerrainLoaded) Initialize(world *ecs.World) {
 	landUseE := ecs.GetResource[res.LandUseEntities](world)
 	fac := ecs.GetResource[res.EntityFactory](world)
 
-	filter := generic.NewFilter2[comp.Tile, comp.Terrain]()
-	query := filter.Query(world)
+	filter := ecs.NewFilter2[comp.Tile, comp.Terrain](world)
+	query := filter.Query()
 	for query.Next() {
 		tile, ter := query.Get()
 		if terr.Properties[ter.Terrain].TerrainBits.Contains(terr.IsTerrain) {
@@ -37,8 +36,8 @@ func (s *InitTerrainLoaded) Initialize(world *ecs.World) {
 	x, y := terrain.Width()/2, terrain.Height()/2
 	fac.SetBuildable(x, y, rules.InitialBuildRadius, true)
 
-	radFilter := generic.NewFilter2[comp.Tile, comp.BuildRadius]()
-	radQuery := radFilter.Query(world)
+	radFilter := ecs.NewFilter2[comp.Tile, comp.BuildRadius](world)
+	radQuery := radFilter.Query()
 	for radQuery.Next() {
 		tile, rad := radQuery.Get()
 		fac.SetBuildable(tile.X, tile.Y, int(rad.Radius), true)

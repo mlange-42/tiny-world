@@ -3,25 +3,24 @@ package sys
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // Cheats system.
 type Cheats struct {
-	rules  generic.Resource[res.Rules]
-	stock  generic.Resource[res.Stock]
-	ui     generic.Resource[res.UI]
-	editor generic.Resource[res.EditorMode]
+	rules  ecs.Resource[res.Rules]
+	stock  ecs.Resource[res.Stock]
+	ui     ecs.Resource[res.UI]
+	editor ecs.Resource[res.EditorMode]
 }
 
 // Initialize the system
 func (s *Cheats) Initialize(world *ecs.World) {
-	s.rules = generic.NewResource[res.Rules](world)
-	s.stock = generic.NewResource[res.Stock](world)
-	s.ui = generic.NewResource[res.UI](world)
-	s.editor = generic.NewResource[res.EditorMode](world)
+	s.rules = ecs.NewResource[res.Rules](world)
+	s.stock = ecs.NewResource[res.Stock](world)
+	s.ui = ecs.NewResource[res.UI](world)
+	s.editor = ecs.NewResource[res.EditorMode](world)
 }
 
 // Update the system

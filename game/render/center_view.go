@@ -3,25 +3,24 @@ package render
 import (
 	"image"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
-// UI is a system to render the user interface.
+// CenterView is a system to render the user interface.
 type CenterView struct {
-	view    generic.Resource[res.View]
-	screen  generic.Resource[res.Screen]
-	terrain generic.Resource[res.Terrain]
+	view    ecs.Resource[res.View]
+	screen  ecs.Resource[res.Screen]
+	terrain ecs.Resource[res.Terrain]
 
 	isInitialized bool
 }
 
 // InitializeUI the system
 func (s *CenterView) InitializeUI(world *ecs.World) {
-	s.view = generic.NewResource[res.View](world)
-	s.screen = generic.NewResource[res.Screen](world)
-	s.terrain = generic.NewResource[res.Terrain](world)
+	s.view = s.view.New(world)
+	s.screen = s.screen.New(world)
+	s.terrain = s.terrain.New(world)
 }
 
 // UpdateUI the system

@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/arche-model/model"
-	"github.com/mlange-42/arche/ecs"
+	"github.com/mlange-42/ark-tools/app"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/menu"
 	"github.com/mlange-42/tiny-world/game/render"
@@ -47,7 +47,7 @@ func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType, isEd
 
 func runMenu(g *Game, tab int) {
 	ebiten.SetVsyncEnabled(true)
-	g.Model = model.New()
+	g.Model = app.New()
 
 	ecs.AddResource(&g.Model.World, &g.Screen)
 
@@ -77,7 +77,7 @@ func runMenu(g *Game, tab int) {
 func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string, isEditor bool) error {
 	ebiten.SetVsyncEnabled(true)
 
-	g.Model = model.New()
+	g.Model = app.New()
 
 	// Register components for deserialization,
 	// where it does not happen in systems already.

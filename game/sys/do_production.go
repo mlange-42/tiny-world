@@ -1,8 +1,7 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
@@ -11,30 +10,30 @@ import (
 
 // DoProduction system.
 type DoProduction struct {
-	speed   generic.Resource[res.GameSpeed]
-	time    generic.Resource[res.GameTick]
-	update  generic.Resource[res.UpdateInterval]
-	stock   generic.Resource[res.Stock]
-	landUse generic.Resource[res.LandUse]
-	editor  generic.Resource[res.EditorMode]
+	speed   ecs.Resource[res.GameSpeed]
+	time    ecs.Resource[res.GameTick]
+	update  ecs.Resource[res.UpdateInterval]
+	stock   ecs.Resource[res.Stock]
+	landUse ecs.Resource[res.LandUse]
+	editor  ecs.Resource[res.EditorMode]
 
-	filter        generic.Filter4[comp.Terrain, comp.Tile, comp.UpdateTick, comp.Production]
-	markerBuilder generic.Map2[comp.Tile, comp.ProductionMarker]
+	filter        *ecs.Filter4[comp.Terrain, comp.Tile, comp.UpdateTick, comp.Production]
+	markerBuilder *ecs.Map2[comp.Tile, comp.ProductionMarker]
 
 	toCreate []markerEntry
 }
 
 // Initialize the system
 func (s *DoProduction) Initialize(world *ecs.World) {
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.time = generic.NewResource[res.GameTick](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.stock = generic.NewResource[res.Stock](world)
-	s.landUse = generic.NewResource[res.LandUse](world)
-	s.editor = generic.NewResource[res.EditorMode](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.time = ecs.NewResource[res.GameTick](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.stock = ecs.NewResource[res.Stock](world)
+	s.landUse = ecs.NewResource[res.LandUse](world)
+	s.editor = ecs.NewResource[res.EditorMode](world)
 
-	s.filter = *generic.NewFilter4[comp.Terrain, comp.Tile, comp.UpdateTick, comp.Production]()
-	s.markerBuilder = generic.NewMap2[comp.Tile, comp.ProductionMarker](world)
+	s.filter = s.filter.New(world)
+	s.markerBuilder = s.markerBuilder.New(world)
 }
 
 // Update the system
@@ -47,7 +46,7 @@ func (s *DoProduction) Update(world *ecs.World) {
 	update := s.update.Get()
 	tickMod := tick % update.Interval
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		ter, tile, up, pr := query.Get()
 
@@ -68,7 +67,7 @@ func (s *DoProduction) Update(world *ecs.World) {
 	}
 
 	for _, entry := range s.toCreate {
-		s.markerBuilder.NewWith(
+		s.markerBuilder.NewEntity(
 			&entry.Tile,
 			&comp.ProductionMarker{StartTick: tick, Resource: entry.Resource},
 		)

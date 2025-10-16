@@ -2,13 +2,13 @@ package game
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/arche-model/model"
+	"github.com/mlange-42/ark-tools/app"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // Game container
 type Game struct {
-	Model  *model.Model
+	Model  *app.App
 	Screen res.Screen
 	Mouse  res.Mouse
 
@@ -16,7 +16,7 @@ type Game struct {
 }
 
 // NewGame returns a new game
-func NewGame(mod *model.Model) Game {
+func NewGame(mod *app.App) Game {
 	return Game{
 		Model:        mod,
 		Screen:       res.Screen{Image: nil, Width: 0, Height: 0},

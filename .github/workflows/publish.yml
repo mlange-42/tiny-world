@@ -25,13 +25,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.x'
+          go-version: '1.25.x'
       - name: Install dependencies
         run: go get ./...
 
       - name: Build WebAssembly
         run: |
-          go build -ldflags="-s -w" -tags tiny -o docs/html/main.wasm .
+          go build -ldflags="-s -w" -tags ark_tiny -o docs/html/main.wasm .
 
       - name: Deploy to GitHub Pages
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

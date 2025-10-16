@@ -1,21 +1,20 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // Tick system.
 type Tick struct {
-	speed generic.Resource[res.GameSpeed]
-	time  generic.Resource[res.GameTick]
+	speed ecs.Resource[res.GameSpeed]
+	time  ecs.Resource[res.GameTick]
 }
 
 // Initialize the system
 func (s *Tick) Initialize(world *ecs.World) {
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.time = generic.NewResource[res.GameTick](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.time = ecs.NewResource[res.GameTick](world)
 }
 
 // Update the system

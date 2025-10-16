@@ -12,8 +12,7 @@ import (
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/sprites"
@@ -85,7 +84,7 @@ type UI struct {
 
 	terrainButtons []terrainButton
 
-	animMapper generic.Map1[comp.CardAnimation]
+	animMapper *ecs.Map1[comp.CardAnimation]
 
 	buttonImages           []widget.ButtonImage
 	buttonTooltip          []string
@@ -138,18 +137,18 @@ func (ui *UI) SetResourceLabel(id resource.Resource, text string, warning bool) 
 	label := ui.resourceLabels[id]
 	label.Label = text
 	if warning {
-		label.Color = ui.sprites.TextHighlightColor
+		label.SetColor(ui.sprites.TextHighlightColor)
 	} else {
-		label.Color = ui.sprites.TextColor
+		label.SetColor(ui.sprites.TextColor)
 	}
 }
 
 func (ui *UI) SetPopulationLabel(text string, warning bool) {
 	ui.populationLabel.Label = text
 	if warning {
-		ui.populationLabel.Color = ui.sprites.TextHighlightColor
+		ui.populationLabel.SetColor(ui.sprites.TextHighlightColor)
 	} else {
-		ui.populationLabel.Color = ui.sprites.TextColor
+		ui.populationLabel.SetColor(ui.sprites.TextColor)
 	}
 }
 
@@ -226,7 +225,7 @@ func NewUI(world *ecs.World,
 		buttonPressedSprite:  sprts.GetIndex(sprites.ButtonPressed),
 		buttonDisabledSprite: sprts.GetIndex(sprites.ButtonDisabled),
 
-		animMapper: generic.NewMap1[comp.CardAnimation](world),
+		animMapper: ecs.NewMap1[comp.CardAnimation](world),
 	}
 	sp := ui.sprites.Get(ui.buttonIdleSprite)
 	ui.buttonSize = sp.Bounds().Max
@@ -285,7 +284,7 @@ func (ui *UI) createRandomButton(rules *Rules, index int) {
 func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, randTerrains *RandomTerrains, renderTick int64, target stdimage.Point) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
-		ui.animMapper.NewWith(&comp.CardAnimation{
+		ui.animMapper.NewEntity(&comp.CardAnimation{
 			Point:      bt.Button.GetWidget().Rect.Min,
 			Target:     target,
 			Terrain:    bt.Terrain,
@@ -346,7 +345,7 @@ func (ui *UI) ReplaceAllButtons(rules *Rules) {
 func (ui *UI) createUI() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
-			widget.AnchorLayoutOpts.Padding(widget.Insets{Top: 48}),
+			widget.AnchorLayoutOpts.Padding(&widget.Insets{Top: 48}),
 		)),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
@@ -512,7 +511,7 @@ func (ui *UI) createStatusBar() *widget.Container {
 	)
 
 	ui.statusLabel = widget.NewButton(
-		widget.ButtonOpts.Text("", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(4)),
@@ -569,7 +568,7 @@ func (ui *UI) createMenu() *widget.Container {
 			widget.WidgetOpts.ContextMenu(mainMenu),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Menu", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Menu", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -587,7 +586,7 @@ func (ui *UI) createMenu() *widget.Container {
 
 	helpLabel := widget.NewText(
 		widget.TextOpts.ProcessBBCode(true),
-		widget.TextOpts.Text(helpText, ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(helpText, &ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(helpPanelWidth),
 	)
@@ -599,7 +598,7 @@ func (ui *UI) createMenu() *widget.Container {
 			widget.WidgetOpts.ContextMenuCloseMode(widget.CLICK_OUT),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("?", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("?", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -634,13 +633,13 @@ func (ui *UI) createMainMenu() *widget.Container {
 	saveTooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			widget.RowLayoutOpts.Padding(&widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
 		)),
 		widget.ContainerOpts.AutoDisableChildren(),
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
 	saveLabel := widget.NewText(
-		widget.TextOpts.Text(saveTooltipText, ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(saveTooltipText, &ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
@@ -660,7 +659,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 			)),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save game", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Save game", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -677,7 +676,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 			}),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save map", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Save map", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -694,7 +693,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 			}),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Save and quit", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Save and quit", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -712,7 +711,7 @@ func (ui *UI) createMainMenu() *widget.Container {
 			}),
 		),
 		widget.ButtonOpts.Image(ui.defaultButtonImage()),
-		widget.ButtonOpts.Text("Quit without saving", ui.fonts.Default, &widget.ButtonTextColor{
+		widget.ButtonOpts.Text("Quit without saving", &ui.fonts.Default, &widget.ButtonTextColor{
 			Idle: ui.sprites.TextColor,
 		}),
 		widget.ButtonOpts.TextPadding(widget.NewInsetsSimple(5)),
@@ -734,7 +733,7 @@ func (ui *UI) createInfo() *widget.Container {
 		widget.ContainerOpts.BackgroundImage(ui.background),
 		widget.ContainerOpts.Layout(
 			widget.NewRowLayout(
-				widget.RowLayoutOpts.Padding(widget.Insets{Top: 4, Bottom: 4, Left: 12, Right: 12}),
+				widget.RowLayoutOpts.Padding(&widget.Insets{Top: 4, Bottom: 4, Left: 12, Right: 12}),
 				widget.RowLayoutOpts.Spacing(12),
 			),
 		),
@@ -776,13 +775,13 @@ func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosi
 	tooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			widget.RowLayoutOpts.Padding(&widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
 		)),
 		widget.ContainerOpts.AutoDisableChildren(),
 		widget.ContainerOpts.BackgroundImage(ui.background),
 	)
 	label := widget.NewText(
-		widget.TextOpts.Text(tooltip, ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(tooltip, &ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
@@ -804,7 +803,7 @@ func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosi
 
 	if len(text) > 0 {
 		label := widget.NewText(
-			widget.TextOpts.Text(text, ui.fonts.Default, ui.sprites.TextColor),
+			widget.TextOpts.Text(text, &ui.fonts.Default, ui.sprites.TextColor),
 			widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		)
 		cont.AddChild(label)
@@ -813,7 +812,7 @@ func (ui *UI) createLabel(text, tooltip string, width int, align widget.TextPosi
 		widget.TextOpts.WidgetOpts(
 			widget.WidgetOpts.MinSize(width, 0),
 		),
-		widget.TextOpts.Text("", ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text("", &ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(align, widget.TextPositionCenter),
 	)
 	cont.AddChild(counter)
@@ -966,7 +965,7 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 	tooltipContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewRowLayout(
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
+			widget.RowLayoutOpts.Padding(&widget.Insets{Top: 6, Bottom: 6, Left: 12, Right: 12}),
 		)),
 		widget.ContainerOpts.AutoDisableChildren(),
 		widget.ContainerOpts.BackgroundImage(ui.background),
@@ -977,12 +976,12 @@ func (ui *UI) createButton(terrain terr.Terrain, allowRemove bool, randSprite ..
 		text += tooltipSpecial
 	}
 	label := widget.NewText(
-		widget.TextOpts.Text(text, ui.fonts.Default, ui.sprites.TextColor),
+		widget.TextOpts.Text(text, &ui.fonts.Default, ui.sprites.TextColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)
 	warningLabel := widget.NewText(
-		widget.TextOpts.Text("", ui.fonts.Default, ui.sprites.TextHighlightColor),
+		widget.TextOpts.Text("", &ui.fonts.Default, ui.sprites.TextHighlightColor),
 		widget.TextOpts.Position(widget.TextPositionStart, widget.TextPositionCenter),
 		widget.TextOpts.MaxWidth(360),
 	)

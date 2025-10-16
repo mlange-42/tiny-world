@@ -6,8 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/util"
@@ -30,24 +29,24 @@ type PanAndZoom struct {
 
 	mouseStart mouse
 
-	view    generic.Resource[res.View]
-	screen  generic.Resource[res.Screen]
-	bounds  generic.Resource[res.WorldBounds]
-	terrain generic.Resource[res.Terrain]
-	mouse   generic.Resource[res.Mouse]
-	ui      generic.Resource[res.UI]
+	view    ecs.Resource[res.View]
+	screen  ecs.Resource[res.Screen]
+	bounds  ecs.Resource[res.WorldBounds]
+	terrain ecs.Resource[res.Terrain]
+	mouse   ecs.Resource[res.Mouse]
+	ui      ecs.Resource[res.UI]
 
 	inputChars []rune
 }
 
 // Initialize the system
 func (s *PanAndZoom) Initialize(world *ecs.World) {
-	s.view = generic.NewResource[res.View](world)
-	s.screen = generic.NewResource[res.Screen](world)
-	s.bounds = generic.NewResource[res.WorldBounds](world)
-	s.terrain = generic.NewResource[res.Terrain](world)
-	s.mouse = generic.NewResource[res.Mouse](world)
-	s.ui = generic.NewResource[res.UI](world)
+	s.view = ecs.NewResource[res.View](world)
+	s.screen = s.screen.New(world)
+	s.bounds = ecs.NewResource[res.WorldBounds](world)
+	s.terrain = ecs.NewResource[res.Terrain](world)
+	s.mouse = ecs.NewResource[res.Mouse](world)
+	s.ui = ecs.NewResource[res.UI](world)
 }
 
 // Update the system
