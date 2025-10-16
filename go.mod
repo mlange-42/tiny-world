@@ -9,7 +9,6 @@ require (
 	github.com/mlange-42/ark-serde v0.3.0
 	github.com/mlange-42/ark-tools v0.2.1
 	github.com/spf13/cobra v1.10.1
-	golang.org/x/image v0.32.0
 )
 
 require (
@@ -24,6 +23,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
+	golang.org/x/image v0.32.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.30.0 // indirect

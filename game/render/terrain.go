@@ -5,13 +5,13 @@ import (
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/sprites"
 	"github.com/mlange-42/tiny-world/game/terr"
-	"golang.org/x/image/font"
 )
 
 // Terrain is a system to render the terrain.
@@ -55,7 +55,7 @@ type Terrain struct {
 	spriteMapper  *ecs.Map1[comp.RandomSprite]
 	landUseMapper *ecs.Map4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite]
 
-	font font.Face
+	font text.Face
 }
 
 // InitializeUI the system
