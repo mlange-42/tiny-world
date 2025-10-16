@@ -33,7 +33,7 @@ func (s *Markers) InitializeUI(world *ecs.World) {
 	s.sprites = ecs.NewResource[res.Sprites](world)
 	s.view = ecs.NewResource[res.View](world)
 
-	s.filter = ecs.NewFilter2[comp.Tile, comp.ProductionMarker](world)
+	s.filter = s.filter.New(world)
 
 	sprites := s.sprites.Get()
 	s.resources = make([]int, len(resource.Properties))

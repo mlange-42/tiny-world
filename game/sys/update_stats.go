@@ -45,13 +45,13 @@ func (s *UpdateStats) Initialize(world *ecs.World) {
 	s.editor = ecs.NewResource[res.EditorMode](world)
 	s.randomTerrains = ecs.NewResource[res.RandomTerrains](world)
 
-	s.prodFilter = ecs.NewFilter1[comp.Production](world)
-	s.consFilter = ecs.NewFilter1[comp.Consumption](world)
-	s.populationFilter = ecs.NewFilter1[comp.Population](world)
-	s.populationSupportFilter = ecs.NewFilter1[comp.PopulationSupport](world)
+	s.prodFilter = s.prodFilter.New(world)
+	s.consFilter = s.consFilter.New(world)
+	s.populationFilter = s.populationFilter.New(world)
+	s.populationSupportFilter = s.populationSupportFilter.New(world)
 
-	s.stockFilter = ecs.NewFilter1[comp.Terrain](world).With(ecs.C[comp.Warehouse]())
-	s.unlockFilter = ecs.NewFilter1[comp.Terrain](world).With(ecs.C[comp.UnlocksTerrain]())
+	s.stockFilter = s.stockFilter.New(world).With(ecs.C[comp.Warehouse]())
+	s.unlockFilter = s.unlockFilter.New(world).With(ecs.C[comp.UnlocksTerrain]())
 }
 
 // Update the system

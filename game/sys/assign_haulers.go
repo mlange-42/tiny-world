@@ -34,8 +34,8 @@ func (s *AssignHaulers) Initialize(world *ecs.World) {
 	s.landUse = ecs.NewResource[res.LandUse](world)
 	s.landUseE = ecs.NewResource[res.LandUseEntities](world)
 
-	s.haulerFilter = ecs.NewFilter1[comp.Hauler](world)
-	s.pathFilter = ecs.NewFilter1[comp.Path](world)
+	s.haulerFilter = s.haulerFilter.New(world)
+	s.pathFilter = s.pathFilter.New(world)
 
 	s.pathMapper = ecs.NewMap1[comp.Path](world)
 	s.haulerMapper = ecs.NewMap1[comp.Hauler](world)

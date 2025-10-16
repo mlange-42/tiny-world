@@ -20,7 +20,7 @@ type RemoveMarkers struct {
 func (s *RemoveMarkers) Initialize(world *ecs.World) {
 	s.time = ecs.NewResource[res.GameTick](world)
 
-	s.filter = ecs.NewFilter1[comp.ProductionMarker](world)
+	s.filter = s.filter.New(world)
 }
 
 // Update the system

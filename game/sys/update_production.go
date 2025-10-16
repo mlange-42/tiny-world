@@ -28,7 +28,7 @@ func (s *UpdateProduction) Initialize(world *ecs.World) {
 	s.terrain = ecs.NewResource[res.Terrain](world)
 	s.landUse = ecs.NewResource[res.LandUse](world)
 
-	s.filter = ecs.NewFilter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption](world)
+	s.filter = s.filter.New(world)
 	s.consumptionMapper = s.consumptionMapper.New(world)
 }
 

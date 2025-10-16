@@ -28,12 +28,12 @@ type CardAnimation struct {
 
 // InitializeUI the system
 func (s *CardAnimation) InitializeUI(world *ecs.World) {
-	s.time = ecs.NewResource[res.GameTick](world)
-	s.screen = ecs.NewResource[res.Screen](world)
-	s.sprites = ecs.NewResource[res.Sprites](world)
-	s.view = ecs.NewResource[res.View](world)
+	s.time = s.time.New(world)
+	s.screen = s.screen.New(world)
+	s.sprites = s.sprites.New(world)
+	s.view = s.view.New(world)
 
-	s.filter = ecs.NewFilter1[comp.CardAnimation](world)
+	s.filter = s.filter.New(world)
 }
 
 // UpdateUI the system

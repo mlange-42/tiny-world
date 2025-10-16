@@ -26,7 +26,7 @@ func (s *DoConsumption) Initialize(world *ecs.World) {
 	s.stock = ecs.NewResource[res.Stock](world)
 	s.editor = ecs.NewResource[res.EditorMode](world)
 
-	s.filter = ecs.NewFilter3[comp.UpdateTick, comp.Production, comp.Consumption](world)
+	s.filter = s.filter.New(world)
 }
 
 // Update the system

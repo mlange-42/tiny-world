@@ -46,9 +46,9 @@ func (s *Haul) Initialize(world *ecs.World) {
 	s.landUse = ecs.NewResource[res.LandUse](world)
 	s.landUseE = ecs.NewResource[res.LandUseEntities](world)
 
-	s.prodFilter = ecs.NewFilter3[comp.Tile, comp.Terrain, comp.Production](world)
-	s.warehouseFilter = ecs.NewFilter2[comp.Tile, comp.Terrain](world).With(ecs.C[comp.Warehouse]())
-	s.filter = ecs.NewFilter2[comp.Tile, comp.Hauler](world)
+	s.prodFilter = s.prodFilter.New(world)
+	s.warehouseFilter = s.warehouseFilter.New(world).With(ecs.C[comp.Warehouse]())
+	s.filter = s.filter.New(world)
 
 	s.haulerMap = ecs.NewMap2[comp.Tile, comp.Hauler](world)
 	s.homeMap = ecs.NewMap3[comp.Tile, comp.Terrain, comp.Production](world)

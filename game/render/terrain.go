@@ -83,7 +83,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.spriteMapper = ecs.NewMap1[comp.RandomSprite](world)
 	s.landUseMapper = ecs.NewMap4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite](world)
 
-	s.radiusFilter = ecs.NewFilter2[comp.Tile, comp.BuildRadius](world)
+	s.radiusFilter = s.radiusFilter.New(world)
 
 	s.cursorDenied = s.sprites.GetIndex(sprites.CursorDenied)
 	s.cursorOk = s.sprites.GetIndex(sprites.CursorOk)

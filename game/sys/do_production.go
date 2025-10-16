@@ -32,7 +32,7 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 	s.landUse = ecs.NewResource[res.LandUse](world)
 	s.editor = ecs.NewResource[res.EditorMode](world)
 
-	s.filter = ecs.NewFilter4[comp.Terrain, comp.Tile, comp.UpdateTick, comp.Production](world)
+	s.filter = s.filter.New(world)
 	s.markerBuilder = ecs.NewMap2[comp.Tile, comp.ProductionMarker](world)
 }
 

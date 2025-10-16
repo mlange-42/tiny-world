@@ -51,8 +51,8 @@ func (s *Build) Initialize(world *ecs.World) {
 	s.editor = ecs.NewResource[res.EditorMode](world)
 	s.randTerrains = ecs.NewResource[res.RandomTerrains](world)
 
-	s.radiusFilter = ecs.NewFilter2[comp.Tile, comp.BuildRadius](world)
-	s.warehouseFilter = ecs.NewFilter1[comp.Warehouse](world)
+	s.radiusFilter = s.radiusFilter.New(world)
+	s.warehouseFilter = s.warehouseFilter.New(world)
 }
 
 // Update the system

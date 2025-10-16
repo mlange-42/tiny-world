@@ -24,7 +24,7 @@ func (s *HaulerPaths) InitializeUI(world *ecs.World) {
 	s.view = ecs.NewResource[res.View](world)
 	s.update = ecs.NewResource[res.UpdateInterval](world)
 
-	s.filter = ecs.NewFilter1[comp.Hauler](world)
+	s.filter = s.filter.New(world)
 }
 
 // UpdateUI the system

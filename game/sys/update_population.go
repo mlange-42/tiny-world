@@ -27,7 +27,7 @@ func (s *UpdatePopulation) Initialize(world *ecs.World) {
 	s.terrain = ecs.NewResource[res.Terrain](world)
 	s.landUse = ecs.NewResource[res.LandUse](world)
 
-	s.filter = ecs.NewFilter3[comp.Tile, comp.UpdateTick, comp.PopulationSupport](world)
+	s.filter = s.filter.New(world)
 }
 
 // Update the system
