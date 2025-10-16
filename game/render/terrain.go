@@ -5,8 +5,7 @@ import (
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
@@ -31,12 +30,12 @@ type Terrain struct {
 	indicatorStorage            int
 	indicatorStorageInactive    int
 
-	screen    generic.Resource[res.Screen]
-	selection generic.Resource[res.Selection]
-	mouse     generic.Resource[res.Mouse]
-	ui        generic.Resource[res.UI]
+	screen    ecs.Resource[res.Screen]
+	selection ecs.Resource[res.Selection]
+	mouse     ecs.Resource[res.Mouse]
+	ui        ecs.Resource[res.UI]
 
-	radiusFilter generic.Filter2[comp.Tile, comp.BuildRadius]
+	radiusFilter *ecs.Filter2[comp.Tile, comp.BuildRadius]
 
 	time      *res.GameTick
 	rules     *res.Rules
@@ -49,22 +48,22 @@ type Terrain struct {
 	buildable *res.Buildable
 	update    *res.UpdateInterval
 
-	prodMapper    generic.Map2[comp.Terrain, comp.Production]
-	popMapper     generic.Map1[comp.PopulationSupport]
-	pathMapper    generic.Map1[comp.Path]
-	haulerMapper  generic.Map2[comp.Hauler, comp.HaulerSprite]
-	spriteMapper  generic.Map1[comp.RandomSprite]
-	landUseMapper generic.Map4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite]
+	prodMapper    *ecs.Map2[comp.Terrain, comp.Production]
+	popMapper     *ecs.Map1[comp.PopulationSupport]
+	pathMapper    *ecs.Map1[comp.Path]
+	haulerMapper  *ecs.Map2[comp.Hauler, comp.HaulerSprite]
+	spriteMapper  *ecs.Map1[comp.RandomSprite]
+	landUseMapper *ecs.Map4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite]
 
 	font font.Face
 }
 
 // InitializeUI the system
 func (s *Terrain) InitializeUI(world *ecs.World) {
-	s.screen = generic.NewResource[res.Screen](world)
-	s.selection = generic.NewResource[res.Selection](world)
-	s.mouse = generic.NewResource[res.Mouse](world)
-	s.ui = generic.NewResource[res.UI](world)
+	s.screen = ecs.NewResource[res.Screen](world)
+	s.selection = ecs.NewResource[res.Selection](world)
+	s.mouse = ecs.NewResource[res.Mouse](world)
+	s.ui = ecs.NewResource[res.UI](world)
 
 	s.time = ecs.GetResource[res.GameTick](world)
 	s.rules = ecs.GetResource[res.Rules](world)
@@ -77,14 +76,14 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.buildable = ecs.GetResource[res.Buildable](world)
 	s.update = ecs.GetResource[res.UpdateInterval](world)
 
-	s.prodMapper = generic.NewMap2[comp.Terrain, comp.Production](world)
-	s.popMapper = generic.NewMap1[comp.PopulationSupport](world)
-	s.pathMapper = generic.NewMap1[comp.Path](world)
-	s.haulerMapper = generic.NewMap2[comp.Hauler, comp.HaulerSprite](world)
-	s.spriteMapper = generic.NewMap1[comp.RandomSprite](world)
-	s.landUseMapper = generic.NewMap4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite](world)
+	s.prodMapper = ecs.NewMap2[comp.Terrain, comp.Production](world)
+	s.popMapper = ecs.NewMap1[comp.PopulationSupport](world)
+	s.pathMapper = ecs.NewMap1[comp.Path](world)
+	s.haulerMapper = ecs.NewMap2[comp.Hauler, comp.HaulerSprite](world)
+	s.spriteMapper = ecs.NewMap1[comp.RandomSprite](world)
+	s.landUseMapper = ecs.NewMap4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite](world)
 
-	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
+	s.radiusFilter = ecs.NewFilter2[comp.Tile, comp.BuildRadius](world)
 
 	s.cursorDenied = s.sprites.GetIndex(sprites.CursorDenied)
 	s.cursorOk = s.sprites.GetIndex(sprites.CursorOk)
@@ -100,7 +99,7 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.indicatorStorage = s.sprites.GetIndex(sprites.IndicatorStorage)
 	s.indicatorStorageInactive = s.sprites.GetIndex(sprites.IndicatorStorage + sprites.IndicatorInactiveSuffix)
 
-	fts := generic.NewResource[res.Fonts](world)
+	fts := ecs.NewResource[res.Fonts](world)
 	fonts := fts.Get()
 	s.font = fonts.Default
 }

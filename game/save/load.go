@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mlange-42/arche/ecs"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/maps"
 	"github.com/mlange-42/tiny-world/game/terr"

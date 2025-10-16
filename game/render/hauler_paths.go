@@ -4,28 +4,27 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2/vector"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // HaulerPaths is a system to render paths.
 type HaulerPaths struct {
-	screen generic.Resource[res.Screen]
-	view   generic.Resource[res.View]
-	update generic.Resource[res.UpdateInterval]
+	screen ecs.Resource[res.Screen]
+	view   ecs.Resource[res.View]
+	update ecs.Resource[res.UpdateInterval]
 
-	filter generic.Filter1[comp.Hauler]
+	filter *ecs.Filter1[comp.Hauler]
 }
 
 // InitializeUI the system
 func (s *HaulerPaths) InitializeUI(world *ecs.World) {
-	s.screen = generic.NewResource[res.Screen](world)
-	s.view = generic.NewResource[res.View](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
+	s.screen = ecs.NewResource[res.Screen](world)
+	s.view = ecs.NewResource[res.View](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
 
-	s.filter = *generic.NewFilter1[comp.Hauler]()
+	s.filter = ecs.NewFilter1[comp.Hauler](world)
 }
 
 // UpdateUI the system
@@ -40,7 +39,7 @@ func (s *HaulerPaths) UpdateUI(world *ecs.World) {
 	z := float32(view.Zoom)
 	col := color.RGBA{60, 60, 255, 255}
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		haul := query.Get()
 		path := haul.Path

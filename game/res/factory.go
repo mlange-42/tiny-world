@@ -5,62 +5,61 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/terr"
 )
 
 // EntityFactory is a helper to create game entities.
 type EntityFactory struct {
-	landUseBuilder    generic.Map4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite]
-	productionBuilder generic.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite]
-	pathBuilder       generic.Map4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite]
+	landUseBuilder    *ecs.Map4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite]
+	productionBuilder *ecs.Map5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite]
+	pathBuilder       *ecs.Map4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite]
 
-	radiusMapper            generic.Map1[comp.BuildRadius]
-	consumptionMapper       generic.Map1[comp.Consumption]
-	populationMapper        generic.Map1[comp.Population]
-	populationSupportMapper generic.Map1[comp.PopulationSupport]
-	unlockMapper            generic.Map1[comp.UnlocksTerrain]
-	warehouseMapper         generic.Map1[comp.Warehouse]
+	radiusMapper            *ecs.Map1[comp.BuildRadius]
+	consumptionMapper       *ecs.Map1[comp.Consumption]
+	populationMapper        *ecs.Map1[comp.Population]
+	populationSupportMapper *ecs.Map1[comp.PopulationSupport]
+	unlockMapper            *ecs.Map1[comp.UnlocksTerrain]
+	warehouseMapper         *ecs.Map1[comp.Warehouse]
 
-	terrain         generic.Resource[Terrain]
-	terrainEntities generic.Resource[TerrainEntities]
-	landUse         generic.Resource[LandUse]
-	landUseEntities generic.Resource[LandUseEntities]
-	buildable       generic.Resource[Buildable]
-	bounds          generic.Resource[WorldBounds]
+	terrain         ecs.Resource[Terrain]
+	terrainEntities ecs.Resource[TerrainEntities]
+	landUse         ecs.Resource[LandUse]
+	landUseEntities ecs.Resource[LandUseEntities]
+	buildable       ecs.Resource[Buildable]
+	bounds          ecs.Resource[WorldBounds]
 
-	update generic.Resource[UpdateInterval]
+	update ecs.Resource[UpdateInterval]
 }
 
 // NewEntityFactory creates a new EntityFactory for a given world.
 func NewEntityFactory(world *ecs.World) EntityFactory {
 	return EntityFactory{
-		landUseBuilder:    generic.NewMap4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite](world),
-		productionBuilder: generic.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite](world),
-		pathBuilder:       generic.NewMap4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite](world),
+		landUseBuilder:    ecs.NewMap4[comp.Tile, comp.Terrain, comp.UpdateTick, comp.RandomSprite](world),
+		productionBuilder: ecs.NewMap5[comp.Tile, comp.Terrain, comp.UpdateTick, comp.Production, comp.RandomSprite](world),
+		pathBuilder:       ecs.NewMap4[comp.Tile, comp.Terrain, comp.Path, comp.RandomSprite](world),
 
-		radiusMapper:            generic.NewMap1[comp.BuildRadius](world),
-		consumptionMapper:       generic.NewMap1[comp.Consumption](world),
-		populationMapper:        generic.NewMap1[comp.Population](world),
-		populationSupportMapper: generic.NewMap1[comp.PopulationSupport](world),
-		warehouseMapper:         generic.NewMap1[comp.Warehouse](world),
-		unlockMapper:            generic.NewMap1[comp.UnlocksTerrain](world),
+		radiusMapper:            ecs.NewMap1[comp.BuildRadius](world),
+		consumptionMapper:       ecs.NewMap1[comp.Consumption](world),
+		populationMapper:        ecs.NewMap1[comp.Population](world),
+		populationSupportMapper: ecs.NewMap1[comp.PopulationSupport](world),
+		warehouseMapper:         ecs.NewMap1[comp.Warehouse](world),
+		unlockMapper:            ecs.NewMap1[comp.UnlocksTerrain](world),
 
-		terrain:         generic.NewResource[Terrain](world),
-		terrainEntities: generic.NewResource[TerrainEntities](world),
-		landUse:         generic.NewResource[LandUse](world),
-		landUseEntities: generic.NewResource[LandUseEntities](world),
-		buildable:       generic.NewResource[Buildable](world),
-		bounds:          generic.NewResource[WorldBounds](world),
+		terrain:         ecs.NewResource[Terrain](world),
+		terrainEntities: ecs.NewResource[TerrainEntities](world),
+		landUse:         ecs.NewResource[LandUse](world),
+		landUseEntities: ecs.NewResource[LandUseEntities](world),
+		buildable:       ecs.NewResource[Buildable](world),
+		bounds:          ecs.NewResource[WorldBounds](world),
 
-		update: generic.NewResource[UpdateInterval](world),
+		update: ecs.NewResource[UpdateInterval](world),
 	}
 }
 
 func (f *EntityFactory) createLandUse(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
-	e := f.landUseBuilder.NewWith(
+	e := f.landUseBuilder.NewEntity(
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(f.update.Get().Interval)},
@@ -70,7 +69,7 @@ func (f *EntityFactory) createLandUse(pos image.Point, t terr.Terrain, randSprit
 }
 
 func (f *EntityFactory) createPath(pos image.Point, t terr.Terrain, randSprite uint16) ecs.Entity {
-	e := f.pathBuilder.NewWith(
+	e := f.pathBuilder.NewEntity(
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.Path{Haulers: []comp.HaulerEntry{}},
@@ -81,7 +80,7 @@ func (f *EntityFactory) createPath(pos image.Point, t terr.Terrain, randSprite u
 
 func (f *EntityFactory) createProduction(pos image.Point, t terr.Terrain, prod *terr.Production, randSprite uint16) ecs.Entity {
 	update := f.update.Get()
-	e := f.productionBuilder.NewWith(
+	e := f.productionBuilder.NewEntity(
 		&comp.Tile{Point: pos},
 		&comp.Terrain{Terrain: t},
 		&comp.UpdateTick{Tick: rand.Int63n(update.Interval)},
@@ -106,7 +105,7 @@ func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint1
 	}
 
 	if props.BuildRadius > 0 {
-		f.radiusMapper.Assign(e, &comp.BuildRadius{Radius: props.BuildRadius})
+		f.radiusMapper.Add(e, &comp.BuildRadius{Radius: props.BuildRadius})
 	}
 
 	hasConsumption := false
@@ -119,22 +118,22 @@ func (f *EntityFactory) create(pos image.Point, t terr.Terrain, randSprite uint1
 	if hasConsumption {
 		cons := make([]uint8, len(props.Consumption))
 		copy(cons, props.Consumption)
-		f.consumptionMapper.Assign(e, &comp.Consumption{
+		f.consumptionMapper.Add(e, &comp.Consumption{
 			Amount:    cons,
 			Countdown: make([]int16, len(props.Consumption)),
 		})
 	}
 	if props.Population > 0 {
-		f.populationMapper.Assign(e, &comp.Population{Pop: props.Population})
+		f.populationMapper.Add(e, &comp.Population{Pop: props.Population})
 	}
 	if props.PopulationSupport.MaxPopulation > 0 {
-		f.populationSupportMapper.Add(e)
+		f.populationSupportMapper.AddFn(e, nil)
 	}
 	if props.UnlocksTerrains > 0 {
-		f.unlockMapper.Add(e)
+		f.unlockMapper.AddFn(e, nil)
 	}
 	if props.TerrainBits.Contains(terr.IsWarehouse) {
-		f.warehouseMapper.Add(e)
+		f.warehouseMapper.AddFn(e, nil)
 	}
 
 	return e

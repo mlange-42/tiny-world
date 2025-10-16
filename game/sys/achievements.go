@@ -3,8 +3,7 @@ package sys
 import (
 	"fmt"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/res/achievements"
 	"github.com/mlange-42/tiny-world/game/save"
@@ -14,20 +13,20 @@ import (
 type Achievements struct {
 	PlayerFile string
 
-	time         generic.Resource[res.GameTick]
-	update       generic.Resource[res.UpdateInterval]
-	editor       generic.Resource[res.EditorMode]
-	ui           generic.Resource[res.UI]
-	achievements generic.Resource[achievements.Achievements]
+	time         ecs.Resource[res.GameTick]
+	update       ecs.Resource[res.UpdateInterval]
+	editor       ecs.Resource[res.EditorMode]
+	ui           ecs.Resource[res.UI]
+	achievements ecs.Resource[achievements.Achievements]
 }
 
 // Initialize the system
 func (s *Achievements) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[res.GameTick](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.editor = generic.NewResource[res.EditorMode](world)
-	s.ui = generic.NewResource[res.UI](world)
-	s.achievements = generic.NewResource[achievements.Achievements](world)
+	s.time = ecs.NewResource[res.GameTick](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.editor = ecs.NewResource[res.EditorMode](world)
+	s.ui = ecs.NewResource[res.UI](world)
+	s.achievements = ecs.NewResource[achievements.Achievements](world)
 }
 
 // Update the system

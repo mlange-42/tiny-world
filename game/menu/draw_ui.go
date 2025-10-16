@@ -1,23 +1,22 @@
 package menu
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // DrawUI is a system to render the user interface.
 type DrawUI struct {
-	screen  generic.Resource[res.Screen]
-	ui      generic.Resource[UI]
-	sprites generic.Resource[res.Sprites]
+	screen  ecs.Resource[res.Screen]
+	ui      ecs.Resource[UI]
+	sprites ecs.Resource[res.Sprites]
 }
 
 // InitializeUI the system
 func (s *DrawUI) InitializeUI(world *ecs.World) {
-	s.ui = generic.NewResource[UI](world)
-	s.screen = generic.NewResource[res.Screen](world)
-	s.sprites = generic.NewResource[res.Sprites](world)
+	s.ui = ecs.NewResource[UI](world)
+	s.screen = ecs.NewResource[res.Screen](world)
+	s.sprites = ecs.NewResource[res.Sprites](world)
 }
 
 // UpdateUI the system

@@ -5,8 +5,7 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
@@ -17,24 +16,24 @@ type CardAnimation struct {
 	MaxOffset int
 	Duration  int
 
-	time    generic.Resource[res.GameTick]
-	screen  generic.Resource[res.Screen]
-	sprites generic.Resource[res.Sprites]
-	view    generic.Resource[res.View]
+	time    ecs.Resource[res.GameTick]
+	screen  ecs.Resource[res.Screen]
+	sprites ecs.Resource[res.Sprites]
+	view    ecs.Resource[res.View]
 
-	filter generic.Filter1[comp.CardAnimation]
+	filter *ecs.Filter1[comp.CardAnimation]
 
 	toRemove []ecs.Entity
 }
 
 // InitializeUI the system
 func (s *CardAnimation) InitializeUI(world *ecs.World) {
-	s.time = generic.NewResource[res.GameTick](world)
-	s.screen = generic.NewResource[res.Screen](world)
-	s.sprites = generic.NewResource[res.Sprites](world)
-	s.view = generic.NewResource[res.View](world)
+	s.time = ecs.NewResource[res.GameTick](world)
+	s.screen = ecs.NewResource[res.Screen](world)
+	s.sprites = ecs.NewResource[res.Sprites](world)
+	s.view = ecs.NewResource[res.View](world)
 
-	s.filter = *generic.NewFilter1[comp.CardAnimation]()
+	s.filter = ecs.NewFilter1[comp.CardAnimation](world)
 }
 
 // UpdateUI the system
@@ -63,7 +62,7 @@ func (s *CardAnimation) UpdateUI(world *ecs.World) {
 		img.DrawImage(sp, &op)
 	}
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		card := query.Get()
 

@@ -6,8 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/resource"
@@ -16,44 +15,44 @@ import (
 
 // Build system.
 type Build struct {
-	time            generic.Resource[res.GameTick]
-	rules           generic.Resource[res.Rules]
-	view            generic.Resource[res.View]
-	terrain         generic.Resource[res.Terrain]
-	terrainEntities generic.Resource[res.TerrainEntities]
-	landUse         generic.Resource[res.LandUse]
-	buildable       generic.Resource[res.Buildable]
-	stock           generic.Resource[res.Stock]
-	selection       generic.Resource[res.Selection]
-	update          generic.Resource[res.UpdateInterval]
-	ui              generic.Resource[res.UI]
-	factory         generic.Resource[res.EntityFactory]
-	editor          generic.Resource[res.EditorMode]
-	randTerrains    generic.Resource[res.RandomTerrains]
+	time            ecs.Resource[res.GameTick]
+	rules           ecs.Resource[res.Rules]
+	view            ecs.Resource[res.View]
+	terrain         ecs.Resource[res.Terrain]
+	terrainEntities ecs.Resource[res.TerrainEntities]
+	landUse         ecs.Resource[res.LandUse]
+	buildable       ecs.Resource[res.Buildable]
+	stock           ecs.Resource[res.Stock]
+	selection       ecs.Resource[res.Selection]
+	update          ecs.Resource[res.UpdateInterval]
+	ui              ecs.Resource[res.UI]
+	factory         ecs.Resource[res.EntityFactory]
+	editor          ecs.Resource[res.EditorMode]
+	randTerrains    ecs.Resource[res.RandomTerrains]
 
-	radiusFilter    generic.Filter2[comp.Tile, comp.BuildRadius]
-	warehouseFilter generic.Filter1[comp.Warehouse]
+	radiusFilter    *ecs.Filter2[comp.Tile, comp.BuildRadius]
+	warehouseFilter *ecs.Filter1[comp.Warehouse]
 }
 
 // Initialize the system
 func (s *Build) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[res.GameTick](world)
-	s.rules = generic.NewResource[res.Rules](world)
-	s.view = generic.NewResource[res.View](world)
-	s.terrain = generic.NewResource[res.Terrain](world)
-	s.terrainEntities = generic.NewResource[res.TerrainEntities](world)
-	s.landUse = generic.NewResource[res.LandUse](world)
-	s.buildable = generic.NewResource[res.Buildable](world)
-	s.stock = generic.NewResource[res.Stock](world)
-	s.selection = generic.NewResource[res.Selection](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.ui = generic.NewResource[res.UI](world)
-	s.factory = generic.NewResource[res.EntityFactory](world)
-	s.editor = generic.NewResource[res.EditorMode](world)
-	s.randTerrains = generic.NewResource[res.RandomTerrains](world)
+	s.time = ecs.NewResource[res.GameTick](world)
+	s.rules = ecs.NewResource[res.Rules](world)
+	s.view = ecs.NewResource[res.View](world)
+	s.terrain = ecs.NewResource[res.Terrain](world)
+	s.terrainEntities = ecs.NewResource[res.TerrainEntities](world)
+	s.landUse = ecs.NewResource[res.LandUse](world)
+	s.buildable = ecs.NewResource[res.Buildable](world)
+	s.stock = ecs.NewResource[res.Stock](world)
+	s.selection = ecs.NewResource[res.Selection](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.ui = ecs.NewResource[res.UI](world)
+	s.factory = ecs.NewResource[res.EntityFactory](world)
+	s.editor = ecs.NewResource[res.EditorMode](world)
+	s.randTerrains = ecs.NewResource[res.RandomTerrains](world)
 
-	s.radiusFilter = *generic.NewFilter2[comp.Tile, comp.BuildRadius]()
-	s.warehouseFilter = *generic.NewFilter1[comp.Warehouse]()
+	s.radiusFilter = ecs.NewFilter2[comp.Tile, comp.BuildRadius](world)
+	s.warehouseFilter = ecs.NewFilter1[comp.Warehouse](world)
 }
 
 // Update the system

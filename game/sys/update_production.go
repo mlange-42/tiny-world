@@ -1,8 +1,7 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/math"
 	"github.com/mlange-42/tiny-world/game/res"
@@ -11,24 +10,26 @@ import (
 
 // UpdateProduction system.
 type UpdateProduction struct {
-	time    generic.Resource[res.GameTick]
-	speed   generic.Resource[res.GameSpeed]
-	update  generic.Resource[res.UpdateInterval]
-	terrain generic.Resource[res.Terrain]
-	landUse generic.Resource[res.LandUse]
+	time    ecs.Resource[res.GameTick]
+	speed   ecs.Resource[res.GameSpeed]
+	update  ecs.Resource[res.UpdateInterval]
+	terrain ecs.Resource[res.Terrain]
+	landUse ecs.Resource[res.LandUse]
 
-	filter generic.Filter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
+	filter            *ecs.Filter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]
+	consumptionMapper *ecs.Map1[comp.Consumption]
 }
 
 // Initialize the system
 func (s *UpdateProduction) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[res.GameTick](world)
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.terrain = generic.NewResource[res.Terrain](world)
-	s.landUse = generic.NewResource[res.LandUse](world)
+	s.time = ecs.NewResource[res.GameTick](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.terrain = ecs.NewResource[res.Terrain](world)
+	s.landUse = ecs.NewResource[res.LandUse](world)
 
-	s.filter = *generic.NewFilter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption]().Optional(generic.T[comp.Consumption]())
+	s.filter = ecs.NewFilter4[comp.Tile, comp.UpdateTick, comp.Production, comp.Consumption](world)
+	s.consumptionMapper = s.consumptionMapper.New(world)
 }
 
 // Update the system
@@ -43,7 +44,7 @@ func (s *UpdateProduction) Update(world *ecs.World) {
 	interval := s.update.Get().Interval
 	tickMod := tick % interval
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		tile, up, pr, cons := query.Get()
 

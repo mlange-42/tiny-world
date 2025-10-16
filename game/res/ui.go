@@ -12,8 +12,7 @@ import (
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/resource"
 	"github.com/mlange-42/tiny-world/game/sprites"
@@ -85,7 +84,7 @@ type UI struct {
 
 	terrainButtons []terrainButton
 
-	animMapper generic.Map1[comp.CardAnimation]
+	animMapper *ecs.Map1[comp.CardAnimation]
 
 	buttonImages           []widget.ButtonImage
 	buttonTooltip          []string
@@ -226,7 +225,7 @@ func NewUI(world *ecs.World,
 		buttonPressedSprite:  sprts.GetIndex(sprites.ButtonPressed),
 		buttonDisabledSprite: sprts.GetIndex(sprites.ButtonDisabled),
 
-		animMapper: generic.NewMap1[comp.CardAnimation](world),
+		animMapper: ecs.NewMap1[comp.CardAnimation](world),
 	}
 	sp := ui.sprites.Get(ui.buttonIdleSprite)
 	ui.buttonSize = sp.Bounds().Max
@@ -285,7 +284,7 @@ func (ui *UI) createRandomButton(rules *Rules, index int) {
 func (ui *UI) ReplaceButton(stock *Stock, rules *Rules, randTerrains *RandomTerrains, renderTick int64, target stdimage.Point) bool {
 	id := ui.selection.ButtonID
 	if bt, ok := ui.randomButtons[id]; ok {
-		ui.animMapper.NewWith(&comp.CardAnimation{
+		ui.animMapper.NewEntity(&comp.CardAnimation{
 			Point:      bt.Button.GetWidget().Rect.Min,
 			Target:     target,
 			Terrain:    bt.Terrain,

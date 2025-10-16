@@ -7,8 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/cmd/util"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
@@ -40,7 +39,7 @@ type Achievements struct {
 
 	world *ecs.World
 
-	terrainFilter generic.Filter1[comp.Terrain]
+	terrainFilter *ecs.Filter1[comp.Terrain]
 	stock         *res.Stock
 	production    *res.Production
 
@@ -51,8 +50,8 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 	var stock *res.Stock
 	var prod *res.Production
 
-	sRes := generic.NewResource[res.Stock](world)
-	pRes := generic.NewResource[res.Production](world)
+	sRes := ecs.NewResource[res.Stock](world)
+	pRes := ecs.NewResource[res.Production](world)
 	if sRes.Has() {
 		stock = sRes.Get()
 	}
@@ -62,7 +61,7 @@ func New(world *ecs.World, f fs.FS, file string, playerFile string) *Achievement
 
 	a := Achievements{
 		world:         world,
-		terrainFilter: *generic.NewFilter1[comp.Terrain](),
+		terrainFilter: ecs.NewFilter1[comp.Terrain](world),
 		stock:         stock,
 		production:    prod,
 	}
@@ -160,7 +159,7 @@ func (a *Achievements) Check(ach *Achievement) {
 
 func (a *Achievements) checkTerrain(ids uint32, num int) bool {
 	cnt := 0
-	query := a.terrainFilter.Query(a.world)
+	query := a.terrainFilter.Query()
 	for query.Next() {
 		t := query.Get()
 		bits := uint32(1) << t.Terrain

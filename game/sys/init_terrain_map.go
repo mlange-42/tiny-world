@@ -6,8 +6,7 @@ import (
 	"io/fs"
 	"log"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/save"
@@ -75,8 +74,8 @@ func (s *InitTerrainMap) Initialize(world *ecs.World) {
 
 	fac.SetBuildable(x, y, rules.InitialBuildRadius, true)
 
-	radFilter := generic.NewFilter2[comp.Tile, comp.BuildRadius]()
-	radQuery := radFilter.Query(world)
+	radFilter := ecs.NewFilter2[comp.Tile, comp.BuildRadius](world)
+	radQuery := radFilter.Query()
 	for radQuery.Next() {
 		tile, rad := radQuery.Get()
 		fac.SetBuildable(tile.X, tile.Y, int(rad.Radius), true)

@@ -1,8 +1,7 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 )
@@ -11,24 +10,24 @@ import (
 type RemoveMarkers struct {
 	MaxTime int64
 
-	time   generic.Resource[res.GameTick]
-	filter generic.Filter1[comp.ProductionMarker]
+	time   ecs.Resource[res.GameTick]
+	filter *ecs.Filter1[comp.ProductionMarker]
 
 	toRemove []ecs.Entity
 }
 
 // Initialize the system
 func (s *RemoveMarkers) Initialize(world *ecs.World) {
-	s.time = generic.NewResource[res.GameTick](world)
+	s.time = ecs.NewResource[res.GameTick](world)
 
-	s.filter = *generic.NewFilter1[comp.ProductionMarker]()
+	s.filter = ecs.NewFilter1[comp.ProductionMarker](world)
 }
 
 // Update the system
 func (s *RemoveMarkers) Update(world *ecs.World) {
 	tick := s.time.Get().Tick
 
-	query := s.filter.Query(world)
+	query := s.filter.Query()
 	for query.Next() {
 		mark := query.Get()
 		if tick > mark.StartTick+s.MaxTime {

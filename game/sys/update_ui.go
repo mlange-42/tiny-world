@@ -1,21 +1,20 @@
 package sys
 
 import (
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
 // UpdateUI system.
 type UpdateUI struct {
-	rules generic.Resource[res.Rules]
-	ui    generic.Resource[res.UI]
+	rules ecs.Resource[res.Rules]
+	ui    ecs.Resource[res.UI]
 }
 
 // Initialize the system
 func (s *UpdateUI) Initialize(world *ecs.World) {
-	s.rules = generic.NewResource[res.Rules](world)
-	s.ui = generic.NewResource[res.UI](world)
+	s.rules = ecs.NewResource[res.Rules](world)
+	s.ui = ecs.NewResource[res.UI](world)
 
 	rules := s.rules.Get()
 	ui := s.ui.Get()

@@ -4,8 +4,7 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/mlange-42/arche/ecs"
-	"github.com/mlange-42/arche/generic"
+	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
 	"github.com/mlange-42/tiny-world/game/res"
 	"github.com/mlange-42/tiny-world/game/terr"
@@ -13,34 +12,34 @@ import (
 
 // AssignHaulers system.
 type AssignHaulers struct {
-	speed    generic.Resource[res.GameSpeed]
-	update   generic.Resource[res.UpdateInterval]
-	landUse  generic.Resource[res.LandUse]
-	landUseE generic.Resource[res.LandUseEntities]
+	speed    ecs.Resource[res.GameSpeed]
+	update   ecs.Resource[res.UpdateInterval]
+	landUse  ecs.Resource[res.LandUse]
+	landUseE ecs.Resource[res.LandUseEntities]
 
-	haulerFilter generic.Filter1[comp.Hauler]
-	pathFilter   generic.Filter1[comp.Path]
+	haulerFilter *ecs.Filter1[comp.Hauler]
+	pathFilter   *ecs.Filter1[comp.Path]
 
-	pathMapper   generic.Map1[comp.Path]
-	haulerMapper generic.Map1[comp.Hauler]
-	prodMapper   generic.Map1[comp.Production]
+	pathMapper   *ecs.Map1[comp.Path]
+	haulerMapper *ecs.Map1[comp.Hauler]
+	prodMapper   *ecs.Map1[comp.Production]
 
 	toRemove []ecs.Entity
 }
 
 // Initialize the system
 func (s *AssignHaulers) Initialize(world *ecs.World) {
-	s.speed = generic.NewResource[res.GameSpeed](world)
-	s.update = generic.NewResource[res.UpdateInterval](world)
-	s.landUse = generic.NewResource[res.LandUse](world)
-	s.landUseE = generic.NewResource[res.LandUseEntities](world)
+	s.speed = ecs.NewResource[res.GameSpeed](world)
+	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.landUse = ecs.NewResource[res.LandUse](world)
+	s.landUseE = ecs.NewResource[res.LandUseEntities](world)
 
-	s.haulerFilter = *generic.NewFilter1[comp.Hauler]()
-	s.pathFilter = *generic.NewFilter1[comp.Path]()
+	s.haulerFilter = ecs.NewFilter1[comp.Hauler](world)
+	s.pathFilter = ecs.NewFilter1[comp.Path](world)
 
-	s.pathMapper = generic.NewMap1[comp.Path](world)
-	s.haulerMapper = generic.NewMap1[comp.Hauler](world)
-	s.prodMapper = generic.NewMap1[comp.Production](world)
+	s.pathMapper = ecs.NewMap1[comp.Path](world)
+	s.haulerMapper = ecs.NewMap1[comp.Hauler](world)
+	s.prodMapper = ecs.NewMap1[comp.Production](world)
 }
 
 // Update the system
@@ -53,13 +52,13 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 	landUse := s.landUse.Get()
 	landUseE := s.landUseE.Get()
 
-	pathQuery := s.pathFilter.Query(world)
+	pathQuery := s.pathFilter.Query()
 	for pathQuery.Next() {
 		path := pathQuery.Get()
 		path.Haulers = path.Haulers[:0]
 	}
 
-	haulerQuery := s.haulerFilter.Query(world)
+	haulerQuery := s.haulerFilter.Query()
 	for haulerQuery.Next() {
 		haul := haulerQuery.Get()
 
@@ -93,7 +92,7 @@ func (s *AssignHaulers) Update(world *ecs.World) {
 		path.Haulers = append(path.Haulers, comp.HaulerEntry{Entity: haulerQuery.Entity(), YPos: yPos})
 	}
 
-	pathQuery = s.pathFilter.Query(world)
+	pathQuery = s.pathFilter.Query()
 	for pathQuery.Next() {
 		path := pathQuery.Get()
 
