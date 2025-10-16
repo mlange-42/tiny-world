@@ -53,7 +53,7 @@ func (s *GameControls) Update(world *ecs.World) {
 		speed.Speed--
 	}
 	if speed.Speed < speed.MaxSpeed && slices.Contains(s.inputChars, s.FasterKey) {
-		speed.Speed--
+		speed.Speed++
 	}
 
 	s.inputChars = s.inputChars[:0]
