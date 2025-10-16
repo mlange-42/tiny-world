@@ -1,5 +1,9 @@
 # Changelog
 
+## [[v0.2.2]](https://github.com/mlange-42/tiny-world/compare/v0.2.1...v0.2.2)
+
+* Migrate from the Arche ECS to [Ark](https://github.com/mlange-42/ark) (#267)
+
 ## [[v0.2.1]](https://github.com/mlange-42/tiny-world/compare/v0.2.0...v0.2.1)
 
 ### Bugfixes
