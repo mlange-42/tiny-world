@@ -20,7 +20,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.x'
+          go-version: '1.25.x'
       - name: Install dependencies
         run: |
           sudo apt-get update -y
@@ -49,7 +49,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.x'
+          go-version: '1.25.x'
       - name: Install dependencies
         run: go get ./...
       - name: Build
@@ -75,7 +75,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.x'
+          go-version: '1.25.x'
       - name: Build
         run: GOOS=darwin GOARCH=arm64 CGO_ENABLED=1 go build .
       - name: Build APP Bundle
@@ -107,7 +107,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.21.x'
+          go-version: '1.25.x'
       - name: Build
         run: GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build .
       - name: Build APP Bundle
