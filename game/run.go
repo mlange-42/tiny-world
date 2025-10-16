@@ -3,11 +3,8 @@ package game
 import (
 	"embed"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mlange-42/ark-repl/repl"
 	"github.com/mlange-42/ark-tools/app"
 	"github.com/mlange-42/ark/ecs"
 	"github.com/mlange-42/tiny-world/game/comp"
@@ -78,8 +75,6 @@ func runMenu(g *Game, tab int) {
 }
 
 func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string, isEditor bool) error {
-	startServer := len(os.Args) > 1 && os.Args[1] == "monitor"
-
 	ebiten.SetVsyncEnabled(true)
 
 	g.App = app.New()
@@ -250,33 +245,11 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 		view.TileHeight = sprites.TileHeight
 	}
 
-	if startServer {
-		addRepl(g.App)
-	}
+	addRepl(g.App)
 
 	// =========== Run ===========
 
 	g.App.Initialize()
 
 	return nil
-}
-
-func addRepl(app *app.App) {
-	callbacks := repl.Callbacks{
-		Pause: func(out *strings.Builder) {
-			ecs.GetResource[res.GameSpeed](&app.World).Pause = true
-		},
-		Resume: func(out *strings.Builder) {
-			ecs.GetResource[res.GameSpeed](&app.World).Pause = false
-		},
-		Ticks: func() int {
-			return int(ecs.GetResource[res.GameTick](&app.World).Tick)
-		},
-	}
-
-	repl := repl.NewRepl(&app.World, callbacks)
-
-	app.AddUISystem(repl.System())
-
-	repl.StartServer(":9000")
 }
