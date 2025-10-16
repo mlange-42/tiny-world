@@ -33,7 +33,7 @@ func (s *DoProduction) Initialize(world *ecs.World) {
 	s.editor = ecs.NewResource[res.EditorMode](world)
 
 	s.filter = s.filter.New(world)
-	s.markerBuilder = ecs.NewMap2[comp.Tile, comp.ProductionMarker](world)
+	s.markerBuilder = s.markerBuilder.New(world)
 }
 
 // Update the system

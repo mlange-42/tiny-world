@@ -60,7 +60,7 @@ type Terrain struct {
 
 // InitializeUI the system
 func (s *Terrain) InitializeUI(world *ecs.World) {
-	s.screen = ecs.NewResource[res.Screen](world)
+	s.screen = s.screen.New(world)
 	s.selection = ecs.NewResource[res.Selection](world)
 	s.mouse = ecs.NewResource[res.Mouse](world)
 	s.ui = ecs.NewResource[res.UI](world)
@@ -76,12 +76,12 @@ func (s *Terrain) InitializeUI(world *ecs.World) {
 	s.buildable = ecs.GetResource[res.Buildable](world)
 	s.update = ecs.GetResource[res.UpdateInterval](world)
 
-	s.prodMapper = ecs.NewMap2[comp.Terrain, comp.Production](world)
-	s.popMapper = ecs.NewMap1[comp.PopulationSupport](world)
-	s.pathMapper = ecs.NewMap1[comp.Path](world)
-	s.haulerMapper = ecs.NewMap2[comp.Hauler, comp.HaulerSprite](world)
-	s.spriteMapper = ecs.NewMap1[comp.RandomSprite](world)
-	s.landUseMapper = ecs.NewMap4[comp.Production, comp.Consumption, comp.PopulationSupport, comp.RandomSprite](world)
+	s.prodMapper = s.prodMapper.New(world)
+	s.popMapper = s.popMapper.New(world)
+	s.pathMapper = s.pathMapper.New(world)
+	s.haulerMapper = s.haulerMapper.New(world)
+	s.spriteMapper = s.spriteMapper.New(world)
+	s.landUseMapper = s.landUseMapper.New(world)
 
 	s.radiusFilter = s.radiusFilter.New(world)
 

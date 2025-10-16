@@ -13,7 +13,7 @@ type UpdateUI struct {
 
 // Initialize the system
 func (s *UpdateUI) Initialize(world *ecs.World) {
-	s.ui = ecs.NewResource[UI](world)
+	s.ui = s.ui.New(world)
 }
 
 // Update the system

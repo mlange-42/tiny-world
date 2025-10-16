@@ -42,7 +42,7 @@ type PanAndZoom struct {
 // Initialize the system
 func (s *PanAndZoom) Initialize(world *ecs.World) {
 	s.view = ecs.NewResource[res.View](world)
-	s.screen = ecs.NewResource[res.Screen](world)
+	s.screen = s.screen.New(world)
 	s.bounds = ecs.NewResource[res.WorldBounds](world)
 	s.terrain = ecs.NewResource[res.Terrain](world)
 	s.mouse = ecs.NewResource[res.Mouse](world)

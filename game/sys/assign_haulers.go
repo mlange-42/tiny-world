@@ -37,9 +37,9 @@ func (s *AssignHaulers) Initialize(world *ecs.World) {
 	s.haulerFilter = s.haulerFilter.New(world)
 	s.pathFilter = s.pathFilter.New(world)
 
-	s.pathMapper = ecs.NewMap1[comp.Path](world)
-	s.haulerMapper = ecs.NewMap1[comp.Hauler](world)
-	s.prodMapper = ecs.NewMap1[comp.Production](world)
+	s.pathMapper = s.pathMapper.New(world)
+	s.haulerMapper = s.haulerMapper.New(world)
+	s.prodMapper = s.prodMapper.New(world)
 }
 
 // Update the system

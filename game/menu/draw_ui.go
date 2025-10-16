@@ -14,9 +14,9 @@ type DrawUI struct {
 
 // InitializeUI the system
 func (s *DrawUI) InitializeUI(world *ecs.World) {
-	s.ui = ecs.NewResource[UI](world)
-	s.screen = ecs.NewResource[res.Screen](world)
-	s.sprites = ecs.NewResource[res.Sprites](world)
+	s.ui = s.ui.New(world)
+	s.screen = s.screen.New(world)
+	s.sprites = s.sprites.New(world)
 }
 
 // UpdateUI the system

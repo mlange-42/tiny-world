@@ -7,7 +7,7 @@ import (
 	"github.com/mlange-42/tiny-world/game/res"
 )
 
-// UI is a system to render the user interface.
+// CenterView is a system to render the user interface.
 type CenterView struct {
 	view    ecs.Resource[res.View]
 	screen  ecs.Resource[res.Screen]
@@ -18,9 +18,9 @@ type CenterView struct {
 
 // InitializeUI the system
 func (s *CenterView) InitializeUI(world *ecs.World) {
-	s.view = ecs.NewResource[res.View](world)
-	s.screen = ecs.NewResource[res.Screen](world)
-	s.terrain = ecs.NewResource[res.Terrain](world)
+	s.view = s.view.New(world)
+	s.screen = s.screen.New(world)
+	s.terrain = s.terrain.New(world)
 }
 
 // UpdateUI the system

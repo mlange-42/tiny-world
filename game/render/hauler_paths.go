@@ -20,9 +20,9 @@ type HaulerPaths struct {
 
 // InitializeUI the system
 func (s *HaulerPaths) InitializeUI(world *ecs.World) {
-	s.screen = ecs.NewResource[res.Screen](world)
-	s.view = ecs.NewResource[res.View](world)
-	s.update = ecs.NewResource[res.UpdateInterval](world)
+	s.screen = s.screen.New(world)
+	s.view = s.view.New(world)
+	s.update = s.update.New(world)
 
 	s.filter = s.filter.New(world)
 }

@@ -50,10 +50,10 @@ func (s *Haul) Initialize(world *ecs.World) {
 	s.warehouseFilter = s.warehouseFilter.New(world).With(ecs.C[comp.Warehouse]())
 	s.filter = s.filter.New(world)
 
-	s.haulerMap = ecs.NewMap2[comp.Tile, comp.Hauler](world)
-	s.homeMap = ecs.NewMap3[comp.Tile, comp.Terrain, comp.Production](world)
-	s.haulerBuilder = ecs.NewMap3[comp.Tile, comp.Hauler, comp.HaulerSprite](world)
-	s.productionMap = ecs.NewMap2[comp.Terrain, comp.Production](world)
+	s.haulerMap = s.haulerMap.New(world)
+	s.homeMap = s.homeMap.New(world)
+	s.haulerBuilder = s.haulerBuilder.New(world)
+	s.productionMap = s.productionMap.New(world)
 
 	s.aStar = nav.NewAStar(s.landUse.Get())
 

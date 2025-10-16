@@ -29,7 +29,7 @@ type Markers struct {
 // InitializeUI the system
 func (s *Markers) InitializeUI(world *ecs.World) {
 	s.time = ecs.NewResource[res.GameTick](world)
-	s.screen = ecs.NewResource[res.Screen](world)
+	s.screen = s.screen.New(world)
 	s.sprites = ecs.NewResource[res.Sprites](world)
 	s.view = ecs.NewResource[res.View](world)
 

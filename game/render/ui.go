@@ -14,7 +14,7 @@ type UI struct {
 // InitializeUI the system
 func (s *UI) InitializeUI(world *ecs.World) {
 	s.ui = ecs.NewResource[res.UI](world)
-	s.screen = ecs.NewResource[res.Screen](world)
+	s.screen = s.screen.New(world)
 }
 
 // UpdateUI the system
