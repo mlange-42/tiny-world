@@ -137,18 +137,18 @@ func (ui *UI) SetResourceLabel(id resource.Resource, text string, warning bool) 
 	label := ui.resourceLabels[id]
 	label.Label = text
 	if warning {
-		label.Color = ui.sprites.TextHighlightColor
+		label.SetColor(ui.sprites.TextHighlightColor)
 	} else {
-		label.Color = ui.sprites.TextColor
+		label.SetColor(ui.sprites.TextColor)
 	}
 }
 
 func (ui *UI) SetPopulationLabel(text string, warning bool) {
 	ui.populationLabel.Label = text
 	if warning {
-		ui.populationLabel.Color = ui.sprites.TextHighlightColor
+		ui.populationLabel.SetColor(ui.sprites.TextHighlightColor)
 	} else {
-		ui.populationLabel.Color = ui.sprites.TextColor
+		ui.populationLabel.SetColor(ui.sprites.TextColor)
 	}
 }
 
@@ -345,7 +345,7 @@ func (ui *UI) ReplaceAllButtons(rules *Rules) {
 func (ui *UI) createUI() *widget.Container {
 	anchor := widget.NewContainer(
 		widget.ContainerOpts.Layout(widget.NewAnchorLayout(
-			widget.AnchorLayoutOpts.Padding(widget.Insets{Top: 48}),
+			widget.AnchorLayoutOpts.Padding(&widget.Insets{Top: 48}),
 		)),
 		widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.LayoutData(widget.StackedLayoutData{}),
