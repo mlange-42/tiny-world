@@ -8,7 +8,7 @@ import (
 
 // Game container
 type Game struct {
-	Model  *app.App
+	App    *app.App
 	Screen res.Screen
 	Mouse  res.Mouse
 
@@ -16,9 +16,9 @@ type Game struct {
 }
 
 // NewGame returns a new game
-func NewGame(mod *app.App) Game {
+func NewGame(app *app.App) Game {
 	return Game{
-		Model:        mod,
+		App:          app,
 		Screen:       res.Screen{Image: nil, Width: 0, Height: 0},
 		canvasHelper: newCanvasHelper(),
 	}
@@ -48,7 +48,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 // Update the game.
 func (g *Game) Update() error {
 	g.updateMouse()
-	g.Model.Update()
+	g.App.Update()
 	return nil
 }
 
@@ -57,7 +57,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.Screen.Image = screen
 	g.Screen.Width = screen.Bounds().Dx()
 	g.Screen.Height = screen.Bounds().Dy()
-	g.Model.UpdateUI()
+	g.App.UpdateUI()
 }
 
 func (g *Game) updateMouse() {

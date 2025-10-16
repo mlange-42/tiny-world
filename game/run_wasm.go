@@ -4,6 +4,8 @@ package game
 
 import (
 	"syscall/js"
+
+	"github.com/mlange-42/ark-tools/app"
 )
 
 type canvasHelper struct {
@@ -41,3 +43,5 @@ func (c *canvasHelper) onMouseLeave(this js.Value, args []js.Value) interface{} 
 	c.mouseInside = false
 	return nil
 }
+
+func addRepl(app *app.App) {}

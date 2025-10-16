@@ -47,14 +47,14 @@ func run(g *Game, name string, mapLoc save.MapLocation, load save.LoadType, isEd
 
 func runMenu(g *Game, tab int) {
 	ebiten.SetVsyncEnabled(true)
-	g.Model = app.New()
+	g.App = app.New()
 
-	ecs.AddResource(&g.Model.World, &g.Screen)
+	ecs.AddResource(&g.App.World, &g.Screen)
 
 	sprites := res.NewSprites(GameData, "data/gfx", "paper")
-	ecs.AddResource(&g.Model.World, &sprites)
+	ecs.AddResource(&g.App.World, &sprites)
 
-	achievements := achievements.New(&g.Model.World, GameData, "data/json/achievements.json", "user/achievements.json")
+	achievements := achievements.New(&g.App.World, GameData, "data/json/achievements.json", "user/achievements.json")
 
 	fonts := res.NewFonts(GameData)
 	ui := menu.NewUI(GameData, saveFolder, mapsFolder, tab, &sprites, &fonts, achievements,
@@ -66,135 +66,135 @@ func runMenu(g *Game, tab int) {
 		},
 	)
 
-	ecs.AddResource(&g.Model.World, &ui)
+	ecs.AddResource(&g.App.World, &ui)
 
-	g.Model.AddSystem(&menu.UpdateUI{})
-	g.Model.AddUISystem(&menu.DrawUI{})
+	g.App.AddSystem(&menu.UpdateUI{})
+	g.App.AddUISystem(&menu.DrawUI{})
 
-	g.Model.Initialize()
+	g.App.Initialize()
 }
 
 func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, tileSet string, isEditor bool) error {
 	ebiten.SetVsyncEnabled(true)
 
-	g.Model = app.New()
+	g.App = app.New()
 
 	// Register components for deserialization,
 	// where it does not happen in systems already.
-	_ = ecs.ComponentID[comp.CardAnimation](&g.Model.World)
+	_ = ecs.ComponentID[comp.CardAnimation](&g.App.World)
 
 	// =========== Resources ===========
 
 	rules := res.NewRules(GameData, "data/json/rules.json")
-	ecs.AddResource(&g.Model.World, &rules)
+	ecs.AddResource(&g.App.World, &rules)
 
 	gameSpeed := res.GameSpeed{
 		MinSpeed: -2,
 		MaxSpeed: 3,
 	}
-	ecs.AddResource(&g.Model.World, &gameSpeed)
+	ecs.AddResource(&g.App.World, &gameSpeed)
 
 	gameTick := res.GameTick{}
-	ecs.AddResource(&g.Model.World, &gameTick)
+	ecs.AddResource(&g.App.World, &gameTick)
 
 	terrain := res.NewTerrain(rules.WorldSize, rules.WorldSize)
-	ecs.AddResource(&g.Model.World, &terrain)
+	ecs.AddResource(&g.App.World, &terrain)
 
 	terrainEntities := res.TerrainEntities{Grid: res.NewGrid[ecs.Entity](rules.WorldSize, rules.WorldSize)}
-	ecs.AddResource(&g.Model.World, &terrainEntities)
+	ecs.AddResource(&g.App.World, &terrainEntities)
 
 	landUse := res.NewLandUse(rules.WorldSize, rules.WorldSize)
-	ecs.AddResource(&g.Model.World, &landUse)
+	ecs.AddResource(&g.App.World, &landUse)
 
 	landUseEntities := res.LandUseEntities{Grid: res.NewGrid[ecs.Entity](rules.WorldSize, rules.WorldSize)}
-	ecs.AddResource(&g.Model.World, &landUseEntities)
+	ecs.AddResource(&g.App.World, &landUseEntities)
 
 	buildable := res.NewBuildable(rules.WorldSize, rules.WorldSize)
-	ecs.AddResource(&g.Model.World, &buildable)
+	ecs.AddResource(&g.App.World, &buildable)
 
 	selection := res.Selection{}
-	ecs.AddResource(&g.Model.World, &selection)
+	ecs.AddResource(&g.App.World, &selection)
 
 	bounds := res.WorldBounds{}
-	ecs.AddResource(&g.Model.World, &bounds)
+	ecs.AddResource(&g.App.World, &bounds)
 
 	editor := res.EditorMode{IsEditor: isEditor}
-	ecs.AddResource(&g.Model.World, &editor)
+	ecs.AddResource(&g.App.World, &editor)
 
 	saveTime := res.SaveTime{}
-	ecs.AddResource(&g.Model.World, &saveTime)
+	ecs.AddResource(&g.App.World, &saveTime)
 
 	randomTerrains := res.RandomTerrains{
 		TotalAvailable: rules.InitialRandomTerrains,
 	}
-	ecs.AddResource(&g.Model.World, &randomTerrains)
+	ecs.AddResource(&g.App.World, &randomTerrains)
 
 	update := res.UpdateInterval{
 		Interval:  TPS,
 		Countdown: 60,
 	}
-	ecs.AddResource(&g.Model.World, &update)
+	ecs.AddResource(&g.App.World, &update)
 
 	sprites := res.NewSprites(GameData, "data/gfx", tileSet)
-	ecs.AddResource(&g.Model.World, &sprites)
+	ecs.AddResource(&g.App.World, &sprites)
 
 	view := res.NewView(sprites.TileWidth, sprites.TileHeight)
-	ecs.AddResource(&g.Model.World, &view)
+	ecs.AddResource(&g.App.World, &view)
 
 	production := res.NewProduction()
-	ecs.AddResource(&g.Model.World, &production)
+	ecs.AddResource(&g.App.World, &production)
 
 	stock := res.NewStock(rules.InitialResources)
-	ecs.AddResource(&g.Model.World, &stock)
+	ecs.AddResource(&g.App.World, &stock)
 
-	ecs.AddResource(&g.Model.World, &g.Screen)
-	ecs.AddResource(&g.Model.World, &g.Mouse)
+	ecs.AddResource(&g.App.World, &g.Screen)
+	ecs.AddResource(&g.App.World, &g.Mouse)
 
 	saveEvent := res.SaveEvent{}
-	ecs.AddResource(&g.Model.World, &saveEvent)
+	ecs.AddResource(&g.App.World, &saveEvent)
 
 	fonts := res.NewFonts(GameData)
-	ecs.AddResource(&g.Model.World, &fonts)
+	ecs.AddResource(&g.App.World, &fonts)
 
-	factory := res.NewEntityFactory(&g.Model.World)
-	ecs.AddResource(&g.Model.World, &factory)
+	factory := res.NewEntityFactory(&g.App.World)
+	ecs.AddResource(&g.App.World, &factory)
 
-	achievements := achievements.New(&g.Model.World, GameData, "data/json/achievements.json", "user/achievements.json")
-	ecs.AddResource(&g.Model.World, achievements)
+	achievements := achievements.New(&g.App.World, GameData, "data/json/achievements.json", "user/achievements.json")
+	ecs.AddResource(&g.App.World, achievements)
 
 	// =========== Systems ===========
 
 	if load == save.LoadTypeGame {
-		g.Model.AddSystem(&sys.InitTerrainLoaded{})
+		g.App.AddSystem(&sys.InitTerrainLoaded{})
 	} else if load == save.LoadTypeMap {
-		g.Model.AddSystem(&sys.InitTerrainMap{
+		g.App.AddSystem(&sys.InitTerrainMap{
 			FS:        GameData,
 			MapFolder: mapsFolder,
 			Map:       mapLoc,
 		})
 	} else {
-		g.Model.AddSystem(&sys.InitTerrain{})
+		g.App.AddSystem(&sys.InitTerrain{})
 	}
-	g.Model.AddSystem(&sys.InitUI{})
+	g.App.AddSystem(&sys.InitUI{})
 
-	g.Model.AddSystem(&sys.Tick{})
-	g.Model.AddSystem(&sys.UpdateProduction{})
-	g.Model.AddSystem(&sys.UpdatePopulation{})
-	g.Model.AddSystem(&sys.DoProduction{})
-	g.Model.AddSystem(&sys.DoConsumption{})
-	g.Model.AddSystem(&sys.Haul{})
-	g.Model.AddSystem(&sys.UpdateStats{})
-	g.Model.AddSystem(&sys.RemoveMarkers{
+	g.App.AddSystem(&sys.Tick{})
+	g.App.AddSystem(&sys.UpdateProduction{})
+	g.App.AddSystem(&sys.UpdatePopulation{})
+	g.App.AddSystem(&sys.DoProduction{})
+	g.App.AddSystem(&sys.DoConsumption{})
+	g.App.AddSystem(&sys.Haul{})
+	g.App.AddSystem(&sys.UpdateStats{})
+	g.App.AddSystem(&sys.RemoveMarkers{
 		MaxTime: TPS,
 	})
 
-	g.Model.AddSystem(&sys.Build{})
-	g.Model.AddSystem(&sys.AssignHaulers{})
-	g.Model.AddSystem(&sys.Achievements{
+	g.App.AddSystem(&sys.Build{})
+	g.App.AddSystem(&sys.AssignHaulers{})
+	g.App.AddSystem(&sys.Achievements{
 		PlayerFile: "user/achievements.json",
 	})
 
-	g.Model.AddSystem(&sys.PanAndZoom{
+	g.App.AddSystem(&sys.PanAndZoom{
 		PanButton:        ebiten.MouseButton1,
 		ZoomInKey:        '+',
 		ZoomOutKey:       '-',
@@ -203,15 +203,15 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 		MaxZoom:          4,
 	})
 
-	g.Model.AddSystem(&sys.UpdateUI{})
-	g.Model.AddSystem(&sys.Cheats{})
-	g.Model.AddSystem(&sys.SaveGame{
+	g.App.AddSystem(&sys.UpdateUI{})
+	g.App.AddSystem(&sys.Cheats{})
+	g.App.AddSystem(&sys.SaveGame{
 		SaveFolder:   "save",
 		MapFolder:    "maps",
 		Name:         name,
 		MainMenuFunc: func() { runMenu(g, 0) },
 	})
-	g.Model.AddSystem(&sys.GameControls{
+	g.App.AddSystem(&sys.GameControls{
 		PauseKey:      ebiten.KeySpace,
 		SlowerKey:     '[',
 		FasterKey:     ']',
@@ -220,22 +220,22 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 
 	// =========== UI Systems ===========
 
-	g.Model.AddUISystem(&render.CenterView{})
-	g.Model.AddUISystem(&render.Terrain{})
-	g.Model.AddUISystem(&render.Markers{
+	g.App.AddUISystem(&render.CenterView{})
+	g.App.AddUISystem(&render.Terrain{})
+	g.App.AddUISystem(&render.Markers{
 		MinOffset: view.TileHeight * 2,
 		MaxOffset: view.TileHeight*2 + 30,
 		Duration:  TPS,
 	})
-	g.Model.AddUISystem(&render.UI{})
-	g.Model.AddUISystem(&render.CardAnimation{
+	g.App.AddUISystem(&render.UI{})
+	g.App.AddUISystem(&render.CardAnimation{
 		MaxOffset: 200,
 		Duration:  TPS / 4,
 	})
 
 	// =========== Load game ===========
 	if load == save.LoadTypeGame {
-		err := save.LoadWorld(&g.Model.World, saveFolder, name)
+		err := save.LoadWorld(&g.App.World, saveFolder, name)
 		if err != nil {
 			return err
 		}
@@ -245,9 +245,11 @@ func runGame(g *Game, load save.LoadType, name string, mapLoc save.MapLocation, 
 		view.TileHeight = sprites.TileHeight
 	}
 
+	addRepl(g.App)
+
 	// =========== Run ===========
 
-	g.Model.Initialize()
+	g.App.Initialize()
 
 	return nil
 }
